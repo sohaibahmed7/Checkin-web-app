@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moderator Dashboard - Check-In</title>
+    <link rel="stylesheet" href="C:\Users\Shrey\checkin_we\checkin_web_code\dashboard\styles\dashboard.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="C:\Users\Shrey\checkin_we\checkin_web_code\dashboard\scripts\dashboard.js"></script> <!-- Local file saved to Shrey's computer -->
+</head>
+<body class="dashboard">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="../index.html" class="logo">
+                <h1>Check-In</h1>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#home" class="active" data-tab="home"><i class="fas fa-home"></i> Home</a>
+            <a href="#live-map" data-tab="live-map"><i class="fas fa-globe"></i> Live Map</a>
+            <a href="#chat" data-tab="chat"><i class="fas fa-comments"></i> Chat</a>
+            <a href="#reports" data-tab="reports"><i class="fas fa-file-alt"></i> Reports</a>
+            <a href="#settings" data-tab="settings"><i class="fas fa-cog"></i> Settings</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div class="greeting">
+                <h2>Good Morning, User!</h2>
+                <p>Welcome back to your dashboard</p>
+            </div>
+            <div class="user-menu">
+                <div class="user-avatar">
+                    <img src="dashboard/assets/avatar.svg" alt="User Avatar">
+                </div>
+                <div class="dropdown-menu">
+                    <a href="#"><i class="fas fa-user"></i> Profile</a>
+                    <a href="#"><i class="fas fa-cog"></i> Settings</a>
+                    <a href="../index.html"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Home Tab -->
+            <div class="tab-pane active" id="home">
+                <div class="dashboard-grid">
+                    <!-- Upcoming Alerts Card -->
+                    <section class="card upcoming-alerts">
+                        <h3><i class="fas fa-bell"></i> Upcoming</h3>
+                        <div class="alert-stack">
+                            <div class="alert-item message">
+                                <div class="alert-icon">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div class="alert-content">
+                                    <p class="alert-title">Unread Messages</p>
+                                    <p class="alert-details">3 new messages in Community Chat</p>
+                                </div>
+                                <span class="alert-time">2m ago</span>
+                            </div>
+                            <div class="alert-item suspicious">
+                                <div class="alert-icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="alert-content">
+                                    <p class="alert-title">Suspicious Activity</p>
+                                    <p class="alert-details">Reported near Main St.</p>
+                                </div>
+                                <span class="alert-time">15m ago</span>
+                            </div>
+                            <div class="alert-item event">
+                                <div class="alert-icon">
+                                    <i class="fas fa-calendar"></i>
+                                </div>
+                                <div class="alert-content">
+                                    <p class="alert-title">Community Meeting</p>
+                                    <p class="alert-details">Tomorrow at 6 PM</p>
+                                </div>
+                                <span class="alert-time">1d ahead</span>
+                            </div>
+                            <a href="#" class="view-more" data-navigate-to="reports">
+                                View more alerts <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </div>
+                    </section>
+
+                    <!-- Activity Overview Card -->
+                    <section class="card activity-overview">
+                        <div class="overview-header">
+                            <h3><i class="fas fa-chart-bar"></i> Activity Overview</h3>
+                            <a href="#" class="view-reports-btn" data-navigate-to="reports">
+                                <i class="fas fa-external-link-alt"></i> Full Reports
+                            </a>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="activityChart"></canvas>
+                        </div>
+                        <div class="overview-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Today's Reports</span>
+                                <span class="stat-value">12</span>
+                                <span class="stat-change positive">+2 <i class="fas fa-arrow-up"></i></span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Active Cases</span>
+                                <span class="stat-value">5</span>
+                                <span class="stat-change neutral">0 <i class="fas fa-minus"></i></span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Response Rate</span>
+                                <span class="stat-value">95%</span>
+                                <span class="stat-change positive">+5% <i class="fas fa-arrow-up"></i></span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Map Section -->
+                    <section class="card map-section">
+                        <div class="map-header">
+                            <h3><i class="fas fa-map-marked-alt"></i> Neighborhood Map</h3>
+                            <button class="ping-button" id="home-place-ping">
+                                <i class="fas fa-map-marker-alt"></i> Place a Ping
+                            </button>
+                        </div>
+                        <div id="map-home" style="height: 300px; width: 100%;"></div>
+                        <div class="map-controls" style="margin-bottom: 0.75rem;">
+                            <div class="map-filters">
+                                <div class="filter-group">
+                                    <select class="time-filter">
+                                        <option value="24h">Last 24h</option>
+                                        <option value="7d">7 Days</option>
+                                        <option value="30d">30 Days</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <div class="category-toggles">
+                                        <button class="active" data-category="all">All</button>
+                                        <button data-category="suspicious">Suspicious</button>
+                                        <button data-category="fire">Fire</button>
+                                        <button data-category="theft">Theft</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="map-feed">
+                            <div class="feed-header">
+                                <h4><i class="fas fa-bell"></i> Recent Updates</h4>
+                                <div class="feed-filters">
+                                    <button class="active"><i class="fas fa-clock"></i> Latest</button>
+                                    <button><i class="fas fa-fire"></i> Urgent</button>
+                                </div>
+                            </div>
+                            <div class="feed-items">
+                                <div class="feed-item urgent">
+                                    <div class="feed-avatar">
+                                        <img src="dashboard/assets/avatar.svg" alt="John D">
+                                        <span class="status urgent"></span>
+                                    </div>
+                                    <div class="feed-content">
+                                        <div class="feed-header">
+                                            <span class="feed-user">John D.</span>
+                                            <span class="feed-time">5m ago</span>
+                                        </div>
+                                        <p class="feed-text">Fire reported at Oak & Main. Fire department en route.</p>
+                                        <div class="feed-actions">
+                                            <a href="#map" class="view-on-map" data-coordinates="-81.24,43.02">
+                                                <i class="fas fa-map-marker-alt"></i> View Location
+                                            </a>
+                                            <span class="feed-category fire">
+                                                <i class="fas fa-fire"></i> Fire Alert
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="feed-item">
+                                    <div class="feed-avatar">
+                                        <img src="dashboard/assets/avatar.svg" alt="Sarah M.">
+                                        <span class="status active"></span>
+                                    </div>
+                                    <div class="feed-content">
+                                        <div class="feed-header">
+                                            <span class="feed-user">Sarah M.</span>
+                                            <span class="feed-time">15m ago</span>
+                                        </div>
+                                        <p class="feed-text">Neighborhood watch starting evening rounds. All clear so far.</p>
+                                        <div class="feed-actions">
+                                            <button class="feed-action">
+                                                <i class="fas fa-thumbs-up"></i> Thanks
+                                            </button>
+                                            <span class="feed-category patrol">
+                                                <i class="fas fa-shield-alt"></i> Patrol Update
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="feed-item">
+                                    <div class="feed-avatar">
+                                        <img src="dashboard/assets/avatar.svg" alt="Mike R.">
+                                        <span class="status active"></span>
+                                    </div>
+                                    <div class="feed-content">
+                                        <div class="feed-header">
+                                            <span class="feed-user">Mike R.</span>
+                                            <span class="feed-time">30m ago</span>
+                                        </div>
+                                        <p class="feed-text">Suspicious vehicle spotted - Silver van circling Elm Street.</p>
+                                        <div class="feed-actions">
+                                            <a href="#map" class="view-on-map" data-coordinates="-81.25,43.01">
+                                                <i class="fas fa-map-marker-alt"></i> View Location
+                                            </a>
+                                            <span class="feed-category suspicious">
+                                                <i class="fas fa-exclamation-triangle"></i> Suspicious
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Map Tab -->
+            <div class="tab-pane" id="map">
+                <div class="map-full-container">
+                    <div id="map-full" style="width: 100%; height: calc(100vh - 80px);"></div>
+                    <div class="map-controls-overlay">
+                        <div class="map-filters-left">
+                            <button class="category-filter active" data-category="all">
+                                <i class="fas fa-layer-group"></i> All
+                            </button>
+                            <button class="category-filter" data-category="suspicious">
+                                <i class="fas fa-exclamation-triangle"></i> Suspicious
+                            </button>
+                            <button class="category-filter" data-category="theft">
+                                <i class="fas fa-lock"></i> Break-in
+                            </button>
+                            <button class="category-filter" data-category="fire">
+                                <i class="fas fa-fire"></i> Fire
+                            </button>
+                            <button class="category-filter" data-category="noise">
+                                <i class="fas fa-volume-up"></i> Noise
+                            </button>
+                        </div>
+                        <div class="map-filters-right">
+                            <select class="time-filter">
+                                <option value="24h">Last 24 hours</option>
+                                <option value="7d">Past 7 Days</option>
+                                <option value="30d">Last 30 Days</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Map Tab -->
+            <div class="tab-pane" id="live-map">
+                <div class="live-map-container">
+                    <div class="live-map-header">
+                        <h2>Live Community Map</h2>
+                        <div class="live-map-controls">
+                            <div class="category-toggles" style="display: flex; align-items: center; gap: 10px;">
+                                <button class="active" data-category="all">All</button>
+                                <button data-category="suspicious">
+                                    <i class="fas fa-exclamation-triangle"></i> Suspicious
+                                </button>
+                                <button data-category="fire">
+                                    <i class="fas fa-fire"></i> Fire
+                                </button>
+                                <button data-category="community">
+                                    <i class="fas fa-users"></i> Community
+                                </button>
+                                <select id="live-time-filter" style="margin-left: auto;">
+                                    <option value="24h">Last 24 Hours</option>
+                                    <option value="7d">Last 7 Days</option>
+                                    <option value="30d">Last 30 Days</option>
+                                </select>
+                                <button id="live-place-ping" class="ping-button">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    Place Ping
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="live-map-layout">
+                        <!-- Map View -->
+                        <div class="live-map-view">
+                            <div id="live-map-full"></div>
+                        </div>
+
+                        <!-- Ping Details Column -->
+                        <div class="ping-details-column">
+                            <div class="ping-details-header">
+                                <h3>Ping Details</h3>
+                                <span class="ping-count">3 active pings</span>
+                            </div>
+                            <div class="ping-details-container">
+                                <div class="ping-detail-item">
+                                    <div class="ping-header">
+                                        <div class="ping-user">
+                                            <img src="dashboard/assets/avatar.svg" alt="John D.">
+                                            <div class="ping-user-info">
+                                                <h4>John D.</h4>
+                                                <span class="ping-time">5m ago</span>
+                                            </div>
+                                        </div>
+                                        <span class="ping-category fire">
+                                            <i class="fas fa-fire"></i> Fire Alert
+                                        </span>
+                                    </div>
+                                    <div class="ping-content">
+                                        <p>Fire reported at Oak & Main. Fire department en route. Multiple units responding.</p>
+                                        <div class="ping-location">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <span>Oak Street & Main Street</span>
+                                        </div>
+                                    </div>
+                                    <div class="ping-replies">
+                                        <div class="reply">
+                                            <div class="reply-user">
+                                                <img src="dashboard/assets/avatar.svg" alt="Sarah M.">
+                                                <span class="reply-name">Sarah M.</span>
+                                            </div>
+                                            <p>I can see the smoke from my window. Fire trucks are arriving now.</p>
+                                            <span class="reply-time">2m ago</span>
+                                        </div>
+                                    </div>
+                                    <div class="ping-actions">
+                                        <button class="action-btn">
+                                            <i class="fas fa-reply"></i> Reply
+                                        </button>
+                                        <button class="action-btn">
+                                            <i class="fas fa-thumbs-up"></i> Like
+                                        </button>
+                                        <button class="action-btn">
+                                            <i class="fas fa-share"></i> Share
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="ping-details">
+                                    <div class="ping-header">
+                                        <div class="ping-user">
+                                            <img src="dashboard/assets/avatar.svg" alt="Sarah M.">
+                                            <div class="ping-user-info">
+                                                <h4>Sarah M.</h4>
+                                                <span class="ping-time">30m ago</span>
+                                            </div>
+                                        </div>
+                                        <span class="ping-category community">Community</span>
+                                    </div>
+                                    <div class="ping-content">
+                                        <p>Neighborhood watch starting evening rounds. All clear so far</p>
+                                    </div>
+                                    <div class="ping-replies">
+                                        <div class="reply">
+                                            <img src="dashboard/assets/avatar.svg" alt="John D.">
+                                            <div class="reply-content">
+                                                <h5>John D. <span>25m ago</span></h5>
+                                                <p>Thanks for the update, Sarah. I'll join the next patrol.</p>
+                                            </div>
+                                        </div>
+                                        <div class="reply">
+                                            <img src="dashboard/assets/avatar.svg" alt="Mike R.">
+                                            <div class="reply-content">
+                                                <h5>Mike R. <span>20m ago</span></h5>
+                                                <p>I'll be there in 10 minutes to help with the rounds.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ping-actions">
+                                        <button class="action-btn reply-btn">
+                                            <i class="fas fa-reply"></i> Reply
+                                        </button>
+                                        <button class="action-btn like-btn">
+                                            <i class="fas fa-thumbs-up"></i> Like
+                                        </button>
+                                        <button class="action-btn share-btn">
+                                            <i class="fas fa-share"></i> Share
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Additional ping items... -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pings-feed">
+                        <div class="pings-header">
+                            <h3><i class="fas fa-list"></i> Recent Pings</h3>
+                            <div class="pings-filter">
+                                <button class="active" data-category="all">All</button>
+                                <button data-category="suspicious">Suspicious</button>
+                                <button data-category="fire">Fire</button>
+                                <button data-category="community">Community</button>
+                            </div>
+                        </div>
+                        <div class="pings-list">
+                            <!-- Ping items will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Tab -->
+            <div class="tab-pane" id="chat">
+                <div class="chat-dashboard">
+                    <!-- Recent Chats Panel -->
+                    <div class="chat-list-panel">
+                        <div class="chat-list-header">
+                            <div class="search-container">
+                                <i class="fas fa-search"></i>
+                                <input type="text" placeholder="Search conversations...">
+                                <button class="new-chat-btn" title="Start a new chat">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="chat-list">
+                            <div class="chat-item active" data-chat-id="community">
+                                <div class="chat-item-avatar">
+                                    <img src="dashboard/assets/avatar.svg" alt="Community Chat">
+                                    <span class="status-dot active"></span>
+                                </div>
+                                <div class="chat-item-content">
+                                    <div class="chat-item-header">
+                                        <span class="chat-item-name">Community Chat</span>
+                                        <span class="chat-item-time">Now</span>
+                                    </div>
+                                    <p class="chat-item-preview">Emma: Just spotted a coyote near Richmond Park! Be careful...</p>
+                                </div>
+                            </div>
+
+                            <div class="chat-item" data-chat-id="watch">
+                                <div class="chat-item-avatar">
+                                    <img src="dashboard/assets/avatar.svg" alt="Neighborhood Watch">
+                                    <span class="status-dot active"></span>
+                                </div>
+                                <div class="chat-item-content">
+                                    <div class="chat-item-header">
+                                        <span class="chat-item-name">Neighborhood Watch</span>
+                                        <span class="chat-item-time">2m ago</span>
+                                    </div>
+                                    <p class="chat-item-preview">John: Starting evening patrol. All clear on east side.</p>
+                                </div>
+                            </div>
+
+                            <div class="chat-item" data-chat-id="safety">
+                                <div class="chat-item-avatar">
+                                    <img src="dashboard/assets/avatar.svg" alt="Safety Committee">
+                                    <span class="status-dot"></span>
+                                </div>
+                                <div class="chat-item-content">
+                                    <div class="chat-item-header">
+                                        <span class="chat-item-name">Safety Committee</span>
+                                        <span class="chat-item-time">15m ago</span>
+                                    </div>
+                                    <p class="chat-item-preview">Sarah: Updated emergency response plan attached for review</p>
+                                </div>
+                            </div>
+
+                            <div class="chat-item" data-chat-id="events">
+                                <div class="chat-item-avatar">
+                                    <img src="dashboard/assets/avatar.svg" alt="Community Events">
+                                    <span class="status-dot active"></span>
+                                </div>
+                                <div class="chat-item-content">
+                                    <div class="chat-item-header">
+                                        <span class="chat-item-name">Community Events</span>
+                                        <span class="chat-item-time">30m ago</span>
+                                    </div>
+                                    <p class="chat-item-preview">🎉 Weekend farmers market: 20+ vendors confirmed!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Window -->
+                    <div class="chat-window">
+                        <div class="chat-window-header">
+                            <div class="chat-window-title">
+                                <div class="chat-title-avatar">
+                                    <img src="dashboard/assets/avatar.svg" alt="Community Chat">
+                                    <span class="status-dot active"></span>
+                                </div>
+                                <div class="chat-header" id="community-chat-header" style="cursor: pointer;">
+                                    <h3>Community Chat</h3>
+                                    <span>156 members online</span>
+                                </div>
+                                
+                                <script>
+                                    document.getElementById('community-chat-header').addEventListener('click', function() {
+                                        window.open('community-chat-members.html', '_blank'); // Opens the member list in a new tab
+                                    });
+                                </script>
+                            </div>
+                        </div>
+
+                        <div class="messages-container">
+                            <!-- Community Chat Messages -->
+                            <div class="message-group" data-chat="community">
+                                <div class="message received">
+                                    <div class="message-avatar">
+                                        <img src="dashboard/assets/avatar.svg" alt="Emma">
+                                    </div>
+                                    <div class="message-content">
+                                        <span class="message-author">Emma</span>
+                                        <p>Just spotted a coyote near Richmond Park! Be careful if you're walking pets in the area.</p>
+                                        <div class="message-actions">
+                                            <button class="action-btn reply-btn" title="Reply">
+                                                <i class="fas fa-reply"></i>
+                                            </button>
+                                            <button class="action-btn forward-btn" title="Forward">
+                                                <i class="fas fa-share"></i>
+                                            </button>
+                                            <button class="action-btn react-btn" title="React">
+                                                <i class="fas fa-smile"></i>
+                                            </button>
+                                            <button class="action-btn star-btn" title="Star">
+                                                <i class="fas fa-star"></i>
+                                            </button>
+                                            <button class="action-btn delete-btn" title="Delete">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <span class="message-time">Now</span>
+                                </div>
+
+                                <div class="message sent">
+                                    <div class="message-content">
+                                        <p>Thanks for the heads up! I'll keep my dog inside for now.</p>
+                                        <div class="message-actions">
+                                            <button class="action-btn edit-btn" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="action-btn unsend-btn" title="Unsend">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                            <button class="action-btn react-btn" title="React">
+                                                <i class="fas fa-smile"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <span class="message-time">Now</span>
+                                </div>
+
+                                <div class="message received">
+                                    <div class="message-avatar">
+                                        <img src="dashboard/assets/avatar.svg" alt="Mike">
+                                    </div>
+                                    <div class="message-content">
+                                        <span class="message-author">Mike</span>
+                                        <p>I've notified animal control. They're sending someone to check the area.</p>
+                                        <div class="message-actions">
+                                            <button class="action-btn reply-btn" title="Reply">
+                                                <i class="fas fa-reply"></i>
+                                            </button>
+                                            <button class="action-btn forward-btn" title="Forward">
+                                                <i class="fas fa-share"></i>
+                                            </button>
+                                            <button class="action-btn react-btn" title="React">
+                                                <i class="fas fa-smile"></i>
+                                            </button>
+                                            <button class="action-btn star-btn" title="Star">
+                                                <i class="fas fa-star"></i>
+                                            </button>
+                                            <button class="action-btn delete-btn" title="Delete">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <span class="message-time">1m ago</span>
+                                </div>
+                            </div>
+
+                            <!-- Neighborhood Watch Messages -->
+                            <div class="message-group" data-chat="watch" style="display: none;">
+                                <div class="message received">
+                                    <div class="message-avatar">
+                                        <img src="dashboard/assets/avatar.svg" alt="John">
+                                    </div>
+                                    <div class="message-content">
+                                        <span class="message-author">John</span>
+                                        <p>Starting evening patrol. All clear on east side.</p>
+                                        <div class="message-actions">
+                                            <button class="action-btn reply-btn" title="Reply">
+                                                <i class="fas fa-reply"></i>
+                                            </button>
+                                            <button class="action-btn forward-btn" title="Forward">
+                                                <i class="fas fa-share"></i>
+                                            </button>
+                                            <button class="action-btn react-btn" title="React">
+                                                <i class="fas fa-smile"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <span class="message-time">2m ago</span>
+                                </div>
+
+                                <div class="message sent">
+                                    <div class="message-content">
+                                        <p>Thanks for the update. I'll be joining the patrol in 15 minutes.</p>
+                                        <div class="message-actions">
+                                            <button class="action-btn edit-btn" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="action-btn unsend-btn" title="Unsend">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                            <button class="action-btn react-btn" title="React">
+                                                <i class="fas fa-smile"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <span class="message-time">1m ago</span>
+                                </div>
+                            </div>
+
+                            <!-- Safety Committee Messages -->
+                            <div class="message-group" data-chat="safety" style="display: none;">
+                                <div class="message received">
+                                    <div class="message-avatar">
+                                        <img src="dashboard/assets/avatar.svg" alt="Sarah">
+                                    </div>
+                                    <div class="message-content">
+                                        <span class="message-author">Sarah</span>
+                                        <p>Updated emergency response plan attached for review. Please review by Friday.</p>
+                                        <div class="message-actions">
+                                            <button class="action-btn reply-btn" title="Reply">
+                                                <i class="fas fa-reply"></i>
+                                            </button>
+                                            <button class="action-btn forward-btn" title="Forward">
+                                                <i class="fas fa-share"></i>
+                                            </button>
+                                            <button class="action-btn react-btn" title="React">
+                                                <i class="fas fa-smile"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <span class="message-time">15m ago</span>
+                                </div>
+
+                                <div class="message sent">
+                                    <div class="message-content">
+                                        <p>I've reviewed the plan. The evacuation routes look good, but we should add more emergency contact numbers.</p>
+                                        <div class="message-actions">
+                                            <button class="action-btn edit-btn" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="action-btn unsend-btn" title="Unsend">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                            <button class="action-btn react-btn" title="React">
+                                                <i class="fas fa-smile"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <span class="message-time">10m ago</span>
+                                </div>
+                            </div>
+
+                            <!-- Community Events Messages -->
+                            <div class="message-group" data-chat="events" style="display: none;">
+                                <div class="message received">
+                                    <div class="message-avatar">
+                                        <img src="dashboard/assets/avatar.svg" alt="Emma">
+                                    </div>
+                                    <div class="message-content">
+                                        <span class="message-author">Emma</span>
+                                        <p>🎉 Weekend farmers market: 20+ vendors confirmed! We'll have fresh produce, baked goods, and local crafts.</p>
+                                        <div class="message-actions">
+                                            <button class="action-btn reply-btn" title="Reply">
+                                                <i class="fas fa-reply"></i>
+                                            </button>
+                                            <button class="action-btn forward-btn" title="Forward">
+                                                <i class="fas fa-share"></i>
+                                            </button>
+                                            <button class="action-btn react-btn" title="React">
+                                                <i class="fas fa-smile"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <span class="message-time">30m ago</span>
+                                </div>
+
+                                <div class="message sent">
+                                    <div class="message-content">
+                                        <p>That's great news! I'll bring my family. What time does it start?</p>
+                                        <div class="message-actions">
+                                            <button class="action-btn edit-btn" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="action-btn unsend-btn" title="Unsend">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                            <button class="action-btn react-btn" title="React">
+                                                <i class="fas fa-smile"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <span class="message-time">25m ago</span>
+                                </div>
+
+                                <div class="message received">
+                                    <div class="message-avatar">
+                                        <img src="dashboard/assets/avatar.svg" alt="Emma">
+                                    </div>
+                                    <div class="message-content">
+                                        <span class="message-author">Emma</span>
+                                        <p>8 AM to 2 PM both Saturday and Sunday. We'll have live music starting at 10 AM!</p>
+                                        <div class="message-actions">
+                                            <button class="action-btn reply-btn" title="Reply">
+                                                <i class="fas fa-reply"></i>
+                                            </button>
+                                            <button class="action-btn forward-btn" title="Forward">
+                                                <i class="fas fa-share"></i>
+                                            </button>
+                                            <button class="action-btn react-btn" title="React">
+                                                <i class="fas fa-smile"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <span class="message-time">20m ago</span>
+                                </div>
+                            </div>
+
+                            <div class="typing-indicator">
+                                <span>Emma is typing...</span>
+                            </div>
+                        </div>
+
+                        <div class="chat-input-container">
+                            <button class="attach-button">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            <input type="text" placeholder="Type a message...">
+                            <button class="send-button">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Emoji Picker Modal -->
+                    <div class="emoji-picker">
+                        <div class="emoji-picker-header">
+                            <span>Quick Reactions</span>
+                            <button class="close-emoji-picker">×</button>
+                        </div>
+                        <div class="emoji-grid">
+                            <button class="emoji-btn">👍</button>
+                            <button class="emoji-btn">❤️</button>
+                            <button class="emoji-btn">😊</button>
+                            <button class="emoji-btn">👏</button>
+                            <button class="emoji-btn">🙏</button>
+                            <button class="emoji-btn">💯</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div class="tab-pane" id="reports">
+                <div class="reports-dashboard">
+                    <div class="reports-header">
+                        <h2>Incident Reports</h2>
+                        <button class="quick-stats-btn">
+                            <i class="fas fa-chart-line"></i> View Quick Stats
+                        </button>
+                    </div>
+
+                    <div class="reports-overview">
+                        <div class="activity-chart-section">
+                            <div class="chart-header">
+                                <h3><i class="fas fa-chart-bar"></i> Activity Overview</h3>
+                                <div class="chart-filters">
+                                    <button class="active">Week</button>
+                                    <button>Month</button>
+                                    <button>Year</button>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="reportsActivityChart"></canvas>
+                            </div>
+                            <div class="chart-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Total Reports</span>
+                                    <span class="stat-value">124</span>
+                                    <span class="stat-change positive">+12% <i class="fas fa-arrow-up"></i></span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Response Time</span>
+                                    <span class="stat-value">8m</span>
+                                    <span class="stat-change negative">-5% <i class="fas fa-arrow-down"></i></span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Resolution Rate</span>
+                                    <span class="stat-value">92%</span>
+                                    <span class="stat-change positive">+3% <i class="fas fa-arrow-up"></i></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="activity-feed-section">
+                            <div class="feed-header">
+                                <h3><i class="fas fa-history"></i> Recent Activity</h3>
+                                <div class="feed-filters">
+                                    <button class="active"><i class="fas fa-clock"></i> Latest</button>
+                                    <button><i class="fas fa-fire"></i> Urgent</button>
+                                    <button><i class="fas fa-check-circle"></i> Resolved</button>
+                                </div>
+                            </div>
+                            <div class="feed-items">
+                                <div class="feed-item urgent">
+                                    <div class="feed-avatar">
+                                        <img src="dashboard/assets/avatar.svg" alt="John D.">
+                                        <span class="status urgent"></span>
+                                    </div>
+                                    <div class="feed-content">
+                                        <div class="feed-header">
+                                            <span class="feed-user">John D.</span>
+                                            <span class="feed-time">5m ago</span>
+                                        </div>
+                                        <p class="feed-text">Fire reported at Oak & Main. Fire department en route.</p>
+                                        <div class="feed-actions">
+                                            <a href="#map" class="view-on-map" data-coordinates="-81.24,43.02">
+                                                <i class="fas fa-map-marker-alt"></i> View Location
+                                            </a>
+                                            <span class="feed-category fire">
+                                                <i class="fas fa-fire"></i> Fire Alert
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="feed-item resolved">
+                                    <div class="feed-avatar">
+                                        <img src="dashboard/assets/avatar.svg" alt="Sarah M.">
+                                        <span class="status resolved"></span>
+                                    </div>
+                                    <div class="feed-content">
+                                        <div class="feed-header">
+                                            <span class="feed-user">Sarah M.</span>
+                                            <span class="feed-time">15m ago</span>
+                                        </div>
+                                        <p class="feed-text">Suspicious activity report resolved. Area secured by patrol.</p>
+                                        <div class="feed-actions">
+                                            <button class="feed-action">
+                                                <i class="fas fa-check-circle"></i> Resolved
+                                            </button>
+                                            <span class="feed-category resolved">
+                                                <i class="fas fa-shield-alt"></i> Case Closed
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="feed-item">
+                                    <div class="feed-avatar">
+                                        <img src="dashboard/assets/avatar.svg" alt="Mike R.">
+                                        <span class="status active"></span>
+                                    </div>
+                                    <div class="feed-content">
+                                        <div class="feed-header">
+                                            <span class="feed-user">Mike R.</span>
+                                            <span class="feed-time">30m ago</span>
+                                        </div>
+                                        <p class="feed-text">Suspicious vehicle spotted - Silver van circling Elm Street.</p>
+                                        <div class="feed-actions">
+                                            <a href="#map" class="view-on-map" data-coordinates="-81.25,43.01">
+                                                <i class="fas fa-map-marker-alt"></i> View Location
+                                            </a>
+                                            <span class="feed-category suspicious">
+                                                <i class="fas fa-exclamation-triangle"></i> Under Investigation
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reports-filters">
+                    <div class="filter-group">
+                        <label>Type</label>
+                        <select class="type-filter">
+                            <option value="all">All Types</option>
+                            <option value="suspicious">Suspicious Activity</option>
+                            <option value="theft">Theft</option>
+                            <option value="fire">Fire</option>
+                            <option value="noise">Noise Complaint</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <select class="status-filter">
+                            <option value="all">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="investigating">Investigating</option>
+                            <option value="resolved">Resolved</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Date Range</label>
+                        <div class="date-range">
+                            <input type="date" class="date-from" placeholder="From">
+                            <input type="date" class="date-to" placeholder="To">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reports-table-container">
+                    <table class="reports-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="reporter">Reporter <i class="fas fa-sort"></i></th>
+                                <th class="sortable" data-sort="type">Type <i class="fas fa-sort"></i></th>
+                                <th class="sortable" data-sort="date">Date <i class="fas fa-sort"></i></th>
+                                <th class="sortable" data-sort="status">Status <i class="fas fa-sort"></i></th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Sample Reports -->
+                            <tr class="report-row">
+                                <td>Sarah Johnson</td>
+                                <td><span class="badge suspicious">Suspicious</span></td>
+                                <td>2024-03-15 14:30</td>
+                                <td><span class="status-badge investigating">Investigating</span></td>
+                                <td>
+                                    <button class="expand-btn"><i class="fas fa-chevron-down"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="report-details">
+                                <td colspan="5">
+                                    <div class="report-card">
+                                        <div class="report-info">
+                                            <h4>Suspicious Vehicle Activity</h4>
+                                            <p>Black sedan circling the neighborhood for the past hour. License plate partially visible: ABC-12**</p>
+                                            <div class="report-meta">
+                                                <div class="report-photos">
+                                                    <h5>Photos</h5>
+                                                    <div class="photo-grid">
+                                                        <img src="dashboard/assets/sample-photo1.jpg" alt="Suspicious vehicle">
+                                                        <img src="dashboard/assets/sample-photo2.jpg" alt="License plate">
+                                                    </div>
+                                                </div>
+                                                <div class="report-location">
+                                                    <h5>Location</h5>
+                                                    <button class="view-location" data-coordinates="-81.25,43.01">
+                                                        <i class="fas fa-map-marker-alt"></i> View on Map
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- More sample reports -->
+                            <tr class="report-row">
+                                <td>Michael Chen</td>
+                                <td><span class="badge theft">Theft</span></td>
+                                <td>2024-03-14 09:15</td>
+                                <td><span class="status-badge resolved">Resolved</span></td>
+                                <td>
+                                    <button class="expand-btn"><i class="fas fa-chevron-down"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="report-details">
+                                <td colspan="5">
+                                    <div class="report-card">
+                                        <div class="report-info">
+                                            <h4>Package Theft</h4>
+                                            <p>Package stolen from front porch. Security camera footage available.</p>
+                                            <div class="report-meta">
+                                                <div class="report-photos">
+                                                    <h5>Photos</h5>
+                                                    <div class="photo-grid">
+                                                        <img src="assets/sample-photo3.jpg" alt="Security footage">
+                                                    </div>
+                                                </div>
+                                                <div class="report-location">
+                                                    <h5>Location</h5>
+                                                    <button class="view-location" data-coordinates="-81.24,43.02">
+                                                        <i class="fas fa-map-marker-alt"></i> View on Map
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Add more sample reports here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div class="tab-pane" id="settings">
+                <div class="settings-dashboard">
+                    <!-- Profile Preview Card -->
+                    <div class="profile-preview-card">
+                        <div class="profile-preview-avatar">
+                            <img src="assets/avatar.svg" alt="User Avatar">
+                        </div>
+                        <div class="profile-preview-info">
+                            <h2>User Name</h2>
+                            <p>user@example.com</p>
+                        </div>
+                    </div>
+
+                    <!-- Account Settings -->
+                    <div class="settings-section">
+                        <h3>Account Settings</h3>
+                        <form class="settings-form">
+                            <div class="form-group">
+                                <label for="name">Full Name</label>
+                                <input type="text" id="name" value="User Name">
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" value="user@example.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" id="phone" value="+1 (555) 123-4567">
+                            </div>
+                            <button type="button" class="change-password-btn">
+                                <i class="fas fa-lock"></i> Change Password
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Notification Settings -->
+                    <div class="settings-section">
+                        <h3>Notification Settings</h3>
+                        <div class="toggle-group">
+                            <span>Email Notifications</span>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-group">
+                            <span>Push Notifications</span>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-group">
+                            <span>Community Alerts</span>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Privacy Settings -->
+                    <div class="settings-section">
+                        <h3>Privacy Settings</h3>
+                        <div class="toggle-group">
+                            <span>Show Location on Map</span>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-group">
+                            <span>Share Activity Status</span>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Settings Actions -->
+                    <div class="settings-actions">
+                        <button class="cancel-button">Cancel</button>
+                        <button class="save-button">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Place Ping Modal -->
+    <div id="place-ping-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Place a Ping</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="ping-map" style="height: 300px; width: 100%; margin-bottom: 1rem;"></div>
+                <form class="ping-form">
+                    <div class="form-group">
+                        <label for="ping-description">Description</label>
+                        <textarea id="ping-description" placeholder="What's happening?"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Photo (optional)</label>
+                        <div class="photo-upload">
+                            <i class="fas fa-camera"></i>
+                            <span>Click to upload photo</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="cancel-btn">Cancel</button>
+                <button class="submit-ping-btn">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/dashboard.js"></script>
+</body>
+</html> 

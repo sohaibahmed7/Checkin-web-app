@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Check-In</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .form-group label {
+            font-weight: 500;
+            color: #333;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+        }
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            margin: 0;
+        }
+        .checkbox-group input[type="checkbox"] {
+            margin-left: 0.5rem;
+        }
+        .form-group input {
+            padding: 0.75rem 1rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .login-button {
+            background: #4a6bff;
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .login-button:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <a href="index.html"><h1>Check-In</h1></a>
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="features.html">Features</a>
+            <a href="how-it-works.html">How It Works</a>
+            <a href="download.html">Download</a>
+            <a href="contact.html">Contact</a>
+        </div>
+    </nav>
+
+    <div class="login-container">
+        <h2>Welcome Back</h2>
+        <form class="login-form" id="loginForm">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div class="form-group checkbox-group">
+                <label for="moderator-checkbox">
+                    Are you a moderator
+                    <input type="checkbox" id="moderator-checkbox">
+                </label>
+            </div>
+            <button type="button" class="login-button" id="login-button">Login</button>
+        </form>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: support@check-in.com</p>
+                <p>Phone: 416-786-8163</p>
+            </div>
+            <div class="footer-section">
+                <h3>Follow Us</h3>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Check-In. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Add event listener to the login button
+        document.getElementById('login-button').addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Check if the moderator checkbox is checked
+            const isModerator = document.getElementById('moderator-checkbox').checked;
+            console.log('Checkbox checked:', isModerator); // Debugging line
+
+            if (isModerator) {
+                // Redirect to the Create Neighborhood page
+                window.location.href = 'create-neighborhood.html';
+            } else {
+                // Proceed with the normal login process
+                console.log('Proceeding with normal login');
+                // Add your login logic here
+                window.location.href = 'dashboard/index.html';
+            }
+        });
+    </script>
+</body>
+</html>

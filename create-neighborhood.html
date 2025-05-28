@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Your Neighborhood</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="frontend/src/styles/dashboard.css"> <!-- Link to the CSS file -->
+    <link rel="stylesheet" href="path/to/create-neighborhood.css"> <!-- Link to the new CSS file -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet" />
+    <style>
+        * {
+            box-sizing: border-box; /* Ensure consistent box sizing */
+        }
+
+        body {
+            font-family: 'Poppins', Arial, sans-serif; /* Ensure the body uses Poppins */
+            margin: 0; /* Reset default margin */
+        }
+
+        .container {
+            margin: 100px 250px; /* Top, Right, Bottom, Left */
+        }
+
+        #map {
+            width: 100%;
+            height: 800px; /* Set height to 800px */
+        }
+
+        .create-neighborhood-button {
+            background-color: #4a6bff; /* Theme color */
+            color: white;
+            border: none;
+            padding: 1.5rem; /* Increase padding for a larger button */
+            border-radius: 8px;
+            font-weight: bold; /* Make the font bold */
+            font-size: 1.2rem; /* Increase font size (adjust as needed) */
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            margin-top: 20px; /* Add gap between the button and the map */
+        }
+
+        .create-neighborhood-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .url-generator {
+            margin-top: 20px; /* Space between the button and the URL section */
+            display: flex; /* Use flexbox for alignment */
+            align-items: center; /* Center items vertically */
+        }
+
+        .url-generator p {
+            font-family: 'Poppins', sans-serif; /* Use Poppins font */
+            font-weight: bold; /* Make the font bold */
+            margin-right: 10px; /* Space between the label and input */
+        }
+
+        #neighborhood-url {
+            width: 300px; /* Adjust width as needed */
+            padding: 0.5rem; /* Padding for the input box */
+            border: 1px solid #ccc; /* Border style */
+            border-radius: 4px; /* Rounded corners */
+            margin-right: 10px; /* Space between input and icon */
+        }
+
+        .copy-icon {
+            cursor: pointer; /* Change cursor to pointer */
+            font-size: 1.5rem; /* Adjust size of the icon */
+            display: inline-flex; /* Ensure proper alignment */
+            align-items: center; /* Center the icon vertically */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Create Your Neighborhood</h1>
+        <div id="map"></div> <!-- Map container -->
+        <button type="button" class="create-neighborhood-button" id="create-neighborhood-button">Create Neighborhood</button>
+
+        <div class="url-generator">
+            <p>Neighborhood URL</p>
+            <input type="text" id="neighborhood-url" value="https://example.com/neighborhood" readonly>
+            <span class="copy-icon" onclick="copyToClipboard()">
+                <svg clip-rule="evenodd" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#4a6bff">
+                    <path d="m6 18v3c0 .621.52 1 1 1h14c.478 0 1-.379 1-1v-14c0-.478-.379-1-1-1h-3v-3c0-.478-.379-1-1-1h-14c-.62 0-1 .519-1 1v14c0 .621.52 1 1 1zm10.5-12h-9.5c-.62 0-1 .519-1 1v9.5h-2.5v-13h13z" fill-rule="nonzero"/>
+                </svg>
+            </span> <!-- Copy icon -->
+        </div>
+    </div>
+
+    <script>
+        // Initialize Mapbox
+        mapboxgl.accessToken = 'pk.eyJ1Ijoic2hyZXp5IiwiYSI6ImNtYXVvNGRrYTFhN24yaXNhOHNzNGI3NTcifQ.O742ke5fW6__DHMYGvTaXw'; // Your Mapbox access token
+        const map = new mapboxgl.Map({
+            container: 'map', // ID of the map container
+            style: 'mapbox://styles/mapbox/streets-v11', // Map style
+            center: [-74.5, 40], // Starting position [lng, lat]
+            zoom: 9 // Starting zoom level
+        });
+
+        // Redirect to moderator home when the button is clicked
+        document.getElementById('create-neighborhood-button').addEventListener('click', function() {
+            window.location.href = 'moderator-home.html'; // Redirect to moderator home
+        });
+
+        function copyToClipboard() {
+            const urlInput = document.getElementById('neighborhood-url');
+            urlInput.select();
+            document.execCommand('copy');
+            alert('URL copied to clipboard!'); // Optional: alert to confirm copy
+        }
+    </script>
+</body>
+</html>
