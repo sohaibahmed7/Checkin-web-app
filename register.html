@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Check-In</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .register-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .register-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .form-group label {
+            font-weight: 500;
+            color: #333;
+        }
+        .form-group input {
+            padding: 0.75rem 1rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #4a6bff;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            margin: 0;
+        }
+        .checkbox-group input[type="checkbox"] {
+            margin: 0;
+        }
+        .register-button {
+            background: #4a6bff;
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .register-button:hover {
+            transform: translateY(-2px);
+        }
+        .error-message {
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        .success-message {
+            color: #28a745;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        .login-link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+        .login-link a {
+            color: #4a6bff;
+            text-decoration: none;
+        }
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+        .loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .loading::after {
+            content: '...';
+        }
+        .password-requirements {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+        .profile-picture-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 1rem auto;
+            display: none;
+            border: 2px solid #4a6bff;
+        }
+        .file-input-container {
+            position: relative;
+            display: inline-block;
+        }
+        .file-input-label {
+            background: #f0f0f0;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+        .file-input-label:hover {
+            background: #e0e0e0;
+        }
+        .file-input {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <a href="index.html"><h1>Check-In</h1></a>
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="features.html">Features</a>
+            <a href="how-it-works.html">How It Works</a>
+            <a href="download.html">Download</a>
+            <a href="contact.html">Contact</a>
+        </div>
+    </nav>
+
+    <div class="register-container">
+        <h2>Create Your Account</h2>
+        <form class="register-form" id="registerForm">
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" required>
+                <div class="error-message" id="nameError"></div>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+                <div class="error-message" id="emailError"></div>
+            </div>
+            <div class="form-group">
+                <label for="number">Phone Number</label>
+                <input type="tel" id="number" name="number" required>
+                <div class="error-message" id="numberError"></div>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+                <div class="password-requirements">
+                    Password must be at least 8 characters long and contain at least one special character
+                </div>
+                <div class="error-message" id="passwordError"></div>
+            </div>
+            <div class="form-group">
+                <label for="inviteCode">Invite Code</label>
+                <input type="text" id="inviteCode" name="inviteCode" required placeholder="Enter the 5-digit invite code">
+                <div class="error-message" id="inviteCodeError"></div>
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required>
+                <div class="error-message" id="confirmPasswordError"></div>
+            </div>
+            <div class="form-group">
+                <label>Profile Picture</label>
+                <div class="file-input-container">
+                    <label class="file-input-label" for="profilePicture">
+                        Choose File
+                    </label>
+                    <input type="file" id="profilePicture" name="profile_picture" class="file-input" accept="image/*">
+                </div>
+                <img id="profilePreview" class="profile-picture-preview" alt="Profile Preview">
+                <div class="error-message" id="profileError"></div>
+            </div>
+            <div class="form-group checkbox-group">
+                <input type="checkbox" id="moderator-checkbox" name="is_moderator">
+                <label for="moderator-checkbox">I am a moderator</label>
+            </div>
+            <button type="submit" class="register-button" id="register-button">Create Account</button>
+            <div class="error-message" id="registerError"></div>
+            <div class="success-message" id="registerSuccess"></div>
+            <div class="login-link">
+                Already have an account? <a href="login.html">Login here</a>
+            </div>
+        </form>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: teamatcheckin@gmail.com</p>
+                <p>Phone: 416-786-8163</p>
+            </div>
+            <div class="footer-section">
+                <h3>Follow Us</h3>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Check-In. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        const registerForm = document.getElementById('registerForm');
+        const registerButton = document.getElementById('register-button');
+        const profilePreview = document.getElementById('profilePreview');
+        const profileInput = document.getElementById('profilePicture');
+
+        // Function to show error message
+        function showError(element, message) {
+            element.textContent = message;
+            element.style.display = 'block';
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+
+        // Function to show success message
+        function showSuccess(message) {
+            const successElement = document.getElementById('registerSuccess');
+            successElement.textContent = message;
+            successElement.style.display = 'block';
+            setTimeout(() => {
+                successElement.style.display = 'none';
+            }, 5000);
+        }
+
+        // Handle profile picture preview
+        profileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    profilePreview.src = e.target.result;
+                    profilePreview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Function to validate password
+        function validatePassword(password) {
+            const minLength = 8;
+            const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+            return password.length >= minLength && hasSpecialChar;
+        }
+
+        // Function to handle registration
+        async function handleRegistration(event) {
+            event.preventDefault();
+            
+            // Reset error messages
+            document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+            document.getElementById('registerSuccess').style.display = 'none';
+
+            // Get form values
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const number = document.getElementById('number').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const isModerator = document.getElementById('moderator-checkbox').checked;
+            const inviteCode = document.getElementById('inviteCode').value;
+            const profilePicture = document.getElementById('profilePicture').files[0];
+
+            // Basic validation
+            if (!name) {
+                showError(document.getElementById('nameError'), 'Please enter your name');
+                return;
+            }
+            if (!email) {
+                showError(document.getElementById('emailError'), 'Please enter your email');
+                return;
+            }
+            if (!number) {
+                showError(document.getElementById('numberError'), 'Please enter your phone number');
+                return;
+            }
+            if (!validatePassword(password)) {
+                showError(document.getElementById('passwordError'), 
+                    'Password must be at least 8 characters long and contain at least one special character');
+                return;
+            }
+            if (password !== confirmPassword) {
+                showError(document.getElementById('confirmPasswordError'), 'Passwords do not match');
+                return;
+            }
+            if (!inviteCode) {
+                showError(document.getElementById('inviteCodeError'), 'Please enter the invite code');
+                return;
+            }
+
+            // Validate invite code first
+            try {
+                const inviteResponse = await fetch('http://localhost:5000/api/validate-invite-code', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ inviteCode })
+                });
+
+                const inviteData = await inviteResponse.json();
+                
+                if (!inviteData.valid) {
+                    showError(document.getElementById('inviteCodeError'), 'Invalid invite code. Please try again.');
+                    return;
+                }
+            } catch (error) {
+                console.error('Error validating invite code:', error);
+                showError(document.getElementById('inviteCodeError'), 'Error validating invite code. Please try again.');
+                return;
+            }
+
+            // Show loading state
+            registerButton.classList.add('loading');
+            registerButton.disabled = true;
+
+            try {
+                const response = await fetch('http://localhost:5000/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        name,
+                        number,
+                        email, 
+                        password, 
+                        isModerator,
+                        inviteCode 
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showSuccess('Registration successful! Please check your email for verification.');
+                    // Redirect to verification page
+                    setTimeout(() => {
+                        window.location.href = `verify-email.html?email=${encodeURIComponent(email)}`;
+                    }, 2000);
+                } else {
+                    showError(document.getElementById('registerError'), data.message || 'Registration failed. Please try again.');
+                }
+            } catch (error) {
+                showError(document.getElementById('registerError'), 'An error occurred. Please try again.');
+                console.error('Registration error:', error);
+            } finally {
+                // Remove loading state
+                registerButton.classList.remove('loading');
+                registerButton.disabled = false;
+            }
+        }
+
+        // Add event listener to the form
+        registerForm.addEventListener('submit', handleRegistration);
+    </script>
+</body>
+</html> 

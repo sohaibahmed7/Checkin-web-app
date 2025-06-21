@@ -61,6 +61,36 @@
         .login-button:hover {
             transform: translateY(-2px);
         }
+        .error-message {
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        .success-message {
+            color: #28a745;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        .register-link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+        .register-link a {
+            color: #4a6bff;
+            text-decoration: none;
+        }
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+        .loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .loading::after {
+            content: '...';
+        }
     </style>
 </head>
 <body>
@@ -79,22 +109,26 @@
 
     <div class="login-container">
         <h2>Welcome Back</h2>
-        <form class="login-form" id="loginForm">
+        <form class="login-form" id="loginForm" onsubmit="return false;">
             <div class="form-group">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" required>
+                <div class="error-message" id="emailError"></div>
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
-            </div>
-            <div class="form-group checkbox-group">
-                <label for="moderator-checkbox">
-                    Are you a moderator
-                    <input type="checkbox" id="moderator-checkbox">
-                </label>
+                <div class="error-message" id="passwordError"></div>
             </div>
             <button type="button" class="login-button" id="login-button">Login</button>
+            <div class="error-message" id="loginError"></div>
+            <div class="success-message" id="loginSuccess"></div>
+            <div class="register-link">
+                Don't have an account? <a href="register.html">Create one here</a>
+            </div>
+            <div class="forgot-password-link">
+                <a href="forgot-password.html" id="forgotPasswordLink">Forgot Password?</a>
+            </div>
         </form>
     </div>
 
@@ -102,7 +136,7 @@
         <div class="footer-content">
             <div class="footer-section">
                 <h3>Contact Us</h3>
-                <p>Email: support@check-in.com</p>
+                <p>Email: teamatcheckin@gmail.com</p>
                 <p>Phone: 416-786-8163</p>
             </div>
             <div class="footer-section">
@@ -120,24 +154,92 @@
     </footer>
 
     <script>
-        // Add event listener to the login button
-        document.getElementById('login-button').addEventListener('click', function(event) {
-            event.preventDefault(); // Prevent default form submission
+        const loginForm = document.getElementById('loginForm');
+        const loginButton = document.getElementById('login-button');
 
-            // Check if the moderator checkbox is checked
-            const isModerator = document.getElementById('moderator-checkbox').checked;
-            console.log('Checkbox checked:', isModerator); // Debugging line
+        // Function to show error message
+        function showError(element, message) {
+            element.textContent = message;
+            element.style.display = 'block';
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
 
-            if (isModerator) {
-                // Redirect to the Create Neighborhood page
-                window.location.href = 'create-neighborhood.html';
-            } else {
-                // Proceed with the normal login process
-                console.log('Proceeding with normal login');
-                // Add your login logic here
-                window.location.href = 'dashboard/index.html';
+        // Function to show success message
+        function showSuccess(message) {
+            const successElement = document.getElementById('loginSuccess');
+            successElement.textContent = message;
+            successElement.style.display = 'block';
+            setTimeout(() => {
+                successElement.style.display = 'none';
+            }, 5000);
+        }
+
+        // Function to handle login
+        async function handleLogin() {
+            // Reset error messages
+            document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+            document.getElementById('loginSuccess').style.display = 'none';
+
+            // Get form values
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Basic validation
+            if (!email) {
+                showError(document.getElementById('emailError'), 'Please enter your email');
+                return;
             }
-        });
+            if (!password) {
+                showError(document.getElementById('passwordError'), 'Please enter your password');
+                return;
+            }
+
+            // Show loading state
+            loginButton.classList.add('loading');
+            loginButton.disabled = true;
+
+            try {
+                const response = await fetch('http://localhost:5000/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                console.log('Login response:', data); // Add logging
+
+                if (response.ok) {
+                    showSuccess('Login successful!');
+                    // Store user info in localStorage, always using _id
+                    if (data.user && data.user.id && !data.user._id) {
+                        data.user._id = data.user.id;
+                        delete data.user.id;
+                    }
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    // Redirect to dashboard or home page
+                    setTimeout(() => {
+                        window.location.href = 'dashboard/index.html';
+                    }, 1000);
+                } else {
+                    showError(document.getElementById('loginError'), data.message || 'Login failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showError(document.getElementById('loginError'), 'An error occurred. Please try again.');
+            } finally {
+                // Remove loading state
+                loginButton.classList.remove('loading');
+                loginButton.disabled = false;
+            }
+        }
+
+        // Add event listener to the button instead of the form
+        loginButton.addEventListener('click', handleLogin);
     </script>
 </body>
 </html>
