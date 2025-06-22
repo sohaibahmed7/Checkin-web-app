@@ -6,7 +6,7 @@ A modern, responsive dashboard for the Check-In community safety app. Built with
 
 - Real-time community alerts and notifications
 - Interactive neighborhood map with incident tracking
-- Community chat system
+- Community chat and commenting system
 - Detailed incident reporting
 - User settings and preferences
 - Mobile-responsive design
