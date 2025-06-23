@@ -18,13 +18,39 @@
             <a href="features.html">Features</a>
             <a href="how-it-works.html">How it Works</a>
             <a href="download.html">Download</a>
-            <a href="contact.html">Contact</a>
+            <a href="contact.html" class="active">Contact</a>
             <div class="nav-buttons">
                 <a href="login.html" class="button button-primary">Login</a>
                 <a href="download.html" class="button button-secondary">Download</a>
             </div>
         </div>
+        <div class="mobile-menu-toggle">
+            <i class="fas fa-bars"></i>
+        </div>
     </nav>
+
+    <!-- Mobile Navigation Overlay -->
+    <div class="mobile-nav-overlay">
+        <div class="mobile-nav-content">
+            <div class="mobile-nav-header">
+                <h2>Check-In</h2>
+                <button class="mobile-nav-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="mobile-nav-links">
+                <a href="index.html" class="mobile-nav-link">Home</a>
+                <a href="features.html" class="mobile-nav-link">Features</a>
+                <a href="how-it-works.html" class="mobile-nav-link">How It Works</a>
+                <a href="download.html" class="mobile-nav-link">Download</a>
+                <a href="contact.html" class="mobile-nav-link active">Contact</a>
+            </div>
+            <div class="mobile-nav-buttons">
+                <a href="login.html" class="mobile-button mobile-button-primary">Login</a>
+                <a href="download.html" class="mobile-button mobile-button-secondary">Download</a>
+            </div>
+        </div>
+    </div>
 
     <section class="contact-page">
         <div class="container">
@@ -130,6 +156,49 @@
                 console.error('Error:', error);
                 alert('Error sending message. Please try again.');
             }
+        });
+    </script>
+
+    <!-- Mobile Navigation JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+            const mobileNavOverlay = document.querySelector('.mobile-nav-overlay');
+            const mobileNavClose = document.querySelector('.mobile-nav-close');
+            const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+
+            // Open mobile menu
+            mobileMenuToggle.addEventListener('click', function() {
+                mobileNavOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            });
+
+            // Close mobile menu
+            function closeMobileMenu() {
+                mobileNavOverlay.classList.remove('active');
+                document.body.style.overflow = ''; // Restore scrolling
+            }
+
+            mobileNavClose.addEventListener('click', closeMobileMenu);
+
+            // Close menu when clicking on overlay background
+            mobileNavOverlay.addEventListener('click', function(e) {
+                if (e.target === mobileNavOverlay) {
+                    closeMobileMenu();
+                }
+            });
+
+            // Close menu when clicking on navigation links
+            mobileNavLinks.forEach(link => {
+                link.addEventListener('click', closeMobileMenu);
+            });
+
+            // Close menu on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && mobileNavOverlay.classList.contains('active')) {
+                    closeMobileMenu();
+                }
+            });
         });
     </script>
 </body>
