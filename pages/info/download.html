@@ -3,25 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Check-In - Community Safety App</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Download - Check-In</title>
+    <link rel="stylesheet" href="../../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <nav class="navbar">
         <div class="logo">
-            <a href="index.html"><h1>Check-In</h1></a>
+            <a href="../../index.html"><h1>Check-In</h1></a>
         </div>
         <div class="nav-links">
-            <a href="index.html" class="active">Home</a>
-            <a href="pages/info/features.html">Features</a>
-            <a href="pages/info/how-it-works.html">How It Works</a>
-            <a href="pages/info/download.html">Download</a>
-            <a href="pages/info/contact.html">Contact</a>
+            <a href="../../index.html">Home</a>
+            <a href="features.html">Features</a>
+            <a href="how-it-works.html">How it Works</a>
+            <a href="download.html" class="active">Download</a>
+            <a href="contact.html">Contact</a>
             <div class="nav-buttons">
-                <a href="pages/auth/login.html" class="button button-primary">Login</a>
-                <a href="pages/info/download.html" class="button button-secondary">Download</a>
+                <a href="../auth/login.html" class="button button-primary">Login</a>
+                <a href="download.html" class="button button-secondary">Download</a>
             </div>
         </div>
         <div class="mobile-menu-toggle">
@@ -39,32 +39,64 @@
                 </button>
             </div>
             <div class="mobile-nav-links">
-                <a href="index.html" class="mobile-nav-link active">Home</a>
-                <a href="pages/info/features.html" class="mobile-nav-link">Features</a>
-                <a href="pages/info/how-it-works.html" class="mobile-nav-link">How It Works</a>
-                <a href="pages/info/download.html" class="mobile-nav-link">Download</a>
-                <a href="pages/info/contact.html" class="mobile-nav-link">Contact</a>
+                <a href="../../index.html" class="mobile-nav-link">Home</a>
+                <a href="features.html" class="mobile-nav-link">Features</a>
+                <a href="how-it-works.html" class="mobile-nav-link">How It Works</a>
+                <a href="download.html" class="mobile-nav-link active">Download</a>
+                <a href="contact.html" class="mobile-nav-link">Contact</a>
             </div>
             <div class="mobile-nav-buttons">
-                <a href="pages/auth/login.html" class="mobile-button mobile-button-primary">Login</a>
-                <a href="pages/info/download.html" class="mobile-button mobile-button-secondary">Download</a>
+                <a href="../auth/login.html" class="mobile-button mobile-button-primary">Login</a>
+                <a href="download.html" class="mobile-button mobile-button-secondary">Download</a>
             </div>
         </div>
     </div>
 
-    <header class="hero">
-        <div class="hero-content">
-            <h1 class="animate-text">Keep Your Community Connected & Informed</h1>
-            <p class="animate-text">Real-time safety alerts, live maps, and group chat — all in one app.</p>
-            <a href="pages/info/download.html" class="cta-button animate-button">
-                <span>Download Now</span>
-                <i class="fas fa-arrow-right"></i>
-            </a>
+    <section class="download-page">
+        <div class="container">
+            <h2>Download Check-In</h2>
+            <p class="download-subtitle">Get started with Check-In today and help keep your community safe.</p>
+            
+            <div class="download-buttons">
+                <a href="#" class="app-store">
+                    <i class="fab fa-apple"></i>
+                    <div class="button-text">
+                        <span class="small-text">Download on the</span>
+                        <span class="large-text">App Store</span>
+                    </div>
+                </a>
+                <a href="#" class="play-store">
+                    <i class="fab fa-google-play"></i>
+                    <div class="button-text">
+                        <span class="small-text">Get it on</span>
+                        <span class="large-text">Google Play</span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="system-requirements">
+                <h3>System Requirements</h3>
+                <div class="requirements-grid">
+                    <div class="requirement-card">
+                        <h4>iOS</h4>
+                        <ul>
+                            <li>iOS 13.0 or later</li>
+                            <li>Compatible with iPhone, iPad, and iPod touch</li>
+                            <li>Location Services required</li>
+                        </ul>
+                    </div>
+                    <div class="requirement-card">
+                        <h4>Android</h4>
+                        <ul>
+                            <li>Android 8.0 or later</li>
+                            <li>GPS and Internet connection required</li>
+                            <li>Access to Google Play Services</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="hero-image">
-            <img src="pages/assets/Check-In Pitchdeck.png" alt="Check-In App Interface" class="animate-image app-screenshot" style="max-width: 300px;">
-        </div>
-    </header>
+    </section>
 
     <footer class="footer">
         <div class="footer-content">
