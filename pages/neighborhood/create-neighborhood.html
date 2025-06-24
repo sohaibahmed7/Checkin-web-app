@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Neighborhood - Check-In</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css" rel="stylesheet">
+    <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.5.0/mapbox-gl-draw.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.5.0/mapbox-gl-draw.js"></script>
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .invite-code {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4a6bff;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        #map {
+            height: 400px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        .moderator-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .permissions-list {
+            margin-top: 10px;
+        }
+        .permissions-list label {
+            display: block;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .permissions-list label:hover {
+            background: #f0f0f0;
+        }
+        .create-button {
+            background: #4a6bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .create-button:hover {
+            background: #3a5bef;
+        }
+        .moderator-list {
+            list-style: none;
+            padding: 0;
+        }
+        .moderator-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+        .remove-moderator {
+            color: #dc3545;
+            cursor: pointer;
+        }
+        .check-all-button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .check-all-button:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <a href="../../index.html"><h1>Check-In</h1></a>
+        </div>
+        <div class="nav-links">
+            <a href="../../index.html">Home</a>
+            <a href="../info/features.html">Features</a>
+            <a href="../info/how-it-works.html">How It Works</a>
+            <a href="../info/download.html">Download</a>
+            <a href="../info/contact.html">Contact</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Create Your Neighborhood</h1>
+        <div class="invite-code">
+            Your Invite Code: <span id="inviteCode"></span>
+            <button onclick="copyInviteCode()" class="copy-button">
+                <i class="fas fa-copy"></i> Copy
+            </button>
+        </div>
+        <form id="neighborhoodForm">
+            <div class="form-group">
+                <label for="neighborhoodName">Neighborhood Name</label>
+                <input type="text" id="neighborhoodName" required placeholder="Enter your neighborhood name">
+            </div>
+            <div class="form-group">
+                <label>Draw Neighborhood Boundaries</label>
+                <div id="map"></div>
+            </div>
+            <div class="moderator-section">
+                <h2>Moderators</h2>
+                <div class="form-group">
+                    <label for="moderatorPhone">Add Moderator Phone Number</label>
+                    <input type="tel" id="moderatorPhone" placeholder="Enter phone number">
+                    <button type="button" id="addModerator" class="add-button">Add Moderator</button>
+                </div>
+                <ul id="moderatorsList" class="moderator-list"></ul>
+                <h3>Moderator Permissions</h3>
+                <button type="button" id="checkAll" class="check-all-button">Check All</button>
+                <div class="permissions-list">
+                    <label><input type="checkbox" checked> Edit Chats</label>
+                    <label><input type="checkbox" checked> Remove Guests</label>
+                    <label><input type="checkbox" checked> See Full Data</label>
+                    <label><input type="checkbox" checked> Manage Moderators</label>
+                    <label><input type="checkbox" checked> View Analytics</label>
+                    <label><input type="checkbox" checked> Send Announcements</label>
+                </div>
+            </div>
+            <button type="submit" class="create-button">Create Neighborhood</button>
+        </form>
+    </div>
+
+    <script>
+        // Generate a random 5-digit invite code
+        const inviteCode = Math.floor(10000 + Math.random() * 90000).toString();
+        document.getElementById('inviteCode').textContent = inviteCode;
+
+        // Copy invite code to clipboard
+        function copyInviteCode() {
+            navigator.clipboard.writeText(inviteCode).then(() => {
+                alert('Invite code copied to clipboard!');
+            });
+        }
+
+        // Use the same Mapbox API key as the dashboard
+        mapboxgl.accessToken = 'pk.eyJ1IjoiYW5zaG1ha2thciIsImEiOiJjbTl2ams5OGcwbGwwMm1vbGpiaDduczg1In0.4yzUyxSxV9lHLtbRQfjdWA';
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v12',
+            center: [-81.24, 43.02], // London, ON coordinates
+            zoom: 13
+        });
+        map.addControl(new mapboxgl.NavigationControl());
+
+        // Add Mapbox Draw for polygon (rectangle) drawing
+        const Draw = new MapboxDraw({
+            displayControlsDefault: false,
+            controls: {
+                polygon: true,
+                trash: true
+            },
+            styles: [
+                // ACTIVE (being drawn)
+                {
+                    id: 'gl-draw-polygon-fill',
+                    type: 'fill',
+                    filter: ['all', ['==', '$type', 'Polygon'], ['==', 'mode', 'draw_polygon']],
+                    paint: {
+                        'fill-color': '#ff8800', // Darker orange
+                        'fill-opacity': 0.5
+                    }
+                },
+                // INACTIVE (already drawn)
+                {
+                    id: 'gl-draw-polygon-fill-inactive',
+                    type: 'fill',
+                    filter: ['all', ['==', '$type', 'Polygon'], ['!=', 'mode', 'draw_polygon']],
+                    paint: {
+                        'fill-color': '#ff8800', // Darker orange
+                        'fill-opacity': 0.5
+                    }
+                },
+                // OUTLINE
+                {
+                    id: 'gl-draw-polygon-stroke-active',
+                    type: 'line',
+                    filter: ['all', ['==', '$type', 'Polygon'], ['==', 'active', 'true']],
+                    layout: {
+                        'line-cap': 'round',
+                        'line-join': 'round'
+                    },
+                    paint: {
+                        'line-color': '#ff6600', // Even darker orange
+                        'line-width': 3
+                    }
+                },
+                {
+                    id: 'gl-draw-polygon-stroke-inactive',
+                    type: 'line',
+                    filter: ['all', ['==', '$type', 'Polygon'], ['!=', 'active', 'true']],
+                    layout: {
+                        'line-cap': 'round',
+                        'line-join': 'round'
+                    },
+                    paint: {
+                        'line-color': '#ff6600',
+                        'line-width': 2
+                    }
+                },
+                // VERTICES
+                {
+                    id: 'gl-draw-polygon-midpoint',
+                    type: 'circle',
+                    filter: ['all', ['==', '$type', 'Point'], ['==', 'meta', 'midpoint']],
+                    paint: {
+                        'circle-radius': 5,
+                        'circle-color': '#ff6600'
+                    }
+                },
+                {
+                    id: 'gl-draw-polygon-and-line-vertex-halo-active',
+                    type: 'circle',
+                    filter: ['all', ['==', '$type', 'Point'], ['==', 'meta', 'vertex'], ['==', 'active', 'true']],
+                    paint: {
+                        'circle-radius': 8,
+                        'circle-color': '#fff'
+                    }
+                },
+                {
+                    id: 'gl-draw-polygon-and-line-vertex-active',
+                    type: 'circle',
+                    filter: ['all', ['==', '$type', 'Point'], ['==', 'meta', 'vertex'], ['==', 'active', 'true']],
+                    paint: {
+                        'circle-radius': 6,
+                        'circle-color': '#ff6600'
+                    }
+                }
+            ]
+        });
+        map.addControl(Draw, 'top-left');
+
+        // Show instructions for drawing a rectangle
+        const mapLabel = document.createElement('div');
+        mapLabel.style.margin = '10px 0';
+        mapLabel.style.fontWeight = 'bold';
+        mapLabel.style.color = '#4a6bff';
+        mapLabel.innerHTML = 'Use the polygon tool (top left) to draw a rectangle boundary on the map.<br><span style="color:#ff6600;font-weight:normal;">Double-click (or double-tap) to finish drawing.</span>';
+        document.getElementById('map').parentElement.insertBefore(mapLabel, document.getElementById('map'));
+
+        // Store the drawn polygon coordinates
+        let bounds = null;
+        map.on('draw.create', (e) => {
+            const feature = e.features[0];
+            if (feature && feature.geometry && feature.geometry.type === 'Polygon') {
+                bounds = feature.geometry.coordinates[0];
+            }
+        });
+        map.on('draw.update', (e) => {
+            const feature = e.features[0];
+            if (feature && feature.geometry && feature.geometry.type === 'Polygon') {
+                bounds = feature.geometry.coordinates[0];
+            }
+        });
+        map.on('draw.delete', () => {
+            bounds = null;
+        });
+
+        // Only allow this page to be seen once per moderator (after creation, redirect to dashboard)
+        document.getElementById('neighborhoodForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!bounds) {
+                alert('Please draw the neighborhood boundaries on the map');
+                return;
+            }
+            const neighborhoodName = document.getElementById('neighborhoodName').value;
+            const moderators = Array.from(document.querySelectorAll('#moderatorsList li')).map(li => li.textContent.replace('×', '').trim());
+            const permissions = Array.from(document.querySelectorAll('.permissions-list input:checked')).map(input => input.parentElement.textContent.trim());
+            try {
+                const response = await fetch('http://localhost:5000/api/create-neighborhood', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        inviteCode,
+                        neighborhoodName,
+                        moderators,
+                        permissions,
+                        bounds
+                    })
+                });
+                if (response.ok) {
+                    // Mark that the moderator has created a neighborhood (localStorage/session)
+                    localStorage.setItem('neighborhoodCreated', 'true');
+                    window.location.href = 'dashboard/index.html';
+                } else {
+                    alert('Failed to create neighborhood. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        });
+
+        // Prevent access if already created
+        if (localStorage.getItem('neighborhoodCreated') === 'true') {
+            window.location.href = 'dashboard/index.html';
+        }
+
+        // Add moderator
+        document.getElementById('addModerator').addEventListener('click', () => {
+            const phone = document.getElementById('moderatorPhone').value;
+            if (phone) {
+                const li = document.createElement('li');
+                li.innerHTML = `${phone} <span class="remove-moderator" onclick="this.parentElement.remove()">×</span>`;
+                document.getElementById('moderatorsList').appendChild(li);
+                document.getElementById('moderatorPhone').value = '';
+            }
+        });
+
+        // Check all permissions
+        document.getElementById('checkAll').addEventListener('click', () => {
+            document.querySelectorAll('.permissions-list input').forEach(input => {
+                input.checked = true;
+            });
+        });
+    </script>
+</body>
+</html>
