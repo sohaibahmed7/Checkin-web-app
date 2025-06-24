@@ -21,10 +21,13 @@ cd check-in-dashboard
 
 2. Open `index.html` in your browser or use a local server:
 ```bash
-# Using Python
+# Running site on local
 python -m http.server 8000
+*in another terminal*
+cd .\\backend\\
+node server.js
 
-# Using Node.js
+# Using Node.js to view backend
 npx serve
 ```
 
@@ -36,14 +39,18 @@ mapboxgl.accessToken = 'your-mapbox-token';
 ## Structure
 
 ```
-├── dashboard/
-│   ├── styles/
-│   │   └── dashboard.css
-│   ├── scripts/
-│   │   └── dashboard.js
-│   └── assets/
+├── backend/
 ├── index.html
-└── README.md
+├── styles.css
+├── pages/
+│   ├── auth/
+│   ├── info/
+│   ├── neighborhood/
+│   ├── moderator/
+│   ├── dashboard/
+│   └── assets/
+├── script.js
+├── README.md
 ```
 
 ## Technologies Used
