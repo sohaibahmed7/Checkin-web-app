@@ -45,6 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const tabLink = document.querySelector(`a[data-tab="${targetTab}"]`);
             if (tabLink) {
                 tabLink.click();
+                // Scroll to top after switching tab
+                window.scrollTo({top: 0, behavior: 'smooth'});
             }
         });
     });
@@ -206,6 +208,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 initializeLiveMap();
                 updateMapMarkers(liveMap);
             }
+
+            // Scroll to top after switching tab
+            window.scrollTo({top: 0, behavior: 'smooth'});
         });
     });
 
