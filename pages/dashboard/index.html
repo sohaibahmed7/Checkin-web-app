@@ -128,7 +128,7 @@
                     <!-- Map Section -->
                     <section class="card map-section">
                         <div class="map-header">
-                            <h3><i class="fas fa-map-marked-alt"></i> Neighborhood Map</h3>
+                            <h3><i class="fas fa-map-marked-alt"></i> Your Neighborhood</h3>
                         </div>
                         <div class="map-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                             <div class="map-filters" style="display: flex; gap: 1rem; align-items: center;">
@@ -154,84 +154,12 @@
                         </div>
                         <div id="map" class="map-container"></div>
                     </section>
-                    <!-- <section>
-                        <div class="map-feed">
-                            <div class="feed-header">
-                                <h4><i class="fas fa-bell"></i> Updates in your area</h4>
-                                 <div class="feed-filters">
-                                    <button class="active"><i class="fas fa-clock"></i> Latest</button>
-                                    <button><i class="fas fa-fire"></i> Urgent</button>
-                                </div>
-                            </div>
+                    <section>
+                        <div class="card">
+                            <div class="feed-header"><h4><i class="fas fa-bell"></i> Latest in your area</h4></div>
                             <div class="feed-items" id="recent-updates-container">
-                                <div class="feed-item urgent">
-                                    <div class="feed-avatar">
-                                        <img src="assets/avatar.svg" alt="John D.">
-                                        <span class="status urgent"></span>
-                                    </div>
-                                    <div class="feed-content">
-                                        <div class="feed-header">
-                                            <span class="feed-user">John D.</span>
-                                            <span class="feed-time">5m ago</span>
-                                        </div>
-                                        <p class="feed-text">Fire reported at Oak & Main. Fire department en route.</p>
-                                        <div class="feed-actions">
-                                            <a href="#map" class="view-on-map" data-coordinates="-81.24,43.02">
-                                                <i class="fas fa-map-marker-alt"></i> View Location
-                                            </a>
-                                            <span class="feed-category fire">
-                                                <i class="fas fa-fire"></i> Fire Alert
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="feed-item">
-                                    <div class="feed-avatar">
-                                        <img src="assets/avatar.svg" alt="Sarah M.">
-                                        <span class="status active"></span>
-                                    </div>
-                                    <div class="feed-content">
-                                        <div class="feed-header">
-                                            <span class="feed-user">Sarah M.</span>
-                                            <span class="feed-time">15m ago</span>
-                                        </div>
-                                        <p class="feed-text">Neighborhood watch starting evening rounds. All clear so far.</p>
-                                        <div class="feed-actions">
-                                            <button class="feed-action">
-                                                <i class="fas fa-thumbs-up"></i> Thanks
-                                            </button>
-                                            <span class="feed-category patrol">
-                                                <i class="fas fa-shield-alt"></i> Patrol Update
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="feed-item">
-                                    <div class="feed-avatar">
-                                        <img src="assets/avatar.svg" alt="Mike R.">
-                                        <span class="status active"></span>
-                                    </div>
-                                    <div class="feed-content">
-                                        <div class="feed-header">
-                                            <span class="feed-user">Mike R.</span>
-                                            <span class="feed-time">30m ago</span>
-                                        </div>
-                                        <p class="feed-text">Suspicious vehicle spotted - Silver van circling Elm Street.</p>
-                                        <div class="feed-actions">
-                                            <a href="#map" class="view-on-map" data-coordinates="-81.25,43.01">
-                                                <i class="fas fa-map-marker-alt"></i> View Location
-                                            </a>
-                                            <span class="feed-category suspicious">
-                                                <i class="fas fa-exclamation-triangle"></i> Suspicious
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
-                    </section> -->
+                    </section>
                 </div>
             </div>
 
@@ -239,7 +167,7 @@
             <div class="tab-pane" id="map" style="height: calc(100vh - 80px); width: 100%; position: relative;">
                 <!-- Full Map Container -->
                 <div id="map-full" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0;"></div>
-                
+
                 <!-- Map Controls Overlay -->
                 <div class="map-controls-overlay">
                     <div class="map-filters-left">

@@ -394,18 +394,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById(containerId) || document.querySelector(`.${containerId}`);
         if (!container) return;
 
-        // Clear the container only when starting fresh (not just loading more)
-        if (currentPingsDisplayed === 0) {
-            container.innerHTML = '';
+        // Only show the 2 most recent pings in the updates section
+        let pingsToDisplay = pingsToRender;
+        if (containerId === 'recent-updates-container') {
+            pingsToDisplay = pingsToRender.slice(0, 3);
         }
 
-        const pingsToDisplay = pingsToRender.slice(currentPingsDisplayed, currentPingsDisplayed + pingsPerPage);
+        container.innerHTML = '';
 
-        if (pingsToDisplay.length === 0 && currentPingsDisplayed === 0) {
+        if (pingsToDisplay.length === 0) {
             container.innerHTML = '<p class="no-pings-message">No recent pings to display.</p>';
-            // Hide load more button if no pings at all
-            const existingLoadMoreBtn = document.getElementById('load-more-pings');
-            if (existingLoadMoreBtn) existingLoadMoreBtn.style.display = 'none';
             return;
         }
 
@@ -442,27 +440,6 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             container.appendChild(pingElement);
         });
-
-        currentPingsDisplayed += pingsToDisplay.length;
-
-        // Manage the Load More button (only for home feed)
-        if (containerId === 'recent-updates-container') {
-            let loadMoreBtn = document.getElementById('load-more-pings');
-            if (allPings.length > currentPingsDisplayed) {
-                if (!loadMoreBtn) {
-                    loadMoreBtn = document.createElement('button');
-                    loadMoreBtn.id = 'load-more-pings';
-                    loadMoreBtn.className = 'load-more-btn';
-                    loadMoreBtn.textContent = 'Load More Updates';
-                    // Append after the container, not inside it, to maintain structure
-                    container.parentNode.appendChild(loadMoreBtn);
-                    loadMoreBtn.addEventListener('click', () => renderPings(allPings));
-                }
-                loadMoreBtn.style.display = 'block'; // Ensure it's visible
-            } else {
-                if (loadMoreBtn) loadMoreBtn.style.display = 'none'; // Hide if no more pings
-            }
-        }
 
         // Add event listeners for "View on Map" links (only for newly added links)
         container.querySelectorAll('.view-on-map').forEach(link => {

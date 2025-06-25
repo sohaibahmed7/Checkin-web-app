@@ -2378,6 +2378,7 @@ input:checked + .slider:before {
 
 /* Map Feed Styles */
 .map-feed {
+    width: 100%;
     background: var(--white);
     border-radius: 12px;
     padding: 1rem;
@@ -2825,18 +2826,35 @@ input:checked + .slider:before {
 
 /* Update Dashboard Grid */
 .dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    flex-wrap: wrap;
     gap: 1.5rem;
 }
 
-.dashboard-grid .map-section {
-    grid-column: 1 / -1;
+.dashboard-grid > .alert-overview,
+.dashboard-grid > .activity-overview {
+    width: calc(50% - 0.75rem);
+    min-width: 320px;
+    margin-bottom: 1rem;
 }
 
-@media (max-width: 768px) {
+.dashboard-grid > .map-section,
+.dashboard-grid > section:not(.alert-overview):not(.activity-overview):not(.map-section) {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 900px) {
     .dashboard-grid {
-        grid-template-columns: 1fr;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    .dashboard-grid > .alert-overview,
+    .dashboard-grid > .activity-overview,
+    .dashboard-grid > .map-section,
+    .dashboard-grid > section {
+        width: 100%;
+        min-width: 0;
     }
 }
 
