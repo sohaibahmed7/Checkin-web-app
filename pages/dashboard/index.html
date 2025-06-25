@@ -14,7 +14,7 @@
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <a href="/index.html" class="logo" id="mainLogoLink">
+            <a href="index.html" class="logo" id="mainLogoLink">
                 <h1>Check-In</h1>
             </a>
         </div>
@@ -25,6 +25,7 @@
             <a href="#reports" data-tab="reports"><i class="fas fa-file-alt"></i> Reports</a>
             <a href="#contacts" data-tab="contacts"><i class="fas fa-address-book"></i> Key Contacts</a>
             <a href="#settings" data-tab="settings"><i class="fas fa-cog"></i> Settings</a>
+            <a href="/pages/auth/login.html" id="sidebarLogoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </nav>
     </aside>
 
@@ -40,16 +41,6 @@
                 <div class="user-avatar" id="userAvatar">
                     <img src="assets/avatar.svg" alt="User Avatar">
                 </div>
-                <div class="dropdown-menu" id="userDropdown">
-                    <a href="#settings" data-tab="settings" class="dropdown-item">
-                        <i class="fas fa-user"></i>
-                        <span>Account Overview</span>
-                    </a>
-                    <a href="/index.html" id="logoutBtn" class="dropdown-item">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Logout</span>
-                    </a>
-                </div>
             </div>
         </header>
 
@@ -59,17 +50,17 @@
             <div class="tab-pane active" id="home">
                 <div class="dashboard-grid">
                     <!-- Upcoming Alerts Card -->
-                    <section class="card upcoming-alerts">
-                        <h3><i class="fas fa-bell"></i> Upcoming</h3>
+                    <section class="card alert-overview">
+                        <h3><i class="fas fa-bell"></i> Alerts</h3>
                         <div class="alert-stack">
                             <a href="#chat" data-tab="chat" class="alert-link">
-                                <div class="alert-item message" style="width: 100%; min-width: 300px;">
+                                <div class="alert-item msg" style="width: 100%; min-width: 300px;">
                                     <div class="alert-icon">
                                         <i class="fas fa-envelope"></i>
                                     </div>
                                     <div class="alert-content">
-                                        <p class="alert-title">Unread Messages</p>
-                                        <p class="alert-details">3 new messages in Community Chat</p>
+                                        <p class="alert-title">{Message Title here}</p>
+                                        <p class="alert-details">{Message description here}</p>
                                     </div>
                                     <span class="alert-time">2m ago</span>
                                 </div>
@@ -80,28 +71,28 @@
                                         <i class="fas fa-exclamation-triangle"></i>
                                     </div>
                                     <div class="alert-content">
-                                        <p class="alert-title">Suspicious Activity</p>
-                                        <p class="alert-details">Reported near Main St.</p>
+                                        <p class="alert-title">{Suspicious Activity title here}</p>
+                                        <p class="alert-details">{Suspicious activity desc here}</p>
                                     </div>
                                     <span class="alert-time">15m ago</span>
                                 </div>
                             </a>
-                            <a href="#chat" data-tab="chat" class="alert-link">
+                            <a href="" data-tab="" class="alert-link">
                                 <div class="alert-item event" style="width: 100%; min-width: 300px;">
                                     <div class="alert-icon">
-                                        <i class="fas fa-calendar"></i>
+                                        <i class="fas fa-brain"></i>
                                     </div>
                                     <div class="alert-content">
-                                        <p class="alert-title">Community Meeting</p>
-                                        <p class="alert-details">Tomorrow at 6 PM</p>
+                                        <p class="alert-title">{Todays safety tip}</p>
+                                        <p class="alert-details">{idk something other than events i am typing a very long message to see what a long description is going to look like and if it will mess something up im just going to keep going i want to make sure that i am writing css that will wrap the text properly and not look stupid. do we want to add a line limit to avoid messages this long?}</p>
                                     </div>
-                                    <span class="alert-time">1d ahead</span>
+                                    <span class="alert-time">30 min ago</span>
                                 </div>
                             </a>
-                            <a href="#" class="view-more" data-navigate-to="reports">
-                                View more alerts <i class="fas fa-chevron-right"></i>
-                            </a>
                         </div>
+                        <a href="#" class="view-more" data-navigate-to="reports">
+                            View more alerts <i class="fas fa-chevron-right"></i>
+                        </a>
                     </section>
 
                     <!-- Activity Overview Card -->
@@ -138,13 +129,9 @@
                     <section class="card map-section">
                         <div class="map-header">
                             <h3><i class="fas fa-map-marked-alt"></i> Neighborhood Map</h3>
-                            <button class="ping-button" id="place-ping-fab">
-                                <i class="fas fa-plus"></i> Place a Ping
-                            </button>
                         </div>
-                        <div id="map" class="map-container" style="height: 300px; margin-bottom: 1rem; cursor: pointer;" data-navigate-to="live-map"></div>
-                        <div class="map-controls" style="margin-bottom: 0.75rem;">
-                            <div class="map-filters">
+                        <div class="map-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <div class="map-filters" style="display: flex; gap: 1rem; align-items: center;">
                                 <div class="filter-group">
                                     <select class="time-filter">
                                         <option value="24h">Last 24h</option>
@@ -161,11 +148,17 @@
                                     </div>
                                 </div>
                             </div>
+                            <button class="ping-button" id="place-ping-fab">
+                                <i class="fas fa-plus"></i> Place a Ping
+                            </button>
                         </div>
+                        <div id="map" class="map-container"></div>
+                    </section>
+                    <!-- <section>
                         <div class="map-feed">
                             <div class="feed-header">
-                                <h4><i class="fas fa-bell"></i> Recent Updates</h4>
-                                <div class="feed-filters">
+                                <h4><i class="fas fa-bell"></i> Updates in your area</h4>
+                                 <div class="feed-filters">
                                     <button class="active"><i class="fas fa-clock"></i> Latest</button>
                                     <button><i class="fas fa-fire"></i> Urgent</button>
                                 </div>
@@ -238,7 +231,7 @@
                                 </div>
                             </div>
                         </div>
-                    </section>
+                    </section> -->
                 </div>
             </div>
 
@@ -1003,27 +996,16 @@
         const userName = localStorage.getItem('currentUserName') || 'User';
         document.getElementById('greeting-text').textContent = `${getGreeting()}, ${userName}!`;
 
-        // User dropdown toggle logic
-        const userAvatar = document.getElementById('userAvatar');
-        const userDropdown = document.getElementById('userDropdown');
-        const logoutBtn = document.getElementById('logoutBtn');
+        const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
         const mainLogoLink = document.getElementById('mainLogoLink');
 
-        document.addEventListener('click', function(event) {
-            if (userAvatar.contains(event.target)) {
-                userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block';
-            } else {
-                userDropdown.style.display = 'none';
-            }
-        });
-
-        // Ensure logout clears user data and redirects
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', function(e) {
+        // Ensure sidebar logout clears user data and redirects
+        if (sidebarLogoutBtn) {
+            sidebarLogoutBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 localStorage.removeItem('user');
                 localStorage.removeItem('currentUserName');
-                window.location.href = '/index.html';
+                window.location.href = '/pages/auth/login.html';
             });
         }
 
@@ -1031,7 +1013,7 @@
         if (mainLogoLink) {
             mainLogoLink.addEventListener('click', function(e) {
                 e.preventDefault();
-                window.location.href = '/index.html';
+                window.location.href = 'index.html';
             });
         }
     </script>

@@ -201,18 +201,6 @@ body.dashboard {
     flex: 1;
 }
 
-/* Dashboard Grid */
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-    margin: 1.5rem;
-}
-
-.dashboard-grid .map-section {
-    grid-column: 1 / -1;
-}
-
 /* Card Styles */
 .card {
     background: var(--white);
@@ -236,9 +224,11 @@ body.dashboard {
     align-items: center;
     padding: 10px;
     border-bottom: 1px solid #eee;
+    text-decoration: none;
+
 }
 
-.alert-item.message {
+.alert-item.msg {
     border-left: 4px solid #4A6BFF;
 }
 
@@ -248,12 +238,7 @@ body.dashboard {
 
 .alert-item.event {
     border-left: 4px solid #4CAF50;
-    width: 320px; /* Ensure same width as others */
-}
-
-.alert-item.event .alert-icon {
-    background: rgba(52, 152, 219, 0.1);
-    color: #3498db;
+    /* width: 320px; Ensure same width as others */
 }
 
 .alert-icon {
@@ -267,12 +252,17 @@ body.dashboard {
     margin-right: 10px;
 }
 
-.alert-item.message .alert-icon {
+.alert-item.msg .alert-icon {
     background: var(--primary-color);
 }
 
 .alert-item.suspicious .alert-icon {
     background: #ff4d4d;
+}
+
+.alert-item.event .alert-icon {
+    background: rgba(52, 152, 219, 0.1);
+    color: #3498db;
 }
 
 .alert-content {
@@ -283,12 +273,14 @@ body.dashboard {
     font-weight: 600;
     margin-bottom: 0.25rem;
     color: var(--text-color);
+    margin-right: 1rem;
 }
 
 .alert-details {
     color: var(--text-color);
     opacity: 0.8;
     font-size: 0.9rem;
+    margin-right: 1rem;
 }
 
 .alert-time {
@@ -322,7 +314,8 @@ body.dashboard {
     padding: 1.25rem;
     background: var(--white);
     border-radius: 16px;
-    margin-bottom: 1rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -412,6 +405,9 @@ body.dashboard {
     border-radius: 16px;
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 300px;
+    margin-bottom: 1rem;
+    cursor: pointer;
 }
 
 .map-container:hover {
@@ -450,22 +446,15 @@ body.dashboard {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
 }
 
 .ping-button {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
     background: var(--primary-color);
     color: var(--white);
     border: none;
     padding: 0.75rem 1.5rem;
     border-radius: 50px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
     transition: transform 0.3s ease;
     font-weight: 500;
     z-index: 1000;
@@ -644,7 +633,6 @@ body.dashboard {
 }
 
 .map-feed {
-    margin-top: 1rem;
     padding: 1rem;
     background: var(--light-gray);
     border-radius: 10px;
@@ -727,31 +715,6 @@ body.dashboard {
 
 .time-filter:hover {
     border-color: var(--primary-color);
-}
-
-/* Pin Button */
-.ping-button {
-    position: absolute;
-    bottom: 1rem;
-    right: 1rem;
-    z-index: 10;
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 50px;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    box-shadow: 0 4px 12px rgba(74, 107, 255, 0.3);
-    transition: all 0.2s ease;
-}
-
-.ping-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(74, 107, 255, 0.4);
 }
 
 /* Pin Styles */
@@ -2865,7 +2828,6 @@ input:checked + .slider:before {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
-    margin: 1.5rem;
 }
 
 .dashboard-grid .map-section {
@@ -3915,4 +3877,53 @@ input:checked + .slider:before {
     .contacts-header h2 {
         font-size: 1.3rem;
     }
+}
+
+.alert-overview,
+.activity-overview {
+    height: 440px;
+    min-height: 440px;
+    max-height: 440px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.alert-overview .alert-stack {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    margin-top: 1rem;
+    padding-right: 4px;
+}
+
+.alert-overview .view-more {
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+    flex-shrink: 0;
+    align-self: flex-start;
+}
+
+.activity-overview .overview-header,
+.activity-overview .chart-container,
+.activity-overview .overview-stats {
+    flex-shrink: 0;
+}
+
+.activity-overview .overview-stats {
+    margin-top: auto;
+}
+
+/* Remove card/box styling from map-controls and map-filters for dashboard map section */
+.map-section .map-controls,
+.map-section .map-filters {
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+}
+
+.map-section .map-toolbar {
+    margin-bottom: 1rem;
 }
