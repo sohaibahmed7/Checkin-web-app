@@ -975,54 +975,53 @@ body.dashboard {
 }
 
 .chat-list-header {
-    padding: 1.5rem 1rem;
-    border-bottom: 1px solid var(--light-gray);
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
     gap: 1rem;
+    margin-top: 1rem;
+    padding-left: 1rem;
 }
 
 .search-container {
-    position: relative;
+    flex: 1;
     display: flex;
     align-items: center;
-}
-
-.search-container i {
-    position: absolute;
-    left: 15px;
-    color: var(--text-muted);
+    padding: 10px 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 0;
 }
 
 .search-container input {
-    width: 100%;
-    padding: 10px 15px 10px 45px;
-    border: 1px solid var(--light-gray);
-    border-radius: 25px;
-    background-color: var(--light-gray);
-    font-size: 0.95rem;
-    outline: none;
-    transition: border-color 0.3s ease;
-}
-
-.search-container input:focus {
-    border-color: var(--primary-color);
-}
-
-.search-container .new-chat-btn {
-    background: none;
+    flex: 1;
     border: none;
-    color: var(--primary-color);
-    font-size: 1.5rem;
-    cursor: pointer;
-    margin-left: 10px;
-    padding: 5px;
-    border-radius: 50%;
-    transition: background 0.3s ease;
+    background: none;
+    padding: 8px;
+    font-size: 16px;
 }
 
-.search-container .new-chat-btn:hover {
-    background-color: var(--hover-bg);
+.new-chat-btn {
+    margin-left: 0;
+    background: #4a6bff;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    box-shadow: 0 2px 8px rgba(74, 107, 255, 0.08);
+    transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+    margin-top: -4px;
+}
+
+.new-chat-btn:hover {
+    background: #3550d1;
+    box-shadow: 0 4px 16px rgba(74, 107, 255, 0.15);
+    transform: scale(1.08);
 }
 
 .chat-list {
@@ -3600,6 +3599,7 @@ input:checked + .slider:before {
 }
 
 .search-container .new-chat-btn {
+    margin-left: auto;
     background: none;
     border: none;
     color: #4a6bff;
