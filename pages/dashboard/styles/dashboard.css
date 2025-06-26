@@ -1449,6 +1449,7 @@ body.dashboard {
     padding: 1.5rem;
     border-radius: 12px;
     box-shadow: var(--card-shadow);
+    margin-bottom: 2rem;
 }
 
 .reports-filters .filter-group {
