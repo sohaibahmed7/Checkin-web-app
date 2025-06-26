@@ -27,7 +27,7 @@ const io = socketIo(server, {
   }
 });
 
-const PORT = 5000;
+const PORT = 3000;
 
 // MongoDB connection
 mongoose.connect('mongodb+srv://checkin_team123:Checkin2025@cluster0.2doejzi.mongodb.net/checkin?retryWrites=true&w=majority&appName=Cluster0', {
@@ -979,7 +979,7 @@ app.post('/api/request-password-reset', async (req, res) => {
     await user.save();
     // In a real system, send an email with the reset link
     // For now, log the reset link
-    const resetLink = `http://localhost:5000/reset-password?token=${resetToken}`;
+    const resetLink = `http://localhost:3000/reset-password?token=${resetToken}`;
     console.log(`Password reset link for ${email}: ${resetLink}`);
     return res.json({ message: 'If this email is registered, a reset link has been sent.' });
   } catch (err) {
