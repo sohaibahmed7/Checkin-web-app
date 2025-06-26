@@ -14,7 +14,7 @@
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <a href="#" class="logo" id="mainLogoLink" data-tab="home">
+            <a href="index.html" class="logo" id="mainLogoLink">
                 <h1>Check-In</h1>
             </a>
         </div>
@@ -25,6 +25,7 @@
             <a href="#reports" data-tab="reports"><i class="fas fa-file-alt"></i> Reports</a>
             <a href="#contacts" data-tab="contacts"><i class="fas fa-address-book"></i> Key Contacts</a>
             <a href="#settings" data-tab="settings"><i class="fas fa-cog"></i> Settings</a>
+            <a href="/pages/auth/login.html" id="sidebarLogoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </nav>
     </aside>
 
@@ -40,16 +41,6 @@
                 <div class="user-avatar" id="userAvatar">
                     <img src="assets/avatar.svg" alt="User Avatar">
                 </div>
-                <div class="dropdown-menu" id="userDropdown">
-                    <a href="#settings" data-tab="settings" class="dropdown-item">
-                        <i class="fas fa-user"></i>
-                        <span>Account Overview</span>
-                    </a>
-                    <a href="/index.html" id="logoutBtn" class="dropdown-item">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Logout</span>
-                    </a>
-                </div>
             </div>
         </header>
 
@@ -59,17 +50,17 @@
             <div class="tab-pane active" id="home">
                 <div class="dashboard-grid">
                     <!-- Upcoming Alerts Card -->
-                    <section class="card upcoming-alerts">
-                        <h3><i class="fas fa-bell"></i> Upcoming</h3>
+                    <section class="card alert-overview">
+                        <h3><i class="fas fa-bell"></i> Alerts</h3>
                         <div class="alert-stack">
                             <a href="#chat" data-tab="chat" class="alert-link">
-                                <div class="alert-item message" style="width: 100%; min-width: 300px;">
+                                <div class="alert-item msg" style="width: 100%; min-width: 300px;">
                                     <div class="alert-icon">
                                         <i class="fas fa-envelope"></i>
                                     </div>
                                     <div class="alert-content">
-                                        <p class="alert-title">Unread Messages</p>
-                                        <p class="alert-details">3 new messages in Community Chat</p>
+                                        <p class="alert-title">{Message Title here}</p>
+                                        <p class="alert-details">{Message description here}</p>
                                     </div>
                                     <span class="alert-time">2m ago</span>
                                 </div>
@@ -80,28 +71,28 @@
                                         <i class="fas fa-exclamation-triangle"></i>
                                     </div>
                                     <div class="alert-content">
-                                        <p class="alert-title">Suspicious Activity</p>
-                                        <p class="alert-details">Reported near Main St.</p>
+                                        <p class="alert-title">{Suspicious Activity title here}</p>
+                                        <p class="alert-details">{Suspicious activity desc here}</p>
                                     </div>
                                     <span class="alert-time">15m ago</span>
                                 </div>
                             </a>
-                            <a href="#chat" data-tab="chat" class="alert-link">
+                            <a href="" data-tab="" class="alert-link">
                                 <div class="alert-item event" style="width: 100%; min-width: 300px;">
                                     <div class="alert-icon">
-                                        <i class="fas fa-calendar"></i>
+                                        <i class="fas fa-brain"></i>
                                     </div>
                                     <div class="alert-content">
-                                        <p class="alert-title">Community Meeting</p>
-                                        <p class="alert-details">Tomorrow at 6 PM</p>
+                                        <p class="alert-title">{Todays safety tip}</p>
+                                        <p class="alert-details">{idk something other than events i am typing a very long message to see what a long description is going to look like and if it will mess something up im just going to keep going i want to make sure that i am writing css that will wrap the text properly and not look stupid. do we want to add a line limit to avoid messages this long?}</p>
                                     </div>
-                                    <span class="alert-time">1d ahead</span>
+                                    <span class="alert-time">30 min ago</span>
                                 </div>
                             </a>
-                            <a href="#" class="view-more" data-navigate-to="reports">
-                                View more alerts <i class="fas fa-chevron-right"></i>
-                            </a>
                         </div>
+                        <a href="#" class="view-more" data-navigate-to="reports">
+                            View more alerts <i class="fas fa-chevron-right"></i>
+                        </a>
                     </section>
 
                     <!-- Activity Overview Card -->
@@ -137,14 +128,10 @@
                     <!-- Map Section -->
                     <section class="card map-section">
                         <div class="map-header">
-                            <h3><i class="fas fa-map-marked-alt"></i> Neighborhood Map</h3>
-                            <button class="ping-button" id="place-ping-fab">
-                                <i class="fas fa-plus"></i> Place a Ping
-                            </button>
+                            <h3><i class="fas fa-map-marked-alt"></i> Your Neighborhood</h3>
                         </div>
-                        <div id="map" class="map-container" style="height: 300px; margin-bottom: 1rem; cursor: pointer;" data-navigate-to="live-map"></div>
-                        <div class="map-controls" style="margin-bottom: 0.75rem;">
-                            <div class="map-filters">
+                        <div class="map-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <div class="map-filters" style="display: flex; gap: 1rem; align-items: center;">
                                 <div class="filter-group">
                                     <select class="time-filter">
                                         <option value="24h">Last 24h</option>
@@ -161,140 +148,21 @@
                                     </div>
                                 </div>
                             </div>
+                            <button class="ping-button" id="place-ping-fab-home">
+                                <i class="fas fa-plus"></i> Place a Ping
+                            </button>
                         </div>
-                        <div class="map-feed">
-                            <div class="feed-header">
-                                <h4><i class="fas fa-bell"></i> Recent Updates</h4>
-                                <div class="feed-filters">
-                                    <button class="active"><i class="fas fa-clock"></i> Latest</button>
-                                    <button><i class="fas fa-fire"></i> Urgent</button>
-                                </div>
-                            </div>
-                            <div class="feed-items" id="recent-updates-container">
-                                <div class="feed-item urgent">
-                                    <div class="feed-avatar">
-                                        <img src="assets/avatar.svg" alt="John D.">
-                                        <span class="status urgent"></span>
-                                    </div>
-                                    <div class="feed-content">
-                                        <div class="feed-header">
-                                            <span class="feed-user">John D.</span>
-                                            <span class="feed-time">5m ago</span>
-                                        </div>
-                                        <p class="feed-text">Fire reported at Oak & Main. Fire department en route.</p>
-                                        <div class="feed-actions">
-                                            <a href="#map" class="view-on-map" data-coordinates="-81.24,43.02">
-                                                <i class="fas fa-map-marker-alt"></i> View Location
-                                            </a>
-                                            <span class="feed-category fire">
-                                                <i class="fas fa-fire"></i> Fire Alert
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="feed-item">
-                                    <div class="feed-avatar">
-                                        <img src="assets/avatar.svg" alt="Sarah M.">
-                                        <span class="status active"></span>
-                                    </div>
-                                    <div class="feed-content">
-                                        <div class="feed-header">
-                                            <span class="feed-user">Sarah M.</span>
-                                            <span class="feed-time">15m ago</span>
-                                        </div>
-                                        <p class="feed-text">Neighborhood watch starting evening rounds. All clear so far.</p>
-                                        <div class="feed-actions">
-                                            <button class="feed-action">
-                                                <i class="fas fa-thumbs-up"></i> Thanks
-                                            </button>
-                                            <span class="feed-category patrol">
-                                                <i class="fas fa-shield-alt"></i> Patrol Update
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="feed-item">
-                                    <div class="feed-avatar">
-                                        <img src="assets/avatar.svg" alt="Mike R.">
-                                        <span class="status active"></span>
-                                    </div>
-                                    <div class="feed-content">
-                                        <div class="feed-header">
-                                            <span class="feed-user">Mike R.</span>
-                                            <span class="feed-time">30m ago</span>
-                                        </div>
-                                        <p class="feed-text">Suspicious vehicle spotted - Silver van circling Elm Street.</p>
-                                        <div class="feed-actions">
-                                            <a href="#map" class="view-on-map" data-coordinates="-81.25,43.01">
-                                                <i class="fas fa-map-marker-alt"></i> View Location
-                                            </a>
-                                            <span class="feed-category suspicious">
-                                                <i class="fas fa-exclamation-triangle"></i> Suspicious
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <div id="map" class="map-container"></div>
                     </section>
-                </div>
-            </div>
-
-            <!-- Map Tab -->
-            <div class="tab-pane" id="map" style="height: calc(100vh - 80px); width: 100%; position: relative;">
-                <!-- Full Map Container -->
-                <div id="map-full" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0;"></div>
-                
-                <!-- Map Controls Overlay -->
-                <div class="map-controls-overlay">
-                    <div class="map-filters-left">
-                        <button class="category-filter active" data-category="all">
-                            <i class="fas fa-layer-group"></i> All
-                        </button>
-                        <button class="category-filter" data-category="suspicious">
-                            <i class="fas fa-exclamation-triangle"></i> Suspicious
-                        </button>
-                        <button class="category-filter" data-category="theft">
-                            <i class="fas fa-lock"></i> Break-in
-                        </button>
-                        <button class="category-filter" data-category="fire">
-                            <i class="fas fa-fire"></i> Fire
-                        </button>
-                        <button class="category-filter" data-category="noise">
-                            <i class="fas fa-volume-up"></i> Noise
-                        </button>
-                    </div>
-                    <div class="map-filters-right">
-                        <select class="time-filter">
-                            <option value="24h">Last 24 hours</option>
-                            <option value="7d">Past 7 Days</option>
-                            <option value="30d">Last 30 Days</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Place Ping Button -->
-                <button class="ping-button" id="place-ping">
-                    <i class="fas fa-plus"></i>
-                    <i class="fas fa-map-marker-alt"></i>
-                    Place a Ping
-                </button>
-
-                <!-- Pings Sidebar -->
-                <div class="pings-sidebar">
-                    <div class="pings-header">
-                        <h3><i class="fas fa-map-marker-alt"></i> Recent Pings</h3>
-                        <div class="pings-filter">
-                            <button class="active"><i class="fas fa-clock"></i> Latest</button>
-                            <button><i class="fas fa-fire"></i> Urgent</button>
-                            <button><i class="fas fa-comments"></i> Most Active</button>
+                    <section>
+                        <div class="card">
+                            <div class="feed-header"><h4><i class="fas fa-bell"></i> Latest in your area</h4></div>
+                            <div class="feed-items" id="recent-updates-container">
                         </div>
-                    </div>
-                    <div class="pings-list">
-                        <!-- Pings will be populated here -->
-                    </div>
+                        <a href="#" class="view-more" data-navigate-to="live-map">
+                            View more pings <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </section>
                 </div>
             </div>
 
@@ -302,29 +170,27 @@
             <div class="tab-pane" id="live-map">
                 <div class="live-map-container">
                     <div class="live-map-header">
-                        <h2>Live Community Map</h2>
-                        <div class="live-map-controls">
-                            <div class="category-toggles" style="display: flex; align-items: center; gap: 10px;">
-                                <button class="active" data-category="all">All</button>
-                                <button data-category="suspicious">
-                                    <i class="fas fa-exclamation-triangle"></i> Suspicious
-                                </button>
-                                <button data-category="fire">
-                                    <i class="fas fa-fire"></i> Fire
-                                </button>
-                                <button data-category="community">
-                                    <i class="fas fa-users"></i> Community
-                                </button>
-                                <select id="live-time-filter" style="margin-left: auto;">
-                                    <option value="24h">Last 24 Hours</option>
-                                    <option value="7d">Last 7 Days</option>
-                                    <option value="30d">Last 30 Days</option>
-                                </select>
-                                <button id="live-place-ping" class="ping-button">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    Place Ping
-                                </button>
+                        <div class="map-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-left: 1.5rem; margin-right: 1.5rem;">
+                            <div class="map-filters" style="display: flex; gap: 1rem; align-items: center;">
+                                <div class="filter-group">
+                                    <select class="time-filter">
+                                        <option value="24h">Last 24h</option>
+                                        <option value="7d">7 Days</option>
+                                        <option value="30d">30 Days</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <div class="category-toggles">
+                                        <button class="active" data-category="all">All</button>
+                                        <button data-category="suspicious">Suspicious</button>
+                                        <button data-category="fire">Fire</button>
+                                        <button data-category="theft">Theft</button>
+                                    </div>
+                                </div>
                             </div>
+                            <button class="ping-button" id="place-ping-fab-live">
+                                <i class="fas fa-plus"></i> Place a Ping
+                            </button>
                         </div>
                     </div>
                     
@@ -337,113 +203,9 @@
                         <!-- Ping Details Column -->
                         <div class="ping-details-column">
                             <div class="ping-details-header">
-                                <h3>Ping Details</h3>
-                                <span class="ping-count">3 active pings</span>
+                                <h3>Pings in your neighborhood</h3>
                             </div>
-                            <div class="ping-details-container">
-                                <div class="ping-detail-item">
-                                    <div class="ping-header">
-                                        <div class="ping-user">
-                                            <img src="assets/avatar.svg" alt="John D.">
-                                            <div class="ping-user-info">
-                                                <h4>John D.</h4>
-                                                <span class="ping-time">5m ago</span>
-                                            </div>
-                                        </div>
-                                        <span class="ping-category fire">
-                                            <i class="fas fa-fire"></i> Fire Alert
-                                        </span>
-                                    </div>
-                                    <div class="ping-content">
-                                        <p>Fire reported at Oak & Main. Fire department en route. Multiple units responding.</p>
-                                        <div class="ping-location">
-                                            <i class="fas fa-map-marker-alt"></i>
-                                            <span>Oak Street & Main Street</span>
-                                        </div>
-                                    </div>
-                                    <div class="ping-replies">
-                                        <div class="reply">
-                                            <div class="reply-user">
-                                                <img src="assets/avatar.svg" alt="Sarah M.">
-                                                <span class="reply-name">Sarah M.</span>
-                                            </div>
-                                            <p>I can see the smoke from my window. Fire trucks are arriving now.</p>
-                                            <span class="reply-time">2m ago</span>
-                                        </div>
-                                    </div>
-                                    <div class="ping-actions">
-                                        <button class="action-btn">
-                                            <i class="fas fa-reply"></i> Reply
-                                        </button>
-                                        <button class="action-btn">
-                                            <i class="fas fa-thumbs-up"></i> Like
-                                        </button>
-                                        <button class="action-btn">
-                                            <i class="fas fa-share"></i> Share
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div class="ping-details">
-                                    <div class="ping-header">
-                                        <div class="ping-user">
-                                            <img src="assets/avatar.svg" alt="Sarah M.">
-                                            <div class="ping-user-info">
-                                                <h4>Sarah M.</h4>
-                                                <span class="ping-time">30m ago</span>
-                                            </div>
-                                        </div>
-                                        <span class="ping-category community">Community</span>
-                                    </div>
-                                    <div class="ping-content">
-                                        <p>Neighborhood watch starting evening rounds. All clear so far</p>
-                                    </div>
-                                    <div class="ping-replies">
-                                        <div class="reply">
-                                            <img src="assets/avatar.svg" alt="John D.">
-                                            <div class="reply-content">
-                                                <h5>John D. <span>25m ago</span></h5>
-                                                <p>Thanks for the update, Sarah. I'll join the next patrol.</p>
-                                            </div>
-                                        </div>
-                                        <div class="reply">
-                                            <img src="assets/avatar.svg" alt="Mike R.">
-                                            <div class="reply-content">
-                                                <h5>Mike R. <span>20m ago</span></h5>
-                                                <p>I'll be there in 10 minutes to help with the rounds.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="ping-actions" style="gap: 35px;">
-                                        <button class="action-btn reply-btn">
-                                            <i class="fas fa-reply"></i> Reply
-                                        </button>
-                                        <button class="action-btn like-btn">
-                                            <i class="fas fa-thumbs-up"></i> Like
-                                        </button>
-                                        <button class="action-btn share-btn">
-                                            <i class="fas fa-share"></i> Share
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Additional ping items... -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="pings-feed">
-                        <div class="pings-header">
-                            <h3><i class="fas fa-list"></i> Recent Pings</h3>
-                            <div class="pings-filter">
-                                <button class="active" data-category="all">All</button>
-                                <button data-category="suspicious">Suspicious</button>
-                                <button data-category="fire">Fire</button>
-                                <button data-category="community">Community</button>
-                            </div>
-                        </div>
-                        <div class="pings-list">
-                            <!-- Ping items will be dynamically added here -->
+                            <div class="ping-details-container"></div>
                         </div>
                     </div>
                 </div>
@@ -550,7 +312,6 @@
             <div class="tab-pane" id="reports">
                 <div class="reports-dashboard">
                     <div class="reports-header">
-                        <h2>Incident Reports</h2>
                         <button class="quick-stats-btn">
                             <i class="fas fa-chart-line"></i> View Quick Stats
                         </button>
@@ -924,20 +685,26 @@
     <script src="scripts/dashboard.js"></script>
 
     <div id="placePingModal" class="pin-modal">
-        <div class="pin-modal-content">
-            <div class="pin-modal-header">
-                <h3>Place a Ping</h3>
-                <button id="closePingModal" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>
+        <div class="pin-modal-content card">
+            <div class="pin-modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="margin: 0; color: var(--primary-color); font-weight: 600;">Place a Ping</h3>
+                <button id="closePingModal" class="close-modal" style="background:none;border:none;font-size:1.5rem;cursor:pointer;line-height:1;">&times;</button>
             </div>
-            <form id="pingForm">
-                <div style="margin-bottom:1rem;">
-                    <div id="pingMapPreview" style="width:100%;height:120px;background:#eee;border-radius:8px;margin-bottom:1rem;"></div>
+            <form id="pingForm" class="pin-modal-form">
+                <div class="form-group">
+                    <label for="pingAddressSearch">Search Address</label>
+                    <input type="text" id="pingAddressSearch" placeholder="Search for an address or nearby location..." autocomplete="off" style="width:100%;padding:0.75rem;border:1px solid var(--light-gray);border-radius:8px;font-size:0.95rem;background:var(--white);">
+                    <div id="pingAddressSuggestions" style="position:relative;"></div>
                 </div>
-                <div style="margin-bottom:1rem;">
+                <div class="form-group">
+                    <label for="pingMapPreview">Select Location</label>
+                    <div id="pingMapPreview" style="width:100%;height:140px;background:#f5f5f5;border-radius:10px;margin-bottom:0.5rem;"></div>
+                </div>
+                <div class="form-group">
                     <label for="pingDescription">Description</label>
-                    <textarea id="pingDescription" name="description" placeholder="What's happening?" style="width:100%;height:60px;resize:vertical;"></textarea>
+                    <textarea id="pingDescription" name="description" placeholder="What's happening?" style="width:100%;"></textarea>
                 </div>
-                <div style="margin-bottom:1rem;">
+                <div class="form-group">
                     <label for="pingCategory">Type of Ping</label>
                     <select id="pingCategory" name="type" required style="width:100%;padding:0.75rem;border:1px solid var(--light-gray);border-radius:8px;font-size:0.95rem;background:var(--white);">
                         <option value="">Select a type</option>
@@ -946,40 +713,18 @@
                         <option value="other">Other</option>
                     </select>
                 </div>
-                <div style="margin-bottom:1rem;">
+                <div class="form-group">
                     <label for="pingPhoto">Photo (optional)</label>
                     <input type="file" id="pingPhoto" name="photo" accept="image/*">
                 </div>
-                <div style="display:flex;justify-content:flex-end;gap:1rem;">
-                    <button type="button" id="cancelPingBtn" class="cancel-button">Cancel</button>
-                    <button type="submit" class="save-button">Submit</button>
+                <div class="form-group" style="display:none;">
+                    <input type="hidden" id="ping-lat" name="lat">
+                    <input type="hidden" id="ping-lng" name="lng">
                 </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Ping Modal Structure -->
-    <div id="pingModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>Place a New Ping</h2>
-            <form id="pingForm">
-                <label for="ping-description">Description:</label>
-                <textarea id="ping-description" placeholder="Describe the situation..."></textarea>
-
-                <label for="ping-type">Category:</label>
-                <select id="ping-type">
-                    <option value="suspicious">Suspicious Activity</option>
-                    <option value="fire">Fire/Hazard</option>
-                    <option value="theft">Theft/Break-in</option>
-                    <option value="noise">Noise Complaint</option>
-                    <option value="other">Other</option>
-                </select>
-
-                <label for="ping-photo">Upload Photo (Optional):</label>
-                <input type="file" id="ping-photo" accept="image/*">
-
-                <button type="submit">Submit Ping</button>
+                <div class="pin-modal-actions" style="display:flex;justify-content:flex-end;gap:1rem;margin-top:1.5rem;">
+                    <button type="button" id="cancelPingBtn" class="cancel-button modal-action-btn">Cancel</button>
+                    <button type="submit" class="save-button modal-action-btn">Submit</button>
+                </div>
             </form>
         </div>
     </div>
@@ -1003,27 +748,16 @@
         const userName = localStorage.getItem('currentUserName') || 'User';
         document.getElementById('greeting-text').textContent = `${getGreeting()}, ${userName}!`;
 
-        // User dropdown toggle logic
-        const userAvatar = document.getElementById('userAvatar');
-        const userDropdown = document.getElementById('userDropdown');
-        const logoutBtn = document.getElementById('logoutBtn');
+        const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
         const mainLogoLink = document.getElementById('mainLogoLink');
 
-        document.addEventListener('click', function(event) {
-            if (userAvatar.contains(event.target)) {
-                userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block';
-            } else {
-                userDropdown.style.display = 'none';
-            }
-        });
-
-        // Ensure logout clears user data and redirects
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', function(e) {
+        // Ensure sidebar logout clears user data and redirects
+        if (sidebarLogoutBtn) {
+            sidebarLogoutBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 localStorage.removeItem('user');
                 localStorage.removeItem('currentUserName');
-                window.location.href = '/index.html';
+                window.location.href = '/pages/auth/login.html';
             });
         }
 
@@ -1031,7 +765,16 @@
         if (mainLogoLink) {
             mainLogoLink.addEventListener('click', function(e) {
                 e.preventDefault();
-                window.location.href = '/index.html';
+                window.location.href = 'index.html';
+            });
+        }
+
+        // Add event listener for Cancel button to close the modal
+        const cancelPingBtn = document.getElementById('cancelPingBtn');
+        const placePingModal = document.getElementById('placePingModal');
+        if (cancelPingBtn && placePingModal) {
+            cancelPingBtn.addEventListener('click', function() {
+                placePingModal.classList.remove('active');
             });
         }
     </script>

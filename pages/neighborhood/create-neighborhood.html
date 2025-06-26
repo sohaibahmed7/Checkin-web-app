@@ -314,7 +314,7 @@
             const moderators = Array.from(document.querySelectorAll('#moderatorsList li')).map(li => li.textContent.replace('×', '').trim());
             const permissions = Array.from(document.querySelectorAll('.permissions-list input:checked')).map(input => input.parentElement.textContent.trim());
             try {
-                const response = await fetch('http://localhost:5000/api/create-neighborhood', {
+                const response = await fetch('http://localhost:3000/api/create-neighborhood', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

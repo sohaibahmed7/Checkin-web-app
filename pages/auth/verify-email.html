@@ -162,7 +162,7 @@
             document.getElementById('resendSuccessMessage').style.display = 'none';
 
             try {
-                const response = await fetch('http://localhost:5000/api/verify-email', {
+                const response = await fetch('http://localhost:3000/api/verify-email', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -207,7 +207,7 @@
             resendCodeButton.textContent = 'Resending...';
 
             try {
-                const response = await fetch('http://localhost:5000/api/resend-code', {
+                const response = await fetch('http://localhost:3000/api/resend-code', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
