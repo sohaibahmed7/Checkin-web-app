@@ -1432,12 +1432,8 @@ body.dashboard {
 }
 
 /* Reports Tab */
-.reports-dashboard {
-    padding: 2rem;
-}
-
 .reports-header {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .reports-header h2 {
