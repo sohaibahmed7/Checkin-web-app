@@ -1,4 +1,4 @@
-const socket = io('http://localhost:5000'); // Connect to your Node.js server
+const socket = io('http://localhost:3000'); // Connect to your Node.js server
 const messagesContainer = document.getElementById('messages');
 const messageInput = document.getElementById('message-input');
 const sendButton = document.getElementById('send-button');
@@ -44,7 +44,7 @@ const closeEmojiPickerButton = document.querySelector('.close-emoji-picker');
 async function fetchChatHistory(room) {
     try {
         messagesContainer.innerHTML = '<div class="loading">Loading messages...</div>';
-        const response = await fetch(`http://localhost:5000/api/chat/messages?room=${room}`);
+        const response = await fetch(`http://localhost:3000/api/chat/messages?room=${room}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -257,7 +257,7 @@ fileInput.addEventListener('change', async (e) => {
 
         try {
             console.log('Attempting to upload file to /api/chat/upload...');
-            const response = await fetch('http://localhost:5000/api/chat/upload', {
+            const response = await fetch('http://localhost:3000/api/chat/upload', {
                 method: 'POST',
                 body: formData
             });
@@ -334,7 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch and update preview for all chat items on load (optional, but good for consistency)
     // In a real app, you'd typically fetch the last message for each chat from the server.
     // For now, we'll just fetch the last message of the default room.
-    fetch('http://localhost:5000/api/chat/messages?room=community-chat&limit=1')
+    fetch('http://localhost:3000/api/chat/messages?room=community-chat&limit=1')
         .then(response => response.json())
         .then(messages => {
             if (messages.length > 0) {

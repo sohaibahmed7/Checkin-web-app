@@ -120,9 +120,8 @@
                 <input type="password" id="password" name="password" required>
                 <div class="error-message" id="passwordError"></div>
             </div>
-            <button type="button" class="login-button" id="login-button">Login</button>
             <div class="error-message" id="loginError"></div>
-            <div class="success-message" id="loginSuccess"></div>
+            <button type="button" class="login-button" id="login-button">Login</button>
             <div class="register-link">
                 Don't have an account? <a href="register.html">Create one here</a>
             </div>
@@ -166,21 +165,10 @@
             }, 5000);
         }
 
-        // Function to show success message
-        function showSuccess(message) {
-            const successElement = document.getElementById('loginSuccess');
-            successElement.textContent = message;
-            successElement.style.display = 'block';
-            setTimeout(() => {
-                successElement.style.display = 'none';
-            }, 5000);
-        }
-
         // Function to handle login
         async function handleLogin() {
             // Reset error messages
             document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
-            document.getElementById('loginSuccess').style.display = 'none';
 
             // Get form values
             const email = document.getElementById('email').value;
@@ -201,7 +189,7 @@
             loginButton.disabled = true;
 
             try {
-                const response = await fetch('http://localhost:5000/api/login', {
+                const response = await fetch('http://localhost:3000/api/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -214,13 +202,15 @@
                 console.log('Login response:', data); // Add logging
 
                 if (response.ok) {
-                    showSuccess('Login successful!');
                     // Store user info in localStorage, always using _id
                     if (data.user && data.user.id && !data.user._id) {
                         data.user._id = data.user.id;
                         delete data.user.id;
                     }
                     localStorage.setItem('user', JSON.stringify(data.user));
+                    // Change button text to Login Successful
+                    loginButton.textContent = 'Login Successful!';
+                    loginButton.disabled = true;
                     // Redirect to dashboard or home page
                     setTimeout(() => {
                         window.location.href = '/pages/dashboard/index.html';

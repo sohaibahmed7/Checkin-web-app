@@ -45,6 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const tabLink = document.querySelector(`a[data-tab="${targetTab}"]`);
             if (tabLink) {
                 tabLink.click();
+                // Scroll to top after switching tab
+                window.scrollTo({top: 0, behavior: 'smooth'});
             }
         });
     });
@@ -204,8 +206,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateMapMarkers(mapFull);
             } else if (targetTab === 'live-map') {
                 initializeLiveMap();
+                setupMapFilters({
+                    mapInstance: liveMap,
+                    feedContainerId: null,
+                    categoryTogglesSelector: '#live-map .category-toggles',
+                    timeFilterSelector: '#live-map .time-filter'
+                });
                 updateMapMarkers(liveMap);
             }
+
+            // Scroll to top after switching tab
+            window.scrollTo({top: 0, behavior: 'smooth'});
         });
     });
 
@@ -340,7 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to fetch pings from the backend
     async function fetchPings() {
         try {
-            const response = await fetch('http://localhost:5000/api/pings');
+            const response = await fetch('http://localhost:3000/api/pings');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -394,18 +405,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById(containerId) || document.querySelector(`.${containerId}`);
         if (!container) return;
 
-        // Clear the container only when starting fresh (not just loading more)
-        if (currentPingsDisplayed === 0) {
-            container.innerHTML = '';
+        // Only show the 2 most recent pings in the updates section
+        let pingsToDisplay = pingsToRender;
+        if (containerId === 'recent-updates-container') {
+            pingsToDisplay = pingsToRender.slice(0, 3);
         }
 
-        const pingsToDisplay = pingsToRender.slice(currentPingsDisplayed, currentPingsDisplayed + pingsPerPage);
+        container.innerHTML = '';
 
-        if (pingsToDisplay.length === 0 && currentPingsDisplayed === 0) {
+        if (pingsToDisplay.length === 0) {
             container.innerHTML = '<p class="no-pings-message">No recent pings to display.</p>';
-            // Hide load more button if no pings at all
-            const existingLoadMoreBtn = document.getElementById('load-more-pings');
-            if (existingLoadMoreBtn) existingLoadMoreBtn.style.display = 'none';
             return;
         }
 
@@ -415,7 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Ensure the profile picture URL is absolute if needed
             let userAvatar = user.profile_picture_url || 'assets/avatar.svg';
             if (userAvatar && userAvatar.startsWith('/uploads/')) {
-                userAvatar = 'http://localhost:5000' + userAvatar;
+                userAvatar = 'http://localhost:3000' + userAvatar;
             }
             const pingTypeIcon = getPingTypeIcon(ping.type);
             const pingTypeLabel = (ping.type || '').charAt(0).toUpperCase() + (ping.type || '').slice(1);
@@ -442,27 +451,6 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             container.appendChild(pingElement);
         });
-
-        currentPingsDisplayed += pingsToDisplay.length;
-
-        // Manage the Load More button (only for home feed)
-        if (containerId === 'recent-updates-container') {
-            let loadMoreBtn = document.getElementById('load-more-pings');
-            if (allPings.length > currentPingsDisplayed) {
-                if (!loadMoreBtn) {
-                    loadMoreBtn = document.createElement('button');
-                    loadMoreBtn.id = 'load-more-pings';
-                    loadMoreBtn.className = 'load-more-btn';
-                    loadMoreBtn.textContent = 'Load More Updates';
-                    // Append after the container, not inside it, to maintain structure
-                    container.parentNode.appendChild(loadMoreBtn);
-                    loadMoreBtn.addEventListener('click', () => renderPings(allPings));
-                }
-                loadMoreBtn.style.display = 'block'; // Ensure it's visible
-            } else {
-                if (loadMoreBtn) loadMoreBtn.style.display = 'none'; // Hide if no more pings
-            }
-        }
 
         // Add event listeners for "View on Map" links (only for newly added links)
         container.querySelectorAll('.view-on-map').forEach(link => {
@@ -582,7 +570,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (photo) formData.append('photo', photo);
             if (userId) formData.append('userId', userId);
             try {
-                const response = await fetch('http://localhost:5000/api/pings', {
+                const response = await fetch('http://localhost:3000/api/pings', {
                     method: 'POST',
                     body: formData
                 });
@@ -941,18 +929,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial chat window load (example)
     // updateChatWindow('general');
 
-    // Ping Map Preview Modal Logic
-    const placePingBtn = document.getElementById('place-ping-fab');
+    // Place Ping Modal Logic
+    const placePingBtnHome = document.getElementById('place-ping-fab-home');
+    const placePingBtnLive = document.getElementById('place-ping-fab-live');
     const placePingModal = document.getElementById('placePingModal');
     const closePingModal = document.getElementById('closePingModal');
     const pingMapPreviewContainer = document.getElementById('pingMapPreview');
     const mapLocationInput = document.getElementById('pin-location');
 
-    if (placePingBtn) {
-        placePingBtn.addEventListener('click', () => {
+    if (placePingBtnHome) {
+        placePingBtnHome.addEventListener('click', () => {
             placePingModal.classList.add('active');
             // Initialize map inside modal when it opens
             setTimeout(initializePingMapPreview, 100); // Small delay to ensure modal is visible
+        });
+    }
+
+    if (placePingBtnLive) {
+        placePingBtnLive.addEventListener('click', () => {
+            placePingModal.classList.add('active');
+            setTimeout(initializePingMapPreview, 100);
         });
     }
 
@@ -1018,6 +1014,75 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         pingMapPreview.addControl(new mapboxgl.NavigationControl());
+
+        // Address search logic (binds only when modal is open)
+        const pingAddressSearch = document.getElementById('pingAddressSearch');
+        const pingAddressSuggestions = document.getElementById('pingAddressSuggestions');
+        if (pingAddressSearch) {
+            pingAddressSearch.value = '';
+            pingAddressSuggestions.innerHTML = '';
+            pingAddressSearch.oninput = debounce(async function() {
+                const query = this.value.trim();
+                if (query.length < 3) {
+                    pingAddressSuggestions.innerHTML = '';
+                    return;
+                }
+                const suggestions = await fetchAddressSuggestions(query);
+                renderSuggestions(suggestions);
+            }, 350);
+        }
+
+        function renderSuggestions(suggestions) {
+            pingAddressSuggestions.innerHTML = '';
+            if (!suggestions.length) return;
+            const list = document.createElement('ul');
+            list.style.position = 'absolute';
+            list.style.top = '100%';
+            list.style.left = '0';
+            list.style.right = '0';
+            list.style.background = '#fff';
+            list.style.border = '1px solid #eee';
+            list.style.zIndex = '1000';
+            list.style.listStyle = 'none';
+            list.style.margin = '0';
+            list.style.padding = '0';
+            list.style.maxHeight = '180px';
+            list.style.overflowY = 'auto';
+            suggestions.forEach(feature => {
+                const item = document.createElement('li');
+                item.textContent = feature.place_name;
+                item.style.padding = '0.7rem 1rem';
+                item.style.cursor = 'pointer';
+                item.style.borderBottom = '1px solid #f0f0f0';
+                item.addEventListener('mousedown', () => {
+                    // Center map and set marker
+                    if (pingMapPreview) {
+                        pingMapPreview.flyTo({ center: feature.center, zoom: 15 });
+                        // Simulate a click to place marker
+                        const lngLat = { lng: feature.center[0], lat: feature.center[1] };
+                        selectedPingLocation = lngLat;
+                        if (tempPingMarker) tempPingMarker.remove();
+                        const el = document.createElement('div');
+                        el.className = 'marker';
+                        el.style.backgroundColor = 'var(--primary-color)';
+                        el.style.width = '24px';
+                        el.style.height = '24px';
+                        el.style.borderRadius = '50%';
+                        el.style.border = '2px solid white';
+                        el.style.boxShadow = '0 0 0 2px var(--primary-color)';
+                        tempPingMarker = new mapboxgl.Marker(el)
+                            .setLngLat(lngLat)
+                            .addTo(pingMapPreview);
+                        document.getElementById('ping-lat').value = lngLat.lat;
+                        document.getElementById('ping-lng').value = lngLat.lng;
+                    }
+                    pingAddressSearch.value = feature.place_name;
+                    pingAddressSuggestions.innerHTML = '';
+                });
+                list.appendChild(item);
+            });
+            pingAddressSuggestions.appendChild(list);
+        }
     }
 
     // Initial calls for map and feed updates (should be done after fetchPings)
@@ -1064,7 +1129,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (profilePreviewAvatar) {
             let avatarUrl = user.profile_picture_url || 'assets/avatar.svg';
             if (avatarUrl && avatarUrl.startsWith('/uploads/')) {
-                avatarUrl = 'http://localhost:5000' + avatarUrl;
+                avatarUrl = 'http://localhost:3000' + avatarUrl;
             }
             profilePreviewAvatar.src = avatarUrl;
             // Add fallback for broken images
@@ -1117,7 +1182,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch('http://localhost:5000/api/user/settings', {
+            const response = await fetch('http://localhost:3000/api/user/settings', {
                 method: 'PUT',
                 body: formData
             });
@@ -1240,6 +1305,94 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Place Ping Modal Address Search Logic
+    const pingAddressSearch = document.getElementById('pingAddressSearch');
+    const pingAddressSuggestions = document.getElementById('pingAddressSuggestions');
+    let pingMapPreviewInstance = null;
+
+    // Helper: Debounce
+    function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+
+    // Fetch suggestions from Mapbox
+    async function fetchAddressSuggestions(query) {
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${mapboxgl.accessToken}&autocomplete=true&limit=5`;
+        const res = await fetch(url);
+        if (!res.ok) return [];
+        const data = await res.json();
+        return data.features || [];
+    }
+
+    // Render suggestions dropdown
+    function renderSuggestions(suggestions) {
+        pingAddressSuggestions.innerHTML = '';
+        if (!suggestions.length) return;
+        const list = document.createElement('ul');
+        list.style.position = 'absolute';
+        list.style.top = '100%';
+        list.style.left = '0';
+        list.style.right = '0';
+        list.style.background = '#fff';
+        list.style.border = '1px solid #eee';
+        list.style.zIndex = '1000';
+        list.style.listStyle = 'none';
+        list.style.margin = '0';
+        list.style.padding = '0';
+        list.style.maxHeight = '180px';
+        list.style.overflowY = 'auto';
+        suggestions.forEach(feature => {
+            const item = document.createElement('li');
+            item.textContent = feature.place_name;
+            item.style.padding = '0.7rem 1rem';
+            item.style.cursor = 'pointer';
+            item.style.borderBottom = '1px solid #f0f0f0';
+            item.addEventListener('mousedown', () => {
+                // Center map and set marker
+                if (pingMapPreview) {
+                    pingMapPreview.flyTo({ center: feature.center, zoom: 15 });
+                    // Simulate a click to place marker
+                    const lngLat = { lng: feature.center[0], lat: feature.center[1] };
+                    selectedPingLocation = lngLat;
+                    if (tempPingMarker) tempPingMarker.remove();
+                    const el = document.createElement('div');
+                    el.className = 'marker';
+                    el.style.backgroundColor = 'var(--primary-color)';
+                    el.style.width = '24px';
+                    el.style.height = '24px';
+                    el.style.borderRadius = '50%';
+                    el.style.border = '2px solid white';
+                    el.style.boxShadow = '0 0 0 2px var(--primary-color)';
+                    tempPingMarker = new mapboxgl.Marker(el)
+                        .setLngLat(lngLat)
+                        .addTo(pingMapPreview);
+                    document.getElementById('ping-lat').value = lngLat.lat;
+                    document.getElementById('ping-lng').value = lngLat.lng;
+                }
+                pingAddressSearch.value = feature.place_name;
+                pingAddressSuggestions.innerHTML = '';
+            });
+            list.appendChild(item);
+        });
+        pingAddressSuggestions.appendChild(list);
+    }
+
+    if (pingAddressSearch) {
+        pingAddressSearch.addEventListener('input', debounce(async function() {
+            const query = this.value.trim();
+            if (query.length < 3) {
+                pingAddressSuggestions.innerHTML = '';
+                return;
+            }
+            const suggestions = await fetchAddressSuggestions(query);
+            renderSuggestions(suggestions);
+        }, 350));
+    }
+
 }); 
 
 // Helper function to compare only year, month, and day
@@ -1326,8 +1479,8 @@ setupMapFilters({
 setupMapFilters({
     mapInstance: liveMap,
     feedContainerId: null, // If you want to update a feed here, provide its container ID
-    categoryTogglesSelector: '.live-map-controls .category-toggles',
-    timeFilterSelector: '#live-time-filter'
+    categoryTogglesSelector: '#live-map .category-toggles',
+    timeFilterSelector: '#live-map .time-filter'
 });
 
 // After fetchPings, also update live map ping details

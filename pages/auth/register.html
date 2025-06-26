@@ -317,7 +317,7 @@
 
             // Validate invite code first
             try {
-                const inviteResponse = await fetch('http://localhost:5000/api/validate-invite-code', {
+                const inviteResponse = await fetch('http://localhost:3000/api/validate-invite-code', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -342,7 +342,7 @@
             registerButton.disabled = true;
 
             try {
-                const response = await fetch('http://localhost:5000/api/register', {
+                const response = await fetch('http://localhost:3000/api/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
