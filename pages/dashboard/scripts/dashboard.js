@@ -929,18 +929,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial chat window load (example)
     // updateChatWindow('general');
 
-    // Ping Map Preview Modal Logic
-    const placePingBtn = document.getElementById('place-ping-fab');
+    // Place Ping Modal Logic
+    const placePingBtnHome = document.getElementById('place-ping-fab-home');
+    const placePingBtnLive = document.getElementById('place-ping-fab-live');
     const placePingModal = document.getElementById('placePingModal');
     const closePingModal = document.getElementById('closePingModal');
     const pingMapPreviewContainer = document.getElementById('pingMapPreview');
     const mapLocationInput = document.getElementById('pin-location');
 
-    if (placePingBtn) {
-        placePingBtn.addEventListener('click', () => {
+    if (placePingBtnHome) {
+        placePingBtnHome.addEventListener('click', () => {
             placePingModal.classList.add('active');
             // Initialize map inside modal when it opens
             setTimeout(initializePingMapPreview, 100); // Small delay to ensure modal is visible
+        });
+    }
+
+    if (placePingBtnLive) {
+        placePingBtnLive.addEventListener('click', () => {
+            placePingModal.classList.add('active');
+            setTimeout(initializePingMapPreview, 100);
         });
     }
 
