@@ -134,6 +134,7 @@
                             <div class="map-filters" style="display: flex; gap: 1rem; align-items: center;">
                                 <div class="filter-group">
                                     <select class="time-filter">
+                                        <option value="all" selected>All time</option>
                                         <option value="24h">< 24h</option>
                                         <option value="7d">< 7 Days</option>
                                         <option value="30d">< 30 Days</option>
@@ -142,10 +143,10 @@
                                 <div class="filter-group">
                                     <div class="category-toggles">
                                         <button class="active" data-category="all">All</button>
-                                        <button data-category="Suspicious">Suspicious</button>
-                                        <button data-category="Break & Enter">Break & Enter</button>
-                                        <button data-category="Fire">Fire</button>
-                                        <button data-category="Other">Other</button>
+                                        <button data-category="suspicious">Suspicious</button>
+                                        <button data-category="break-enter">Break & Enter</button>
+                                        <button data-category="fire">Fire</button>
+                                        <button data-category="other">Other</button>
                                     </div>
                                 </div>
                             </div>
@@ -175,9 +176,10 @@
                             <div class="map-filters" style="display: flex; gap: 1rem; align-items: center;">
                                 <div class="filter-group">
                                     <select class="time-filter">
-                                        <option value="24h">Last 24h</option>
-                                        <option value="7d">7 Days</option>
-                                        <option value="30d">30 Days</option>
+                                        <option value="all" selected>All time</option>
+                                        <option value="24h">< 24h</option>
+                                        <option value="7d">< 7 Days</option>
+                                        <option value="30d">< 30 Days</option>
                                     </select>
                                 </div>
                                 <div class="filter-group">
@@ -207,7 +209,7 @@
                             <div class="ping-details-header">
                                 <h3>Pings in your neighborhood</h3>
                             </div>
-                            <div class="ping-details-container"></div>
+                            <div class="ping-details-container" id="ping-details-container"></div>
                         </div>
                     </div>
                 </div>
