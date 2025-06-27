@@ -134,17 +134,19 @@
                             <div class="map-filters" style="display: flex; gap: 1rem; align-items: center;">
                                 <div class="filter-group">
                                     <select class="time-filter">
-                                        <option value="24h">Last 24h</option>
-                                        <option value="7d">7 Days</option>
-                                        <option value="30d">30 Days</option>
+                                        <option value="all" selected>All time</option>
+                                        <option value="24h">< 24h</option>
+                                        <option value="7d">< 7 Days</option>
+                                        <option value="30d">< 30 Days</option>
                                     </select>
                                 </div>
                                 <div class="filter-group">
                                     <div class="category-toggles">
                                         <button class="active" data-category="all">All</button>
                                         <button data-category="suspicious">Suspicious</button>
+                                        <button data-category="break-enter">Break & Enter</button>
                                         <button data-category="fire">Fire</button>
-                                        <button data-category="theft">Theft</button>
+                                        <button data-category="other">Other</button>
                                     </div>
                                 </div>
                             </div>
@@ -174,17 +176,19 @@
                             <div class="map-filters" style="display: flex; gap: 1rem; align-items: center;">
                                 <div class="filter-group">
                                     <select class="time-filter">
-                                        <option value="24h">Last 24h</option>
-                                        <option value="7d">7 Days</option>
-                                        <option value="30d">30 Days</option>
+                                        <option value="all" selected>All time</option>
+                                        <option value="24h">< 24h</option>
+                                        <option value="7d">< 7 Days</option>
+                                        <option value="30d">< 30 Days</option>
                                     </select>
                                 </div>
                                 <div class="filter-group">
                                     <div class="category-toggles">
                                         <button class="active" data-category="all">All</button>
                                         <button data-category="suspicious">Suspicious</button>
+                                        <button data-category="break-enter">Break & Enter</button>
                                         <button data-category="fire">Fire</button>
-                                        <button data-category="theft">Theft</button>
+                                        <button data-category="other">Other</button>
                                     </div>
                                 </div>
                             </div>
@@ -205,7 +209,7 @@
                             <div class="ping-details-header">
                                 <h3>Pings in your neighborhood</h3>
                             </div>
-                            <div class="ping-details-container"></div>
+                            <div class="ping-details-container" id="ping-details-container"></div>
                         </div>
                     </div>
                 </div>
@@ -220,10 +224,10 @@
                             <div class="search-container">
                                 <i class="fas fa-search"></i>
                                 <input type="text" placeholder="Search conversations...">
-                                <button class="new-chat-btn" title="Start a new chat">
-                                    <i class="fas fa-edit"></i>
-                                </button>
                             </div>
+                            <button class="new-chat-btn" title="Start a new chat">
+                                <i class="fas fa-edit"></i>
+                            </button>
                         </div>
                         <div class="chat-list">
                             <div class="chat-item active" data-chat-id="community-chat">
@@ -435,9 +439,9 @@
                         <select class="type-filter">
                             <option value="all">All Types</option>
                             <option value="suspicious">Suspicious Activity</option>
-                            <option value="theft">Theft</option>
+                            <option value="break-enter">Break & Enter</option>
                             <option value="fire">Fire</option>
-                            <option value="noise">Noise Complaint</option>
+                            <option value="other">Other</option>
                         </select>
                     </div>
                     <div class="filter-group">
@@ -509,7 +513,7 @@
                             <!-- More sample reports -->
                             <tr class="report-row">
                                 <td>Michael Chen</td>
-                                <td><span class="badge theft">Theft</span></td>
+                                <td><span class="badge break-enter">Break & Enter</span></td>
                                 <td>2024-03-14 09:15</td>
                                 <td><span class="status-badge resolved">Resolved</span></td>
                                 <td>
@@ -708,8 +712,9 @@
                     <label for="pingCategory">Type of Ping</label>
                     <select id="pingCategory" name="type" required style="width:100%;padding:0.75rem;border:1px solid var(--light-gray);border-radius:8px;font-size:0.95rem;background:var(--white);">
                         <option value="">Select a type</option>
+                        <option value="suspicious">Suspicious</option>
+                        <option value="break-enter">Break & Enter</option>
                         <option value="fire">Fire</option>
-                        <option value="robbery">Robbery</option>
                         <option value="other">Other</option>
                     </select>
                 </div>

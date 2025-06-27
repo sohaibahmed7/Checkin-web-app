@@ -6,18 +6,422 @@ let selectedPingLocation = null; // Variable to store selected location {lat, ln
 let tempPingMarker = null; // Variable to hold the temporary marker
 let pingMapPreview = null; // Variable to hold the modal map instance (moved to top-level)
 let allPings = []; // Array to store all fetched pings
-let pingsPerPage = 5; // Number of pings to display per page
-let currentPingsDisplayed = 0; // Keep track of currently displayed pings
+let activityChart = null; // Global variable to track the activity chart instance
 
-// Add event listeners for map filters (category and time)
-// const mapCategoryButtons = document.querySelectorAll('.category-toggles button');
-// const mapTimeFilter = document.querySelector('.time-filter');
+// Global function to create a modern ping marker
+function createModernPingMarker(ping, targetMap) {
+    const el = document.createElement('div');
+    console.log('Creating marker for type:', ping.type); // Debugging: Check the type being applied
+    el.className = `marker ${ping.type}`;
+    
+    // Create popup with timestamp
+    const popup = new mapboxgl.Popup({
+        offset: 25,
+        closeButton: false,
+        closeOnClick: false
+    }).setHTML(`
+        <div class="ping-tooltip">
+            <span class="ping-category ${ping.type}">${formatPingTypeDisplay(ping.type)}</span>
+            <p class="ping-message">${ping.description}</p>
+            <span class="ping-timestamp">${formatTimestamp(ping.timestamp)}</span>
+        </div>
+    `);
 
-// let currentMapCategory = 'all';
-// let currentMapTime = '24h';
-// function applyMapFilters() { ... }
-// mapCategoryButtons.forEach(...);
-// if (mapTimeFilter) { ... }
+    // Create and return the marker
+    const marker = new mapboxgl.Marker(el)
+        .setLngLat(ping.coordinates)
+        .setPopup(popup)
+        .addTo(targetMap);
+    
+    return marker;
+}
+
+// Global function to format timestamps
+function formatTimestamp(timestamp) {
+    const now = new Date();
+    const diff = now - timestamp;
+    const minutes = Math.floor(diff / 1000 / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days}d ago`;
+    if (hours > 0) return `${hours}h ago`;
+    if (minutes > 0) return `${minutes}m ago`;
+    return 'just now';
+}
+
+// Global function to format ping type for display
+function formatPingTypeDisplay(type) {
+    switch(type) {
+        case 'suspicious': return 'Suspicious';
+        case 'break-enter': return 'Break & Enter';
+        case 'fire': return 'Fire';
+        case 'other': return 'Other';
+        default: return 'Other';
+    }
+}
+
+// Global function to update map markers
+function updateMapMarkers(targetMap, pingsList = allPings, category = 'all') {
+    if (!targetMap) return;
+    if (targetMap._markers) {
+        targetMap._markers.forEach(marker => marker.remove());
+    }
+    targetMap._markers = [];
+    pingsList.forEach(ping => {
+        if (ping.coordinates && typeof ping.coordinates[0] === 'number' && typeof ping.coordinates[1] === 'number') {
+            // Only add marker if it matches the category or if 'all' is selected
+            if (category === 'all' || ping.type === category) {
+                const marker = createModernPingMarker(ping, targetMap);
+                targetMap._markers.push(marker);
+            }
+        }
+    });
+}
+
+// Global function to render pings
+function renderPings(pingsToRender, containerId = 'recent-updates-container') {
+    const container = document.getElementById(containerId) || document.querySelector(`.${containerId}`);
+    if (!container) return;
+
+    // Only show the 2 most recent pings in the updates section
+    let pingsToDisplay = pingsToRender;
+    if (containerId === 'recent-updates-container') {
+        pingsToDisplay = pingsToRender.slice(0, 3);
+    }
+
+    container.innerHTML = '';
+
+    if (pingsToDisplay.length === 0) {
+        container.innerHTML = '<p class="no-pings-message">No recent pings to display.</p>';
+        return;
+    }
+
+    pingsToDisplay.forEach(ping => {
+        const user = ping.user || {};
+        const userName = user.name || 'Community User';
+        // Ensure the profile picture URL is absolute if needed
+        let userAvatar = user.profile_picture_url || 'assets/avatar.svg';
+        if (userAvatar && userAvatar.startsWith('/uploads/')) {
+            userAvatar = 'http://localhost:3000' + userAvatar;
+        }
+        const pingTypeIcon = getPingTypeIcon(ping.type);
+        const pingTypeLabel = formatPingTypeDisplay(ping.type);
+        const pingElement = document.createElement('div');
+        pingElement.className = 'feed-item';
+        pingElement.innerHTML = `
+            <div class="feed-avatar">
+                <img src="${userAvatar}" alt="Profile Picture" onerror="this.onerror=null;this.src='assets/avatar.svg';">
+                <span class="status active"></span>
+            </div>
+            <div class="feed-content">
+                <div class="feed-header feed-header-flex">
+                    <span class="feed-user"><strong>${userName}</strong></span>
+                    <div class="feed-meta-right">
+                        <span class="feed-time">${formatTimestamp(ping.timestamp)}</span>
+                        <span class="ping-type-icon">${pingTypeIcon} <span class="ping-type-label">${pingTypeLabel}</span></span>
+                    </div>
+                </div>
+                <p class="feed-text">${ping.description || ''}</p>
+                <div class="feed-actions">
+                    <a href="#" class="view-on-map" data-lat="${ping.coordinates ? ping.coordinates[1] : ''}" data-lng="${ping.coordinates ? ping.coordinates[0] : ''}">View on Map</a>
+                </div>
+            </div>
+        `;
+        container.appendChild(pingElement);
+    });
+
+    // Add event listeners for "View on Map" links (only for newly added links)
+    container.querySelectorAll('.view-on-map').forEach(link => {
+        if (!link.dataset.listenerAdded) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const lat = parseFloat(this.getAttribute('data-lat'));
+                const lng = parseFloat(this.getAttribute('data-lng'));
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    document.querySelector('a[data-tab="live-map"]').click();
+                    if (liveMap) {
+                        liveMap.flyTo({
+                            center: [lng, lat],
+                            zoom: 15
+                        });
+                    }
+                } else {
+                    alert('Location not available for this ping.');
+                }
+            });
+            link.dataset.listenerAdded = 'true';
+        }
+    });
+}
+
+// Global function to fetch pings from the backend
+async function fetchPings() {
+    try {
+        const response = await fetch('http://localhost:3000/api/pings');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const pings = await response.json();
+        console.log('Fetched raw pings from backend:', pings); // Debugging: log raw fetched pings
+        
+        allPings = pings.map(ping => {
+            console.log('Processing raw ping:', ping); // Log each raw ping being processed
+            // Ensure coordinates are an array of two numbers [lng, lat], or null if invalid
+            const coordinates = ping.location && typeof ping.location.lat === 'number' && typeof ping.location.lng === 'number'
+                ? [ping.location.lng, ping.location.lat] // Mapbox expects [lng, lat]
+                : null; // Assign null if coordinates are invalid
+
+            if (coordinates === null || isNaN(coordinates[0]) || isNaN(coordinates[1])) {
+                console.warn('Ping has invalid or missing coordinates, but will still be processed for display:', ping);
+                // Do NOT return null here; let the ping pass through with null coordinates
+            }
+            console.log('Parsed coordinates for ping:', coordinates); // Log parsed coordinates
+
+            return {
+                id: ping._id,
+                type: ping.type || 'other', // Default to 'other' if type is not provided by backend
+                description: ping.description,
+                coordinates: coordinates, // Ensure this is [lng, lat] or null
+                timestamp: new Date(ping.createdAt), // Use createdAt for timestamp
+                photo: ping.photo, // Include photo if available
+                user: ping.user // <-- Add this line to include user info
+            };
+        });
+
+        console.log('Processed pings (allPings):', allPings); // Debugging: log processed pings
+
+        // Get current filter states and apply them to the newly fetched data
+        const homeCategoryEl = document.querySelector('.map-section .category-toggles button.active');
+        const homeCategory = homeCategoryEl ? homeCategoryEl.getAttribute('data-category') : 'all';
+        const homeTimeFilterEl = document.querySelector('.map-section .time-filter');
+        const homeTime = homeTimeFilterEl ? homeTimeFilterEl.value : 'all';
+        const homeFiltered = filterPings(homeCategory, homeTime);
+
+        const fullCategoryEl = document.querySelector('#map .map-filters-left .category-filter.active');
+        const fullCategory = fullCategoryEl ? fullCategoryEl.getAttribute('data-category') : 'all';
+        const fullTimeFilterEl = document.querySelector('#map .map-filters-right .time-filter');
+        const fullTime = fullTimeFilterEl ? fullTimeFilterEl.value : 'all';
+        const fullFiltered = filterPings(fullCategory, fullTime);
+
+        const liveCategoryEl = document.querySelector('#live-map .category-toggles button.active');
+        const liveCategory = liveCategoryEl ? liveCategoryEl.getAttribute('data-category') : 'all';
+        const liveTimeFilterEl = document.querySelector('#live-map .time-filter');
+        const liveTime = liveTimeFilterEl ? liveTimeFilterEl.value : 'all';
+        const liveFiltered = filterPings(liveCategory, liveTime);
+
+        // Update maps with filtered data instead of all pings
+        updatePingsFeed(homeFiltered); // Display filtered pings initially
+        updateMapMarkers(map, homeFiltered, homeCategory);       // Update home map with filtered data
+        updateMapMarkers(mapFull, fullFiltered, fullCategory);   // Update full map with filtered data
+        updateMapMarkers(liveMap, liveFiltered, liveCategory);   // Update live map with filtered data
+        
+        // Reset current displayed pings and render for new data
+        currentPingsDisplayed = 0;
+        // Initialize the activity chart only after pings are loaded
+        initializeActivityChart();
+    } catch (error) {
+        console.error('Error fetching pings:', error);
+    }
+}
+
+// Global function to filter pings based on category and time range
+function filterPings(category, timeRange) {
+    let filtered = allPings;
+
+    if (category !== 'all') {
+        filtered = filtered.filter(ping => ping.type === category);
+    }
+
+    const now = new Date();
+    if (timeRange === '24h') {
+        filtered = filtered.filter(ping => (now - ping.timestamp) < 24 * 60 * 60 * 1000);
+    } else if (timeRange === '7d') {
+        filtered = filtered.filter(ping => (now - ping.timestamp) < 7 * 24 * 60 * 60 * 1000);
+    } else if (timeRange === '30d') {
+        filtered = filtered.filter(ping => (now - ping.timestamp) < 30 * 24 * 60 * 60 * 1000);
+    }
+
+    return filtered;
+}
+
+// Global function to update pings feed
+function updatePingsFeed(filteredPings) {
+    console.log('updatePingsFeed received for filtering:', filteredPings.length, 'pings');
+    // This function will now apply the time and category filters, then trigger rendering
+    currentPingsDisplayed = 0; // Reset pagination for new filter
+    renderPings(filteredPings); // Render the filtered subset
+}
+
+// Global function to initialize activity chart
+function initializeActivityChart() {
+    const ctx = document.getElementById('activityChart');
+    if (!ctx) return;
+
+    // Destroy existing chart instance if it exists
+    if (activityChart) {
+        activityChart.destroy();
+        activityChart = null;
+    }
+
+    // Show the last 7 days, with today on the right
+    const daysToShow = 7;
+    const dates = Array.from({length: daysToShow}, (_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (daysToShow - 1 - i));
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
+
+    const alerts = Array.from({length: daysToShow}, (_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (daysToShow - 1 - i));
+        return allPings.filter(ping => {
+            let pingDate = ping.timestamp instanceof Date ? ping.timestamp : new Date(ping.timestamp);
+            return isSameDay(pingDate, d);
+        }).length;
+    });
+
+    activityChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Alerts',
+                data: alerts,
+                borderColor: '#3B82F6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderWidth: 2,
+                pointBackgroundColor: '#3B82F6',
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: true,
+                tension: 0.4,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'white',
+                    titleColor: '#111827',
+                    bodyColor: '#111827',
+                    borderColor: '#E5E7EB',
+                    borderWidth: 1,
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        title: (items) => {
+                            return items[0].label;
+                        },
+                        label: (item) => {
+                            return `${item.formattedValue} alerts`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#666',
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#eee'
+                    },
+                    ticks: {
+                        color: '#666'
+                    }
+                }
+            }
+        }
+    });
+
+    // Update chart for different periods (daily, weekly, monthly)
+    document.querySelectorAll('.chart-filters button').forEach(button => {
+        button.addEventListener('click', function() {
+            document.querySelectorAll('.chart-filters button').forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            const period = this.getAttribute('data-period');
+            updateChartStats(period);
+        });
+    });
+
+    function updateChartStats(period) {
+        if (!activityChart) return; // Guard against null chart
+        
+        let daysToDisplay;
+        switch(period) {
+            case 'daily': daysToDisplay = 1; break;
+            case 'weekly': daysToDisplay = 7; break;
+            case 'monthly': daysToDisplay = 30; break;
+            default: daysToDisplay = 7;
+        }
+
+        const newDates = Array.from({length: daysToDisplay}, (_, i) => {
+            const d = new Date();
+            d.setDate(d.getDate() - (daysToDisplay - 1 - i));
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        });
+
+        const newAlerts = Array.from({length: daysToDisplay}, (_, i) => {
+            const d = new Date();
+            d.setDate(d.getDate() - (daysToDisplay - 1 - i));
+            return allPings.filter(ping => {
+                let pingDate = ping.timestamp instanceof Date ? ping.timestamp : new Date(ping.timestamp);
+                return isSameDay(pingDate, d);
+            }).length;
+        });
+
+        activityChart.data.labels = newDates;
+        activityChart.data.datasets[0].data = newAlerts;
+        activityChart.update();
+    }
+}
+
+// Global function to destroy activity chart
+function destroyActivityChart() {
+    if (activityChart) {
+        activityChart.destroy();
+        activityChart = null;
+    }
+}
+
+// Global function to clear all filters
+function clearAllFilters() {
+    // Clear category filters - set all to inactive and 'all' to active
+    document.querySelectorAll('.category-toggles button, .category-filter').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-category') === 'all') {
+            btn.classList.add('active');
+        }
+    });
+
+    // Clear time filters - set all to 'all' (All time)
+    document.querySelectorAll('.time-filter').forEach(select => {
+        select.value = 'all';
+    });
+
+    // Update maps with all pings (no filters)
+    updateMapMarkers(map, allPings, 'all');
+    updateMapMarkers(mapFull, allPings, 'all');
+    updateMapMarkers(liveMap, allPings, 'all');
+
+    // Update feed with all pings
+    updatePingsFeed(allPings);
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     // Retrieve username from localStorage and update greeting
@@ -51,60 +455,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Helper function to get marker color based on type
-    function getMarkerColor(type) {
-        const colors = {
-            suspicious: '#D32F2F', // Darker red for suspicious activity
-            fire: '#E65100',      // Darker orange for fire alerts
-            community: '#00796B', // Darker teal for community updates
-            theft: '#F57C00',     // Darker yellow for theft
-            noise: '#4A148C',     // Darker purple for noise complaints
-            default: '#1A237E'    // Darker blue for default
-        };
-        return colors[type] || colors.default;
-    }
-
-    // Helper function to format timestamps
-    function formatTimestamp(timestamp) {
-        const now = new Date();
-        const diff = now - timestamp;
-        const minutes = Math.floor(diff / 1000 / 60);
-        const hours = Math.floor(minutes / 60);
-        const days = Math.floor(hours / 24);
-
-        if (days > 0) return `${days}d ago`;
-        if (hours > 0) return `${hours}h ago`;
-        if (minutes > 0) return `${minutes}m ago`;
-        return 'just now';
-    }
-
-    // Function to create a modern ping marker
-    function createModernPingMarker(ping, targetMap) {
-        const el = document.createElement('div');
-        console.log('Creating marker for type:', ping.type); // Debugging: Check the type being applied
-        el.className = `marker ${ping.type}`;
-        
-        // Create popup with timestamp
-        const popup = new mapboxgl.Popup({
-            offset: 25,
-            closeButton: false,
-            closeOnClick: false
-        }).setHTML(`
-            <div class="ping-tooltip">
-                <span class="ping-category ${ping.type}">${ping.type}</span>
-                <p class="ping-message">${ping.description}</p>
-                <span class="ping-timestamp">${formatTimestamp(ping.timestamp)}</span>
-            </div>
-        `);
-
-        // Create and return the marker
-        const marker = new mapboxgl.Marker(el)
-            .setLngLat(ping.coordinates)
-            .setPopup(popup)
-            .addTo(targetMap);
-        
-        return marker;
-    }
+    // London, ON coordinates
+    const start_x_coord = -81.24
+    const start_y_coord = 43.02
 
     // Initialize home page map
     function initializeHomeMap() {
@@ -115,7 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
         map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/streets-v12',
-            center: [-81.24, 43.02], // London, ON coordinates
+            center: [start_x_coord, start_y_coord], 
             zoom: 13
         });
 
@@ -134,7 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mapFull = new mapboxgl.Map({
             container: 'map-full',
             style: 'mapbox://styles/mapbox/streets-v12',
-            center: [-81.24, 43.02], // London, ON coordinates
+            center: [start_x_coord, start_y_coord],
             zoom: 13
         });
         
@@ -153,23 +506,12 @@ document.addEventListener('DOMContentLoaded', () => {
         liveMap = new mapboxgl.Map({
             container: 'live-map-full',
             style: 'mapbox://styles/mapbox/streets-v12',
-            center: [-81.24, 43.02], // London, ON coordinates
+            center: [start_x_coord, start_y_coord],
             zoom: 13
         });
         
         // Add navigation controls
         liveMap.addControl(new mapboxgl.NavigationControl());
-
-        // Initial markers will be added by fetchPings and updateMapMarkers
-    }
-
-    // Function to add markers to a given map instance (used by updateMapMarkers)
-    // let currentMarkers = []; // Moved to be part of map instance
-
-    function addMarkersToMap(mapInstance, pingsToAdd) {
-        // This function is no longer directly used in updateMapMarkers as we're managing markers per map.
-        // It was meant to be an internal helper, but current implementation directly adds in updateMapMarkers.
-        // No changes needed here, just noting its original intent.
     }
 
     // Greeting messages for each tab
@@ -239,6 +581,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // Update greeting for the selected tab
             updateGreetingForTab(targetTab);
 
+            // Clear all filters when switching tabs
+            clearAllFilters();
+
             // Load user settings when settings tab is clicked
             if (targetTab === 'settings') {
                 loadUserSettings();
@@ -248,18 +593,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (targetTab === 'home') {
                 initializeHomeMap();
                 updateMapMarkers(map);
+                fetchPings(); // Fetch fresh data when switching to home tab
             } else if (targetTab === 'map-full') {
                 initializeMapFull();
                 updateMapMarkers(mapFull);
+                fetchPings(); // Fetch fresh data when switching to full map tab
             } else if (targetTab === 'live-map') {
                 initializeLiveMap();
-                setupMapFilters({
-                    mapInstance: liveMap,
-                    feedContainerId: null,
-                    categoryTogglesSelector: '#live-map .category-toggles',
-                    timeFilterSelector: '#live-map .time-filter'
-                });
                 updateMapMarkers(liveMap);
+                fetchPings(); // Fetch fresh data when switching to live map tab
             }
 
             // Scroll to top after switching tab
@@ -282,317 +624,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial fetch of pings on page load
     fetchPings();
 
-    // Fetch pings every 30 seconds for real-time updates
-    setInterval(fetchPings, 30000);
-
-    // Category Filters for recent pings feed
-    const categoryFilters = document.querySelectorAll('.category-filter');
-    categoryFilters.forEach(button => {
-        button.addEventListener('click', function() {
-            categoryFilters.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-            const selectedCategory = this.getAttribute('data-category');
-            const timeFilterValue = document.querySelector('.time-filter').value;
-            const filteredPings = filterPings(selectedCategory, timeFilterValue);
-            updatePingsFeed(filteredPings);
-            updateMapMarkers(map, filteredPings); // Update map markers
-        });
-    });
-
-    // Time Filter for recent pings feed
-    const timeFilter = document.querySelector('.time-filter');
-    if (timeFilter) {
-        timeFilter.addEventListener('change', function(e) {
-            const selectedCategory = document.querySelector('.category-filter.active').getAttribute('data-category');
-            const filteredPings = filterPings(selectedCategory, e.target.value);
-            updatePingsFeed(filteredPings);
-            updateMapMarkers(map, filteredPings); // Update map markers
-        });
-    }
-
-    // Update Ping Location function (for user's current location, if any)
-    window.pingLocation = () => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(position => {
-                const { longitude, latitude } = position.coords;
-                if (userMarker) userMarker.setLngLat([longitude, latitude]);
-                
-                const activeMap = document.getElementById('map').classList.contains('active') ? map :
-                                document.getElementById('live-map').classList.contains('active') ? liveMap :
-                                mapFull;
-                
-                if (activeMap) {
-                    activeMap.flyTo({
-                        center: [longitude, latitude],
-                        zoom: 15
-                    });
-                }
-                
-                const locationInput = document.getElementById('pin-location');
-                if (locationInput) {
-                    locationInput.value = `${latitude}, ${longitude}`;
-                }
-            });
-        }
-    };
-
-    // Category Filters for live map (duplicate, removing the old one)
-    // const categoryButtons = document.querySelectorAll('.live-map-controls .category-toggles button');
-    // categoryButtons.forEach(button => {
-    //     button.addEventListener('click', () => {
-    //         categoryButtons.forEach(btn => btn.classList.remove('active'));
-    //         button.classList.add('active');
-            
-    //         const category = button.getAttribute('data-category');
-    //         const timeFilterValue = document.getElementById('live-time-filter').value;
-    //         addMarkersToMap(liveMap, filterPings(category, timeFilterValue));
-    //         updatePingsFeed(filterPings(category, timeFilterValue));
-    //     });
-    // });
-
-    // Time filter for live map (duplicate, removing the old one)
-    // const timeFilterLive = document.getElementById('live-time-filter');
-    // if (timeFilterLive) {
-    //     timeFilterLive.addEventListener('change', (e) => {
-    //         const selectedCategory = document.querySelector('.live-map-controls .category-toggles button.active').getAttribute('data-category');
-    //         addMarkersToMap(liveMap, filterPings(selectedCategory, e.target.value));
-    //         updatePingsFeed(filterPings(selectedCategory, e.target.value));
-    //     });
-    // }
-
-    // Place ping button for live map (duplicate, removing the old one)
-    // const livePlacePingBtn = document.getElementById('live-place-ping');
-    // if (livePlacePingBtn) {
-    //     livePlacePingBtn.addEventListener('click', () => {
-    //         if (!liveMap) return;
-
-    //         liveMap.getCanvas().style.cursor = 'crosshair';
-            
-    //         const onClick = (e) => {
-    //             const coordinates = e.lngLat;
-                
-    //             const el = document.createElement('div');
-    //             el.className = 'marker new-ping';
-                
-    //             new mapboxgl.Marker(el)
-    //                 .setLngLat(coordinates)
-    //                 .addTo(liveMap);
-                
-    //             liveMap.getCanvas().style.cursor = '';
-    //             liveMap.off('click', onClick);
-                
-    //             if (pingModal) {
-    //                 document.getElementById('pin-location').value = `${coordinates.lat}, ${coordinates.lng}`;
-    //                 pingModal.classList.add('active');
-    //             }
-    //         };
-            
-    //         liveMap.once('click', onClick);
-    //     });
-    // }
-
     // Add event listener for window resize
     window.addEventListener('resize', () => {
         if (map) map.resize();
         if (mapFull) mapFull.resize();
         if (liveMap) liveMap.resize();
     });
-
-    // Function to fetch pings from the backend
-    async function fetchPings() {
-        try {
-            const response = await fetch('http://localhost:3000/api/pings');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const pings = await response.json();
-            console.log('Fetched raw pings from backend:', pings); // Debugging: log raw fetched pings
-            
-            allPings = pings.map(ping => {
-                console.log('Processing raw ping:', ping); // Log each raw ping being processed
-                // Ensure coordinates are an array of two numbers [lng, lat], or null if invalid
-                const coordinates = ping.location && typeof ping.location.lat === 'number' && typeof ping.location.lng === 'number'
-                    ? [ping.location.lng, ping.location.lat] // Mapbox expects [lng, lat]
-                    : null; // Assign null if coordinates are invalid
-
-                if (coordinates === null || isNaN(coordinates[0]) || isNaN(coordinates[1])) {
-                    console.warn('Ping has invalid or missing coordinates, but will still be processed for display:', ping);
-                    // Do NOT return null here; let the ping pass through with null coordinates
-                }
-                console.log('Parsed coordinates for ping:', coordinates); // Log parsed coordinates
-
-                return {
-                    id: ping._id,
-                    type: ping.type || 'other', // Default to 'other' if type is not provided by backend
-                    description: ping.description,
-                    coordinates: coordinates, // Ensure this is [lng, lat] or null
-                    timestamp: new Date(ping.createdAt), // Use createdAt for timestamp
-                    photo: ping.photo, // Include photo if available
-                    user: ping.user // <-- Add this line to include user info
-                };
-            }); // Removed the .filter(ping => ping !== null) to prevent discarding pings
-
-            console.log('Processed pings (allPings):', allPings); // Debugging: log processed pings
-
-            updatePingsFeed(filterPings('all', 'all')); // Display all pings initially
-            updateMapMarkers(map);       // Update home map
-            updateMapMarkers(mapFull);   // Update full map
-            updateMapMarkers(liveMap);   // Update live map
-            
-            // Reset current displayed pings and render for new data
-            currentPingsDisplayed = 0;
-            renderPings(allPings);
-            // Initialize the activity chart only after pings are loaded
-            initializeActivityChart();
-            renderLiveMapPingDetails();
-        } catch (error) {
-            console.error('Error fetching pings:', error);
-        }
-    }
-
-    // Refactored renderPings to accept a container parameter
-    function renderPings(pingsToRender, containerId = 'recent-updates-container') {
-        const container = document.getElementById(containerId) || document.querySelector(`.${containerId}`);
-        if (!container) return;
-
-        // Only show the 2 most recent pings in the updates section
-        let pingsToDisplay = pingsToRender;
-        if (containerId === 'recent-updates-container') {
-            pingsToDisplay = pingsToRender.slice(0, 3);
-        }
-
-        container.innerHTML = '';
-
-        if (pingsToDisplay.length === 0) {
-            container.innerHTML = '<p class="no-pings-message">No recent pings to display.</p>';
-            return;
-        }
-
-        pingsToDisplay.forEach(ping => {
-            const user = ping.user || {};
-            const userName = user.name || 'Community User';
-            // Ensure the profile picture URL is absolute if needed
-            let userAvatar = user.profile_picture_url || 'assets/avatar.svg';
-            if (userAvatar && userAvatar.startsWith('/uploads/')) {
-                userAvatar = 'http://localhost:3000' + userAvatar;
-            }
-            const pingTypeIcon = getPingTypeIcon(ping.type);
-            const pingTypeLabel = (ping.type || '').charAt(0).toUpperCase() + (ping.type || '').slice(1);
-            const pingElement = document.createElement('div');
-            pingElement.className = 'feed-item';
-            pingElement.innerHTML = `
-                <div class="feed-avatar">
-                    <img src="${userAvatar}" alt="Profile Picture" onerror="this.onerror=null;this.src='assets/avatar.svg';">
-                    <span class="status active"></span>
-                </div>
-                <div class="feed-content">
-                    <div class="feed-header feed-header-flex">
-                        <span class="feed-user"><strong>${userName}</strong></span>
-                        <div class="feed-meta-right">
-                            <span class="feed-time">${formatTimestamp(ping.timestamp)}</span>
-                            <span class="ping-type-icon">${pingTypeIcon} <span class="ping-type-label">${pingTypeLabel}</span></span>
-                        </div>
-                    </div>
-                    <p class="feed-text">${ping.description || ''}</p>
-                    <div class="feed-actions">
-                        <a href="#" class="view-on-map" data-lat="${ping.coordinates ? ping.coordinates[1] : ''}" data-lng="${ping.coordinates ? ping.coordinates[0] : ''}">View on Map</a>
-                    </div>
-                </div>
-            `;
-            container.appendChild(pingElement);
-        });
-
-        // Add event listeners for "View on Map" links (only for newly added links)
-        container.querySelectorAll('.view-on-map').forEach(link => {
-            if (!link.dataset.listenerAdded) {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const lat = parseFloat(this.getAttribute('data-lat'));
-                    const lng = parseFloat(this.getAttribute('data-lng'));
-                    if (!isNaN(lat) && !isNaN(lng)) {
-                        document.querySelector('a[data-tab="live-map"]').click();
-                        if (liveMap) {
-                            liveMap.flyTo({
-                                center: [lng, lat],
-                                zoom: 15
-                            });
-                        }
-                    } else {
-                        alert('Location not available for this ping.');
-                    }
-                });
-                link.dataset.listenerAdded = 'true';
-            }
-        });
-    }
-
-    // For the live map ping details, always show the latest 5 pings
-    function renderLiveMapPingDetails() {
-        currentPingsDisplayed = 0;
-        renderPings(allPings.slice(0, 5), 'ping-details-container');
-    }
-
-    // After fetchPings, also update live map ping details
-    const originalFetchPings = fetchPings;
-    fetchPings = async function() {
-        await originalFetchPings.apply(this, arguments);
-        renderLiveMapPingDetails();
-    };
-
-    // Also update when switching to live map tab
-    const liveMapTab = document.querySelector('a[data-tab="live-map"]');
-    if (liveMapTab) {
-        liveMapTab.addEventListener('click', () => {
-            renderLiveMapPingDetails();
-        });
-    }
-
-    // Modify updatePingsFeed to use renderPings and filter by time range
-    function updatePingsFeed(filteredPings) {
-        console.log('updatePingsFeed received for filtering:', filteredPings.length, 'pings');
-        // This function will now apply the time and category filters, then trigger rendering
-        allPings = filteredPings; // Update the global allPings with the filtered set
-        currentPingsDisplayed = 0; // Reset pagination for new filter
-        renderPings(allPings); // Render the filtered subset
-    }
-
-    // Filter pings based on category and time range
-    function filterPings(category, timeRange) {
-        let filtered = allPings;
-
-        if (category !== 'all') {
-            filtered = filtered.filter(ping => ping.type === category);
-        }
-
-        const now = new Date();
-        if (timeRange === '24h') {
-            filtered = filtered.filter(ping => (now - ping.timestamp) < 24 * 60 * 60 * 1000);
-        } else if (timeRange === '7d') {
-            filtered = filtered.filter(ping => (now - ping.timestamp) < 7 * 24 * 60 * 60 * 1000);
-        } else if (timeRange === '30d') {
-            filtered = filtered.filter(ping => (now - ping.timestamp) < 30 * 24 * 60 * 60 * 1000);
-        }
-
-        return filtered;
-    }
-
-    // Update map markers function (clears existing and adds new ones)
-    function updateMapMarkers(targetMap, pingsList = allPings, category = 'all') {
-        if (!targetMap) return;
-        if (targetMap._markers) {
-            targetMap._markers.forEach(marker => marker.remove());
-        }
-        targetMap._markers = [];
-        pingsList.forEach(ping => {
-            if (ping.coordinates && typeof ping.coordinates[0] === 'number' && typeof ping.coordinates[1] === 'number') {
-                // Only add marker if it matches the category or if 'all' is selected
-                if (category === 'all' || ping.type === category) {
-                    const marker = createModernPingMarker(ping, targetMap);
-                    targetMap._markers.push(marker);
-                }
-            }
-        });
-    }
 
     // Modify the ping form submission to also update the feed immediately
     const pingForm = document.getElementById('pingForm');
@@ -640,182 +677,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (err) {
                 alert('Error posting ping: ' + err.message);
-            }
-        });
-    }
-
-    // Initialize Activity Chart
-    function initializeActivityChart() {
-        const ctx = document.getElementById('activityChart');
-        if (!ctx) return;
-
-        // Show the last 7 days, with today on the right
-        const daysToShow = 7;
-        const dates = Array.from({length: daysToShow}, (_, i) => {
-            const d = new Date();
-            d.setDate(d.getDate() - (daysToShow - 1 - i));
-            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        });
-
-        const alerts = Array.from({length: daysToShow}, (_, i) => {
-            const d = new Date();
-            d.setDate(d.getDate() - (daysToShow - 1 - i));
-            return allPings.filter(ping => {
-                let pingDate = ping.timestamp instanceof Date ? ping.timestamp : new Date(ping.timestamp);
-                return isSameDay(pingDate, d);
-            }).length;
-        });
-
-        const chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: dates,
-                datasets: [{
-                    label: 'Alerts',
-                    data: alerts,
-                    borderColor: '#3B82F6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    borderWidth: 2,
-                    pointBackgroundColor: '#3B82F6',
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    fill: true,
-                    tension: 0.4,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        backgroundColor: 'white',
-                        titleColor: '#111827',
-                        bodyColor: '#111827',
-                        borderColor: '#E5E7EB',
-                        borderWidth: 1,
-                        padding: 12,
-                        displayColors: false,
-                        callbacks: {
-                            title: (items) => {
-                                return items[0].label;
-                            },
-                            label: (item) => {
-                                return `${item.formattedValue} alerts`;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: {
-                            display: false
-                        },
-                        ticks: {
-                            color: '#666',
-                            maxRotation: 45,
-                            minRotation: 45
-                        }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: '#eee'
-                        },
-                        ticks: {
-                            color: '#666'
-                        }
-                    }
-                }
-            }
-        });
-
-        // Update chart for different periods (daily, weekly, monthly)
-        document.querySelectorAll('.chart-filters button').forEach(button => {
-            button.addEventListener('click', function() {
-                document.querySelectorAll('.chart-filters button').forEach(btn => btn.classList.remove('active'));
-                this.classList.add('active');
-                const period = this.getAttribute('data-period');
-                updateChartStats(period);
-            });
-        });
-
-        function updateChartStats(period) {
-            let daysToDisplay;
-            switch(period) {
-                case 'daily': daysToDisplay = 1; break;
-                case 'weekly': daysToDisplay = 7; break;
-                case 'monthly': daysToDisplay = 30; break;
-                default: daysToDisplay = 7;
-            }
-
-            const newDates = Array.from({length: daysToDisplay}, (_, i) => {
-                const d = new Date();
-                d.setDate(d.getDate() - (daysToDisplay - 1 - i));
-                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            });
-
-            const newAlerts = Array.from({length: daysToDisplay}, (_, i) => {
-                const d = new Date();
-                d.setDate(d.getDate() - (daysToDisplay - 1 - i));
-                return allPings.filter(ping => {
-                    let pingDate = ping.timestamp instanceof Date ? ping.timestamp : new Date(ping.timestamp);
-                    return isSameDay(pingDate, d);
-                }).length;
-            });
-
-            chart.data.labels = newDates;
-            chart.data.datasets[0].data = newAlerts;
-            chart.update();
-        }
-    }
-
-    // Reports Filtering
-    function filterReports() {
-        const searchInput = document.getElementById('report-search');
-        const categoryFilter = document.getElementById('report-category-filter');
-        const dateFilter = document.getElementById('report-date-filter');
-        const statusFilter = document.getElementById('report-status-filter');
-
-        const query = searchInput ? searchInput.value.toLowerCase() : '';
-        const category = categoryFilter ? categoryFilter.value : 'all';
-        const dateRange = dateFilter ? dateFilter.value : 'all';
-        const status = statusFilter ? statusFilter.value : 'all';
-
-        const reportsTable = document.getElementById('reports-table');
-        if (!reportsTable) return;
-
-        const rows = reportsTable.querySelectorAll('tbody tr');
-
-        rows.forEach(row => {
-            const id = row.cells[getColumnIndex('ID')].textContent.toLowerCase();
-            const description = row.cells[getColumnIndex('Description')].textContent.toLowerCase();
-            const reportCategory = row.cells[getColumnIndex('Category')].textContent.toLowerCase();
-            const date = new Date(row.cells[getColumnIndex('Date')].textContent);
-            const reportStatus = row.cells[getColumnIndex('Status')].textContent.toLowerCase();
-
-            const matchesSearch = query === '' || id.includes(query) || description.includes(query);
-            const matchesCategory = category === 'all' || reportCategory === category;
-            const matchesStatus = status === 'all' || reportStatus === status;
-
-            const now = new Date();
-            let matchesDate = true;
-            if (dateRange === '24h') {
-                matchesDate = (now - date) < 24 * 60 * 60 * 1000;
-            } else if (dateRange === '7d') {
-                matchesDate = (now - date) < 7 * 24 * 60 * 60 * 1000;
-            } else if (dateRange === '30d') {
-                matchesDate = (now - date) < 30 * 24 * 60 * 60 * 1000;
-            }
-
-            if (matchesSearch && matchesCategory && matchesDate && matchesStatus) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
             }
         });
     }
@@ -1326,39 +1187,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Toggle dropdown on avatar click
-    userAvatar.addEventListener('click', (e) => {
-        e.stopPropagation();
-        userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block';
-    });
-
-    // Close dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!userDropdown.contains(e.target) && !userAvatar.contains(e.target)) {
-            userDropdown.style.display = 'none';
-        }
-    });
-
-    // Handle dropdown item clicks
-    userDropdown.addEventListener('click', (e) => {
-        const target = e.target.closest('.dropdown-item');
-        if (target) {
-            const targetTab = target.getAttribute('data-tab');
-            if (targetTab) {
-                // Find and click the corresponding tab link
-                const tabLink = document.querySelector(`a[data-tab="${targetTab}"]`);
-                if (tabLink) {
-                    tabLink.click();
-                }
-            }
-            userDropdown.style.display = 'none';
-        }
-    });
-
     // Place Ping Modal Address Search Logic
     const pingAddressSearch = document.getElementById('pingAddressSearch');
     const pingAddressSuggestions = document.getElementById('pingAddressSuggestions');
-    let pingMapPreviewInstance = null;
 
     // Helper: Debounce
     function debounce(func, wait) {
@@ -1453,12 +1284,11 @@ function isSameDay(date1, date2) {
 
 function getPingTypeIcon(type) {
     switch(type) {
-        case 'fire': return '<i class="fas fa-fire" style="color:#e53e3e;"></i>';
         case 'suspicious': return '<i class="fas fa-exclamation-triangle" style="color:#ffc107;"></i>';
-        case 'community': return '<i class="fas fa-users" style="color:#3182ce;"></i>';
-        case 'theft': return '<i class="fas fa-user-secret" style="color:#f57c00;"></i>';
-        case 'noise': return '<i class="fas fa-bullhorn" style="color:#4a148c;"></i>';
-        default: return '<i class="fas fa-map-marker-alt" style="color:#1a237e;"></i>';
+        case 'break-enter': return '<i class="fas fa-lock" style="color:#9c27b0;"></i>';
+        case 'fire': return '<i class="fas fa-fire" style="color:#e53e3e;"></i>';
+        case 'other': return '<i class="fas fa-map-marker-alt" style="color:#4caf50;"></i>';
+        default: return '<i class="fas fa-map-marker-alt" style="color:#4caf50;"></i>';
     }
 }
 
@@ -1486,7 +1316,7 @@ function setupMapFilters({mapInstance, feedContainerId, categoryTogglesSelector,
         } // 'all' shows everything
         updateMapMarkers(mapInstance, filtered, currentCategory);
         if (feedContainerId) {
-            renderPings(filtered);
+            renderPings(filtered, feedContainerId);
         }
     }
 
@@ -1496,12 +1326,14 @@ function setupMapFilters({mapInstance, feedContainerId, categoryTogglesSelector,
             this.classList.add('active');
             currentCategory = this.getAttribute('data-category');
             applyFilters();
+            fetchPings(); // Fetch fresh data when category filter changes
         });
     });
     if (timeFilter) {
         timeFilter.addEventListener('change', function() {
             currentTime = this.value;
             applyFilters();
+            fetchPings(); // Fetch fresh data when time filter changes
         });
     }
     // Initial filter
@@ -1527,22 +1359,16 @@ setupMapFilters({
 // Live map tab filters
 setupMapFilters({
     mapInstance: liveMap,
-    feedContainerId: null, // If you want to update a feed here, provide its container ID
+    feedContainerId: 'ping-details-container',
     categoryTogglesSelector: '#live-map .category-toggles',
     timeFilterSelector: '#live-map .time-filter'
 });
 
-// After fetchPings, also update live map ping details
-const originalFetchPings = fetchPings;
-fetchPings = async function() {
-    await originalFetchPings.apply(this, arguments);
-    renderLiveMapPingDetails();
-};
-
-// Also update when switching to live map tab
+// Only call renderLiveMapPingDetails when switching to the live map tab (to show all pings by default)
 const liveMapTab = document.querySelector('a[data-tab="live-map"]');
 if (liveMapTab) {
     liveMapTab.addEventListener('click', () => {
-        renderLiveMapPingDetails();
+        currentPingsDisplayed = 0;
+        renderPings(allPings, 'ping-details-container');
     });
-} 
+}
