@@ -6,8 +6,6 @@ let selectedPingLocation = null; // Variable to store selected location {lat, ln
 let tempPingMarker = null; // Variable to hold the temporary marker
 let pingMapPreview = null; // Variable to hold the modal map instance (moved to top-level)
 let allPings = []; // Array to store all fetched pings
-let pingsPerPage = 5; // Number of pings to display per page
-let currentPingsDisplayed = 0; // Keep track of currently displayed pings
 let activityChart = null; // Global variable to track the activity chart instance
 
 // Global function to create a modern ping marker
@@ -220,7 +218,6 @@ async function fetchPings() {
         
         // Reset current displayed pings and render for new data
         currentPingsDisplayed = 0;
-        renderPings(allPings); // This is for the main feed, not the live map side panel
         // Initialize the activity chart only after pings are loaded
         initializeActivityChart();
     } catch (error) {
@@ -252,16 +249,10 @@ function filterPings(category, timeRange) {
 function updatePingsFeed(filteredPings) {
     console.log('updatePingsFeed received for filtering:', filteredPings.length, 'pings');
     // This function will now apply the time and category filters, then trigger rendering
-    allPings = filteredPings; // Update the global allPings with the filtered set
     currentPingsDisplayed = 0; // Reset pagination for new filter
-    renderPings(allPings); // Render the filtered subset
+    renderPings(filteredPings); // Render the filtered subset
 }
 
-// Global function to render live map ping details
-function renderLiveMapPingDetails() {
-    currentPingsDisplayed = 0;
-    renderPings(allPings, 'ping-details-container');
-}// .slice(0, 5)
 // Global function to initialize activity chart
 function initializeActivityChart() {
     const ctx = document.getElementById('activityChart');
@@ -464,6 +455,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // London, ON coordinates
+    const start_x_coord = -81.24
+    const start_y_coord = 43.02
+
     // Initialize home page map
     function initializeHomeMap() {
         const homeMapContainer = document.getElementById('map');
@@ -473,7 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
         map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/streets-v12',
-            center: [-81.24, 43.02], // London, ON coordinates
+            center: [start_x_coord, start_y_coord], 
             zoom: 13
         });
 
@@ -492,7 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mapFull = new mapboxgl.Map({
             container: 'map-full',
             style: 'mapbox://styles/mapbox/streets-v12',
-            center: [-81.24, 43.02], // London, ON coordinates
+            center: [start_x_coord, start_y_coord],
             zoom: 13
         });
         
@@ -511,7 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
         liveMap = new mapboxgl.Map({
             container: 'live-map-full',
             style: 'mapbox://styles/mapbox/streets-v12',
-            center: [-81.24, 43.02], // London, ON coordinates
+            center: [start_x_coord, start_y_coord],
             zoom: 13
         });
         
@@ -558,12 +553,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetchPings(); // Fetch fresh data when switching to full map tab
             } else if (targetTab === 'live-map') {
                 initializeLiveMap();
-                setupMapFilters({
-                    mapInstance: liveMap,
-                    feedContainerId: 'ping-details-container',
-                    categoryTogglesSelector: '#live-map .category-toggles',
-                    timeFilterSelector: '#live-map .time-filter'
-                });
                 updateMapMarkers(liveMap);
                 fetchPings(); // Fetch fresh data when switching to live map tab
             }
@@ -584,115 +573,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial fetch of pings on page load
     fetchPings();
-
-    // Category Filters for recent pings feed
-    const categoryFilters = document.querySelectorAll('.category-filter');
-    categoryFilters.forEach(button => {
-        button.addEventListener('click', function() {
-            categoryFilters.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-            const selectedCategory = this.getAttribute('data-category');
-            const timeFilterValue = document.querySelector('.time-filter').value;
-            const filteredPings = filterPings(selectedCategory, timeFilterValue);
-            updatePingsFeed(filteredPings);
-            updateMapMarkers(map, filteredPings); // Update map markers
-            fetchPings(); // Fetch fresh data when filter changes
-        });
-    });
-
-    // Time Filter for recent pings feed
-    const timeFilter = document.querySelector('.time-filter');
-    if (timeFilter) {
-        timeFilter.addEventListener('change', function(e) {
-            const activeCategoryEl = document.querySelector('.category-filter.active');
-            const selectedCategory = activeCategoryEl ? activeCategoryEl.getAttribute('data-category') : 'all';
-            const filteredPings = filterPings(selectedCategory, e.target.value);
-            updatePingsFeed(filteredPings);
-            updateMapMarkers(map, filteredPings); // Update map markers
-            fetchPings(); // Fetch fresh data when filter changes
-        });
-    }
-
-    // Update Ping Location function (for user's current location, if any)
-    window.pingLocation = () => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(position => {
-                const { longitude, latitude } = position.coords;
-                if (userMarker) userMarker.setLngLat([longitude, latitude]);
-                
-                const activeMap = document.getElementById('map').classList.contains('active') ? map :
-                                document.getElementById('live-map').classList.contains('active') ? liveMap :
-                                mapFull;
-                
-                if (activeMap) {
-                    activeMap.flyTo({
-                        center: [longitude, latitude],
-                        zoom: 15
-                    });
-                }
-                
-                const locationInput = document.getElementById('pin-location');
-                if (locationInput) {
-                    locationInput.value = `${latitude}, ${longitude}`;
-                }
-            });
-        }
-    };
-
-    // Category Filters for live map (duplicate, removing the old one)
-    // const categoryButtons = document.querySelectorAll('.live-map-controls .category-toggles button');
-    // categoryButtons.forEach(button => {
-    //     button.addEventListener('click', () => {
-    //         categoryButtons.forEach(btn => btn.classList.remove('active'));
-    //         button.classList.add('active');
-            
-    //         const category = button.getAttribute('data-category');
-    //         const timeFilterValue = document.getElementById('live-time-filter').value;
-    //         addMarkersToMap(liveMap, filterPings(category, timeFilterValue));
-    //         updatePingsFeed(filterPings(category, timeFilterValue));
-    //     });
-    // });
-
-    // Time filter for live map (duplicate, removing the old one)
-    // const timeFilterLive = document.getElementById('live-time-filter');
-    // if (timeFilterLive) {
-    //     timeFilterLive.addEventListener('change', (e) => {
-    //         const selectedCategory = document.querySelector('.live-map-controls .category-toggles button.active').getAttribute('data-category');
-    //         addMarkersToMap(liveMap, filterPings(selectedCategory, e.target.value));
-    //         updatePingsFeed(filterPings(selectedCategory, e.target.value));
-    //     });
-    // }
-
-    // Place ping button for live map (duplicate, removing the old one)
-    // const livePlacePingBtn = document.getElementById('live-place-ping');
-    // if (livePlacePingBtn) {
-    //     livePlacePingBtn.addEventListener('click', () => {
-    //         if (!liveMap) return;
-
-    //         liveMap.getCanvas().style.cursor = 'crosshair';
-            
-    //         const onClick = (e) => {
-    //             const coordinates = e.lngLat;
-                
-    //             const el = document.createElement('div');
-    //             el.className = 'marker new-ping';
-                
-    //             new mapboxgl.Marker(el)
-    //                 .setLngLat(coordinates)
-    //                 .addTo(liveMap);
-                
-    //             liveMap.getCanvas().style.cursor = '';
-    //             liveMap.off('click', onClick);
-                
-    //             if (pingModal) {
-    //                 document.getElementById('pin-location').value = `${coordinates.lat}, ${coordinates.lng}`;
-    //                 pingModal.classList.add('active');
-    //             }
-    //         };
-            
-    //         liveMap.once('click', onClick);
-    //     });
-    // }
 
     // Add event listener for window resize
     window.addEventListener('resize', () => {
@@ -747,52 +627,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (err) {
                 alert('Error posting ping: ' + err.message);
-            }
-        });
-    }
-
-    // Reports Filtering
-    function filterReports() {
-        const searchInput = document.getElementById('report-search');
-        const categoryFilter = document.getElementById('report-category-filter');
-        const dateFilter = document.getElementById('report-date-filter');
-        const statusFilter = document.getElementById('report-status-filter');
-
-        const query = searchInput ? searchInput.value.toLowerCase() : '';
-        const category = categoryFilter ? categoryFilter.value : 'all';
-        const dateRange = dateFilter ? dateFilter.value : 'all';
-        const status = statusFilter ? statusFilter.value : 'all';
-
-        const reportsTable = document.getElementById('reports-table');
-        if (!reportsTable) return;
-
-        const rows = reportsTable.querySelectorAll('tbody tr');
-
-        rows.forEach(row => {
-            const id = row.cells[getColumnIndex('ID')].textContent.toLowerCase();
-            const description = row.cells[getColumnIndex('Description')].textContent.toLowerCase();
-            const reportCategory = row.cells[getColumnIndex('Category')].textContent.toLowerCase();
-            const date = new Date(row.cells[getColumnIndex('Date')].textContent);
-            const reportStatus = row.cells[getColumnIndex('Status')].textContent.toLowerCase();
-
-            const matchesSearch = query === '' || id.includes(query) || description.includes(query);
-            const matchesCategory = category === 'all' || reportCategory === category;
-            const matchesStatus = status === 'all' || reportStatus === status;
-
-            const now = new Date();
-            let matchesDate = true;
-            if (dateRange === '24h') {
-                matchesDate = (now - date) < 24 * 60 * 60 * 1000;
-            } else if (dateRange === '7d') {
-                matchesDate = (now - date) < 7 * 24 * 60 * 60 * 1000;
-            } else if (dateRange === '30d') {
-                matchesDate = (now - date) < 30 * 24 * 60 * 60 * 1000;
-            }
-
-            if (matchesSearch && matchesCategory && matchesDate && matchesStatus) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
             }
         });
     }
@@ -1306,7 +1140,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Place Ping Modal Address Search Logic
     const pingAddressSearch = document.getElementById('pingAddressSearch');
     const pingAddressSuggestions = document.getElementById('pingAddressSuggestions');
-    let pingMapPreviewInstance = null;
 
     // Helper: Debounce
     function debounce(func, wait) {
@@ -1486,40 +1319,7 @@ setupMapFilters({
 const liveMapTab = document.querySelector('a[data-tab="live-map"]');
 if (liveMapTab) {
     liveMapTab.addEventListener('click', () => {
-        renderLiveMapPingDetails(); // Show all pings on tab switch
+        currentPingsDisplayed = 0;
+        renderPings(allPings, 'ping-details-container');
     });
 }
-
-// Global function to apply all map filters safely
-window.applyAllMapFilters = function() {
-    // Home map filters
-    try {
-        const homeCategoryEl = document.querySelector('.map-section .category-toggles button.active');
-        const homeCategory = homeCategoryEl ? homeCategoryEl.getAttribute('data-category') : 'all';
-        const homeTimeFilterEl = document.querySelector('.map-section .time-filter');
-        const homeTime = homeTimeFilterEl ? homeTimeFilterEl.value : 'all';
-        const homeFiltered = filterPings(homeCategory, homeTime);
-        updateMapMarkers(map, homeFiltered, homeCategory);
-        updatePingsFeed(homeFiltered);
-    } catch (e) { console.warn('Home map filter error:', e); }
-
-    // Full map filters
-    try {
-        const fullCategoryEl = document.querySelector('#map .map-filters-left .category-filter.active');
-        const fullCategory = fullCategoryEl ? fullCategoryEl.getAttribute('data-category') : 'all';
-        const fullTimeFilterEl = document.querySelector('#map .map-filters-right .time-filter');
-        const fullTime = fullTimeFilterEl ? fullTimeFilterEl.value : 'all';
-        const fullFiltered = filterPings(fullCategory, fullTime);
-        updateMapMarkers(mapFull, fullFiltered, fullCategory);
-    } catch (e) { console.warn('Full map filter error:', e); }
-
-    // Live map filters
-    try {
-        const liveCategoryEl = document.querySelector('#live-map .category-toggles button.active');
-        const liveCategory = liveCategoryEl ? liveCategoryEl.getAttribute('data-category') : 'all';
-        const liveTimeFilterEl = document.querySelector('#live-map .time-filter');
-        const liveTime = liveTimeFilterEl ? liveTimeFilterEl.value : 'all';
-        const liveFiltered = filterPings(liveCategory, liveTime);
-        updateMapMarkers(liveMap, liveFiltered, liveCategory);
-    } catch (e) { console.warn('Live map filter error:', e); }
-}; 
