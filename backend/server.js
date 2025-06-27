@@ -107,7 +107,11 @@ const pingSchema = new mongoose.Schema({
     lat: Number,
     lng: Number,
   },
-  type: String,
+  type: {
+    type: String,
+    enum: ['suspicious', 'break-enter', 'fire', 'other'],
+    default: 'other'
+  },
   photoPath: String,
   createdAt: { type: Date, default: Date.now },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }

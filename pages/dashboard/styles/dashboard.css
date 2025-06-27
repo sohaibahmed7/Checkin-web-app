@@ -2995,12 +2995,17 @@ input:checked + .slider:before {
 
 .ping-category.suspicious {
     background: #fffaf0;
-    color: #dd6b20;
+    color: #ffc107;
 }
 
-.ping-category.community {
-    background: #ebf8ff;
-    color: #3182ce;
+.ping-category.break-enter {
+    background: #f3e5f5;
+    color: #9c27b0;
+}
+
+.ping-category.other {
+    background: #e8f5e8;
+    color: #4caf50;
 }
 
 .ping-content {
@@ -3162,18 +3167,6 @@ input:checked + .slider:before {
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
 }
 
-.marker.suspicious {
-    background-color: #ffc107;
-}
-
-.marker.fire {
-    background-color: #dc3545;
-}
-
-.marker.community {
-    background-color: #28a745;
-}
-
 .ping-tooltip {
     padding: 8px;
     border-radius: 8px;
@@ -3238,18 +3231,27 @@ input:checked + .slider:before {
 }
 
 .marker.suspicious {
-    border-color: #e65100;
-    color: #e65100;
+    border-color: #ffc107;
+    color: #ffc107;
+    background-color: #ffc107;
 }
 
 .marker.fire {
-    border-color: #c62828;
-    color: #c62828;
+    border-color: #e53e3e;
+    color: #e53e3e;
+    background-color: #e53e3e;
 }
 
-.marker.community {
-    border-color: #1565c0;
-    color: #1565c0;
+.marker.break-enter {
+    border-color: #9c27b0;
+    color: #9c27b0;
+    background-color: #9c27b0;
+}
+
+.marker.other {
+    border-color: #4caf50;
+    color: #4caf50;
+    background-color: #4caf50;
 }
 
 .live-map-layout {
