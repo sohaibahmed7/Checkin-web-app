@@ -514,6 +514,50 @@ document.addEventListener('DOMContentLoaded', () => {
         liveMap.addControl(new mapboxgl.NavigationControl());
     }
 
+    // Greeting messages for each tab
+    const tabGreetings = {
+        home: {
+            greeting: (userName, time) => `${time}, ${userName}!`,
+            subtitle: 'Welcome back to your dashboard'
+        },
+        'live-map': {
+            greeting: () => 'Welcome to your Neighbourhood Map!',
+            subtitle: 'See live updates and activity in your area'
+        },
+        chat: {
+            greeting: () => 'Community Chat',
+            subtitle: 'Connect and communicate with your neighbors'
+        },
+        reports: {
+            greeting: () => 'Reports Overview',
+            subtitle: 'View and manage all reports here'
+        },
+        contacts: {
+            greeting: () => 'Key Contacts',
+            subtitle: 'Important contacts for your community'
+        },
+        settings: {
+            greeting: () => 'Settings',
+            subtitle: 'Manage your account and preferences'
+        }
+    };
+
+    function updateGreetingForTab(tab) {
+        const greetingText = document.getElementById('greeting-text');
+        const subtitle = greetingText && greetingText.nextElementSibling;
+        const userName = localStorage.getItem('currentUserName') || 'User';
+        const hour = new Date().getHours();
+        let time = 'Good Morning';
+        if (hour >= 12 && hour < 18) {
+            time = 'Good Afternoon';
+        } else if (hour >= 18) {
+            time = 'Good Evening';
+        }
+        const config = tabGreetings[tab] || tabGreetings['home'];
+        if (greetingText) greetingText.textContent = typeof config.greeting === 'function' ? config.greeting(userName, time) : config.greeting;
+        if (subtitle) subtitle.textContent = config.subtitle;
+    }
+
     // Tab switching logic
     const tabs = document.querySelectorAll('.tab-pane');
     const tabLinks = document.querySelectorAll('.sidebar-nav a');
@@ -533,6 +577,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             tabLinks.forEach(item => item.classList.remove('active'));
             link.classList.add('active');
+
+            // Update greeting for the selected tab
+            updateGreetingForTab(targetTab);
 
             // Clear all filters when switching tabs
             clearAllFilters();
@@ -561,6 +608,9 @@ document.addEventListener('DOMContentLoaded', () => {
             window.scrollTo({top: 0, behavior: 'smooth'});
         });
     });
+
+    // Set greeting on initial load
+    updateGreetingForTab('home');
 
     // Add save settings handler
     const saveButton = document.querySelector('.save-button');
@@ -1223,7 +1273,6 @@ document.addEventListener('DOMContentLoaded', () => {
             renderSuggestions(suggestions);
         }, 350));
     }
-
 }); 
 
 // Helper function to compare only year, month, and day
