@@ -425,7 +425,8 @@ function clearAllFilters() {
 
 document.addEventListener('DOMContentLoaded', () => {
     // Retrieve username from localStorage and update greeting
-    const userName = localStorage.getItem('currentUserName') || 'User';
+    const user = JSON.parse(localStorage.getItem('user'));
+    const userName = user && user.name ? user.name : 'User';
     const greetingText = document.getElementById('greeting-text');
     if (greetingText) {
         const hour = new Date().getHours();
@@ -545,7 +546,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateGreetingForTab(tab) {
         const greetingText = document.getElementById('greeting-text');
         const subtitle = greetingText && greetingText.nextElementSibling;
-        const userName = localStorage.getItem('currentUserName') || 'User';
+        const user = JSON.parse(localStorage.getItem('user'));
+        const userName = user && user.name ? user.name : 'User';
         const hour = new Date().getHours();
         let time = 'Good Morning';
         if (hour >= 12 && hour < 18) {
@@ -1181,7 +1183,6 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             // Clear user data from localStorage
             localStorage.removeItem('user');
-            localStorage.removeItem('currentUserName');
             // Redirect to home page
             window.location.href = '../index.html';
         });

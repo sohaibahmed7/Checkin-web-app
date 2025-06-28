@@ -749,8 +749,9 @@
             if (hour < 18) return 'Good Afternoon';
             return 'Good Evening';
         }
-        // Assume user's name is stored in localStorage as 'currentUserName'
-        const userName = localStorage.getItem('currentUserName') || 'User';
+        // Get user's name from localStorage
+        const user = JSON.parse(localStorage.getItem('user'));
+        const userName = user && user.name ? user.name : 'User';
         document.getElementById('greeting-text').textContent = `${getGreeting()}, ${userName}!`;
 
         const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
@@ -761,7 +762,6 @@
             sidebarLogoutBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 localStorage.removeItem('user');
-                localStorage.removeItem('currentUserName');
                 window.location.href = '/pages/auth/login.html';
             });
         }
