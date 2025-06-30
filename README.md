@@ -13,7 +13,7 @@ A modern, responsive dashboard for the Check-In community safety app. Built with
 
 ## Setup
 
-1. Clone the repository:
+1. Clone the repository now:
 ```bash
 git clone https://github.com/yourusername/check-in-dashboard.git
 cd check-in-dashboard
