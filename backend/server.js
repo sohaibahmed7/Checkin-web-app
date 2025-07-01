@@ -1015,6 +1015,13 @@ app.post('/api/reset-password', async (req, res) => {
   }
 });
 
+// Logout Endpoint (TO BE UPDATED)
+app.post('/api/logout', (req, res) => {
+  // If using sessions: req.session.destroy();
+  // If using JWT: (optional) blacklist the token
+  res.json({ message: 'Logged out successfully' });
+});
+
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 }); 

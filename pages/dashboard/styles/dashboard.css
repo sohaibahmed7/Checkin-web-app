@@ -3993,3 +3993,22 @@ input:checked + .slider:before {
     padding-top: 1vh;
     padding-bottom: 1vh;
 }
+
+.modal-action-btn.logout-button {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  transition: background 0.2s;
+}
+.modal-action-btn.logout-button:hover {
+  background: #c0392b;
+}
+.modal-action-btn.cancel-button {
+  background: var(--white);
+  color: var(--text-color);
+  border: 1px solid var(--light-gray);
+  transition: background 0.2s;
+}
+.modal-action-btn.cancel-button:hover {
+  background: #f5f5f5;
+}

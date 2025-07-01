@@ -424,6 +424,9 @@ function clearAllFilters() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Always push a dummy state on page load for back button modal
+    history.pushState({dashboard: true}, '', location.href);
+
     // Retrieve username from localStorage and update greeting
     const user = JSON.parse(localStorage.getItem('user'));
     const userName = user && user.name ? user.name : 'User';
@@ -605,6 +608,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateMapMarkers(liveMap);
                 fetchPings(); // Fetch fresh data when switching to live map tab
             }
+
+            // Push a new dummy state for back button modal
+            history.pushState({dashboard: true}, '', location.href);
 
             // Scroll to top after switching tab
             window.scrollTo({top: 0, behavior: 'smooth'});
@@ -1274,6 +1280,51 @@ document.addEventListener('DOMContentLoaded', () => {
             renderSuggestions(suggestions);
         }, 350));
     }
+
+    // Sign Out Modal Logic
+    (function() {
+        const modal = document.getElementById('signoutModal');
+        const cancelBtn = document.getElementById('cancelSignoutBtn');
+        const confirmBtn = document.getElementById('confirmSignoutBtn');
+        let popstateTriggered = false;
+
+        // Push a dummy state so back button triggers popstate
+        window.addEventListener('DOMContentLoaded', function() {
+            history.pushState({dashboard: true}, '', location.href);
+        });
+
+        window.addEventListener('popstate', function(e) {
+            // Only show modal if on dashboard and not already triggered
+            if (!popstateTriggered && modal) {
+                popstateTriggered = true;
+                modal.classList.add('active');
+                // Prevent navigation
+                history.pushState({dashboard: true}, '', location.href);
+            }
+        });
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function() {
+                modal.classList.remove('active');
+                popstateTriggered = false;
+            });
+        }
+
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', async function() {
+                // Call backend logout endpoint
+                try {
+                    await fetch('http://localhost:3000/api/logout', { method: 'POST', credentials: 'include' });
+                } catch (e) {
+                    // Ignore errors for now
+                }
+                // Clear localStorage
+                localStorage.removeItem('user');
+                // Redirect to login
+                window.location.href = '/pages/auth/login.html';
+            });
+        }
+    })();
 }); 
 
 // Helper function to compare only year, month, and day
