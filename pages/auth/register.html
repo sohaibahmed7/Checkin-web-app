@@ -147,25 +147,25 @@
 
     <div class="register-container">
         <h2>Create Your Account</h2>
-        <form class="register-form" id="registerForm">
+        <form class="register-form" id="registerForm" autocomplete="off">
             <div class="form-group">
                 <label for="name">Full Name</label>
-                <input type="text" id="name" name="name" required>
+                <input type="text" id="name" name="name" required autocomplete="off">
                 <div class="error-message" id="nameError"></div>
             </div>
             <div class="form-group">
                 <label for="email">Email</label>
-                <input type="email" id="email" name="email" required>
+                <input type="email" id="email" name="email" required autocomplete="off">
                 <div class="error-message" id="emailError"></div>
             </div>
             <div class="form-group">
                 <label for="number">Phone Number</label>
-                <input type="tel" id="number" name="number" required>
+                <input type="tel" id="number" name="number" required autocomplete="off">
                 <div class="error-message" id="numberError"></div>
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
+                <input type="password" id="password" name="password" required autocomplete="off">
                 <div class="password-requirements">
                     Password must be at least 8 characters long and contain at least one special character
                 </div>
@@ -173,12 +173,12 @@
             </div>
             <div class="form-group">
                 <label for="inviteCode">Invite Code</label>
-                <input type="text" id="inviteCode" name="inviteCode" required placeholder="Enter the 5-digit invite code">
+                <input type="text" id="inviteCode" name="inviteCode" required placeholder="Enter the 5-digit invite code" autocomplete="off">
                 <div class="error-message" id="inviteCodeError"></div>
             </div>
             <div class="form-group">
                 <label for="confirmPassword">Confirm Password</label>
-                <input type="password" id="confirmPassword" name="confirmPassword" required>
+                <input type="password" id="confirmPassword" name="confirmPassword" required autocomplete="off">
                 <div class="error-message" id="confirmPasswordError"></div>
             </div>
             <div class="form-group">
