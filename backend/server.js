@@ -114,7 +114,8 @@ const pingSchema = new mongoose.Schema({
   },
   photoPath: String,
   createdAt: { type: Date, default: Date.now },
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  neighborhoodId: { type: mongoose.Schema.Types.ObjectId, ref: 'Neighborhood' }
 });
 
 const Ping = mongoose.model('Ping', pingSchema);
@@ -132,7 +133,8 @@ const userSchema = new mongoose.Schema({
   is_verified: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   resetToken: { type: String },
-  resetTokenExpiry: { type: Date }
+  resetTokenExpiry: { type: Date },
+  neighborhoodId: { type: mongoose.Schema.Types.ObjectId, ref: 'Neighborhood' }
 });
 
 const User = mongoose.model('User', userSchema);
@@ -258,7 +260,12 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/pings', async (req, res) => {
-  const pings = await Ping.find().sort({ createdAt: -1 }).populate('user', 'name profile_picture_url');
+  const { neighborhoodId } = req.query;
+  let filter = {};
+  if (neighborhoodId && mongoose.Types.ObjectId.isValid(neighborhoodId)) {
+    filter.neighborhoodId = neighborhoodId;
+  }
+  const pings = await Ping.find(filter).sort({ createdAt: -1 }).populate('user', 'name profile_picture_url');
   res.json(pings);
 });
 
@@ -286,7 +293,8 @@ app.post('/api/pings', upload.single('photo'), async (req, res) => {
     location: { lat: parseFloat(lat), lng: parseFloat(lng) },
     type,
     photoPath,
-    user: userId
+    user: userId,
+    neighborhoodId: user.neighborhoodId
   });
   await ping.save();
   // Populate the user field before sending the response
@@ -444,7 +452,7 @@ const validatePassword = (password) => {
 // Registration Endpoint
 app.post('/api/register', upload.single('profile_picture'), async (req, res) => {
   try {
-    const { name, number, email, password, is_moderator } = req.body;
+    const { name, number, email, password, is_moderator, inviteCode, neighborhoodId } = req.body;
     const profile_picture_url = req.file ? '/uploads/' + req.file.filename : null;
 
     // Validate password
@@ -468,6 +476,15 @@ app.post('/api/register', upload.single('profile_picture'), async (req, res) => 
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
     const verificationExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
 
+    // Determine neighborhoodId to set
+    let neighborhoodIdToSet = neighborhoodId;
+    if (inviteCode) {
+      const neighborhood = await Neighborhood.findOne({ inviteCode });
+      if (neighborhood) {
+        neighborhoodIdToSet = neighborhood._id;
+      }
+    }
+
     // Create new user
     const user = new User({
       name,
@@ -479,6 +496,7 @@ app.post('/api/register', upload.single('profile_picture'), async (req, res) => 
       verification_code: verificationCode,
       verification_expiry: verificationExpiry,
       is_verified: false,
+      neighborhoodId: neighborhoodIdToSet,
     });
 
     await user.save();
@@ -533,7 +551,7 @@ app.post('/api/verify-email', async (req, res) => {
     }
 
     user.is_verified = true;
-    user.verification_code = null;image.png
+    user.verification_code = null;
     user.verification_expiry = null;
     await user.save();
 
@@ -1012,6 +1030,23 @@ app.post('/api/reset-password', async (req, res) => {
   } catch (err) {
     console.error('Error resetting password:', err);
     res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+});
+
+// Get user's neighborhood
+app.get('/api/user/neighborhood/:userId', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId).populate('neighborhoodId');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    if (!user.neighborhoodId) {
+      return res.status(404).json({ message: 'User not connected to any neighborhood' });
+    }
+    res.status(200).json(user.neighborhoodId);
+  } catch (error) {
+    console.error('Error fetching user neighborhood:', error);
+    res.status(500).json({ message: 'Error fetching neighborhood' });
   }
 });
 
