@@ -8,6 +8,12 @@ let pingMapPreview = null; // Variable to hold the modal map instance (moved to 
 let allPings = []; // Array to store all fetched pings
 let activityChart = null; // Global variable to track the activity chart instance
 
+window.addEventListener('pageshow', () => {
+    if (!localStorage.getItem('user')) {
+        window.location.href = '/pages/auth/login.html';
+    }
+});
+
 // Global function to create a modern ping marker
 function createModernPingMarker(ping, targetMap) {
     const el = document.createElement('div');
@@ -424,9 +430,6 @@ function clearAllFilters() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Always push a dummy state on page load for back button modal
-    history.pushState({dashboard: true}, '', location.href);
-
     // Retrieve username from localStorage and update greeting
     const user = JSON.parse(localStorage.getItem('user'));
     const userName = user && user.name ? user.name : 'User';
@@ -610,7 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Push a new dummy state for back button modal
-            history.pushState({dashboard: true}, '', location.href);
+            history.pushState({ dashboard: true, tab: targetTab }, '', location.href); // Modified to include tab info
 
             // Scroll to top after switching tab
             window.scrollTo({top: 0, behavior: 'smooth'});
@@ -1287,11 +1290,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const cancelBtn = document.getElementById('cancelSignoutBtn');
         const confirmBtn = document.getElementById('confirmSignoutBtn');
         let popstateTriggered = false;
-
-        // Push a dummy state so back button triggers popstate
-        window.addEventListener('DOMContentLoaded', function() {
-            history.pushState({dashboard: true}, '', location.href);
-        });
 
         window.addEventListener('popstate', function(e) {
             // Only show modal if on dashboard and not already triggered

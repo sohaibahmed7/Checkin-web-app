@@ -533,7 +533,7 @@ app.post('/api/verify-email', async (req, res) => {
     }
 
     user.is_verified = true;
-    user.verification_code = null;image.png
+    user.verification_code = null;
     user.verification_expiry = null;
     await user.save();
 
