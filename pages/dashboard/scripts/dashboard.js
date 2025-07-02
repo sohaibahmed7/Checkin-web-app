@@ -559,6 +559,8 @@ document.addEventListener('DOMContentLoaded', () => {
             mapOptions.maxBounds = bounds;
         }
         map = new mapboxgl.Map(mapOptions);
+        map.scrollZoom.disable();
+        map.touchZoomRotate.disable();
         map.addControl(new mapboxgl.NavigationControl());
         if (bounds) {
             map.on('load', () => {
@@ -590,6 +592,8 @@ document.addEventListener('DOMContentLoaded', () => {
             mapOptions.maxBounds = bounds;
         }
         liveMap = new mapboxgl.Map(mapOptions);
+        liveMap.scrollZoom.disable();
+        liveMap.touchZoomRotate.disable();
         liveMap.addControl(new mapboxgl.NavigationControl());
         if (bounds) {
             liveMap.on('load', () => {
@@ -1003,6 +1007,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 mapOptions.maxBounds = bounds;
             }
             pingMapPreview = new mapboxgl.Map(mapOptions);
+            pingMapPreview.scrollZoom.disable();
+            pingMapPreview.touchZoomRotate.disable();
             pingMapPreview.addControl(new mapboxgl.NavigationControl());
             if (bounds) {
                 pingMapPreview.on('load', () => {

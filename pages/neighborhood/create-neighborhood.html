@@ -188,6 +188,8 @@
             center: [-81.24, 43.02], // London, ON coordinates
             zoom: 13
         });
+        map.scrollZoom.disable();
+        map.touchZoomRotate.disable();
         map.addControl(new mapboxgl.NavigationControl());
 
         // Add Mapbox Draw for polygon (rectangle) drawing
