@@ -1,5 +1,4 @@
 let map = null;
-let mapFull = null;
 let liveMap = null;
 let userMarker = null;
 let selectedPingLocation = null; // Variable to store selected location {lat, lng}
@@ -7,6 +6,7 @@ let tempPingMarker = null; // Variable to hold the temporary marker
 let pingMapPreview = null; // Variable to hold the modal map instance (moved to top-level)
 let allPings = []; // Array to store all fetched pings
 let activityChart = null; // Global variable to track the activity chart instance
+let pendingFlyTo = null; // Store flyTo target if switching tabs
 
 // Global function to create a modern ping marker
 function createModernPingMarker(ping, targetMap) {
@@ -18,7 +18,7 @@ function createModernPingMarker(ping, targetMap) {
     const popup = new mapboxgl.Popup({
         offset: 25,
         closeButton: false,
-        closeOnClick: false
+        closeOnClick: true
     }).setHTML(`
         <div class="ping-tooltip">
             <span class="ping-category ${ping.type}">${formatPingTypeDisplay(ping.type)}</span>
@@ -82,9 +82,12 @@ function updateMapMarkers(targetMap, pingsList = allPings, category = 'all') {
 // Global function to render pings
 function renderPings(pingsToRender, containerId = 'recent-updates-container') {
     const container = document.getElementById(containerId) || document.querySelector(`.${containerId}`);
-    if (!container) return;
+    if (!container) {
+        console.warn(`renderPings: Container '${containerId}' not found in DOM.`);
+        return;
+    }
 
-    // Only show the 2 most recent pings in the updates section
+    // Only show the 3 most recent pings in the updates section
     let pingsToDisplay = pingsToRender;
     if (containerId === 'recent-updates-container') {
         pingsToDisplay = pingsToRender.slice(0, 3);
@@ -139,12 +142,13 @@ function renderPings(pingsToRender, containerId = 'recent-updates-container') {
                 const lat = parseFloat(this.getAttribute('data-lat'));
                 const lng = parseFloat(this.getAttribute('data-lng'));
                 if (!isNaN(lat) && !isNaN(lng)) {
-                    document.querySelector('a[data-tab="live-map"]').click();
-                    if (liveMap) {
-                        liveMap.flyTo({
-                            center: [lng, lat],
-                            zoom: 15
-                        });
+                    const isLiveMapActive = document.getElementById('live-map').classList.contains('active');
+                    if (isLiveMapActive && liveMap) {
+                        liveMap.flyTo({ center: [lng, lat], zoom: 18, essential: true });
+                        setTimeout(() => openPingPopupOnLiveMap(lng, lat), 500);
+                    } else {
+                        pendingFlyTo = { lng, lat, showPopup: true };
+                        document.querySelector('a[data-tab="live-map"]').click();
                     }
                 } else {
                     alert('Location not available for this ping.');
@@ -158,7 +162,23 @@ function renderPings(pingsToRender, containerId = 'recent-updates-container') {
 // Global function to fetch pings from the backend
 async function fetchPings() {
     try {
-        const response = await fetch('http://localhost:3000/api/pings');
+        // Get the user's neighborhoodId
+        const user = JSON.parse(localStorage.getItem('user'));
+        let neighborhoodId = null;
+        if (user && user._id) {
+            const nRes = await fetch(`http://localhost:3000/api/user/neighborhood/${user._id}`);
+            if (nRes.ok) {
+                const neighborhood = await nRes.json();
+                if (neighborhood && neighborhood._id) {
+                    neighborhoodId = neighborhood._id;
+                }
+            }
+        }
+        const response = await fetch(
+            neighborhoodId
+                ? `http://localhost:3000/api/pings?neighborhoodId=${neighborhoodId}`
+                : 'http://localhost:3000/api/pings'
+        );
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -213,7 +233,6 @@ async function fetchPings() {
         // Update maps with filtered data instead of all pings
         updatePingsFeed(homeFiltered); // Display filtered pings initially
         updateMapMarkers(map, homeFiltered, homeCategory);       // Update home map with filtered data
-        updateMapMarkers(mapFull, fullFiltered, fullCategory);   // Update full map with filtered data
         updateMapMarkers(liveMap, liveFiltered, liveCategory);   // Update live map with filtered data
         
         // Reset current displayed pings and render for new data
@@ -416,7 +435,6 @@ function clearAllFilters() {
 
     // Update maps with all pings (no filters)
     updateMapMarkers(map, allPings, 'all');
-    updateMapMarkers(mapFull, allPings, 'all');
     updateMapMarkers(liveMap, allPings, 'all');
 
     // Update feed with all pings
@@ -456,63 +474,132 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // London, ON coordinates
+    // London, ON coordinates (fallback)
     const start_x_coord = -81.24
     const start_y_coord = 43.02
 
-    // Initialize home page map
-    function initializeHomeMap() {
-        const homeMapContainer = document.getElementById('map');
-        if (!homeMapContainer) return;
-        
-        if (map) map.remove(); // Remove existing map instance before creating a new one
-        map = new mapboxgl.Map({
-            container: 'map',
-            style: 'mapbox://styles/mapbox/streets-v12',
-            center: [start_x_coord, start_y_coord], 
-            zoom: 13
+    // Helper function to calculate the centroid of a polygon
+    function getCentroid(coords) {
+        let x = 0, y = 0, n = coords.length;
+        coords.forEach(([lng, lat]) => {
+            x += lng;
+            y += lat;
         });
-
-        // Add navigation controls
-        map.addControl(new mapboxgl.NavigationControl());
-
-        // The markers will be added by fetchPings and updateMapMarkers
+        return [x / n, y / n];
     }
 
-    // Initialize full map
-    function initializeMapFull() {
-        const mapContainer = document.getElementById('map-full');
-        if (!mapContainer) return;
-        
-        if (mapFull) mapFull.remove(); // Remove existing map instance before creating a new one
-        mapFull = new mapboxgl.Map({
-            container: 'map-full',
-            style: 'mapbox://styles/mapbox/streets-v12',
-            center: [start_x_coord, start_y_coord],
-            zoom: 13
-        });
-        
-        // Add navigation controls
-        mapFull.addControl(new mapboxgl.NavigationControl());
+    // Function to get neighborhood data and calculate center
+    async function getNeighborhoodData() {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || !user._id) {
+            console.log('No user data found, using default coordinates');
+            return { center: [start_x_coord, start_y_coord], bounds: null };
+        }
+        try {
+            const response = await fetch(`http://localhost:3000/api/user/neighborhood/${user._id}`);
+            if (!response.ok) {
+                console.log('No neighborhood found for user, using default coordinates');
+                return { center: [start_x_coord, start_y_coord], bounds: null };
+            }
+            const neighborhood = await response.json();
+            if (!neighborhood.bounds || !neighborhood.bounds.coordinates) {
+                console.log('Neighborhood has no bounds, using default coordinates');
+                return { center: [start_x_coord, start_y_coord], bounds: null };
+            }
+            // Calculate centroid from neighborhood bounds
+            const coordinates = neighborhood.bounds.coordinates[0]; // First polygon ring
+            const centroid = getCentroid(coordinates);
+            return {
+                center: centroid,
+                bounds: coordinates
+            };
+        } catch (error) {
+            console.error('Error fetching neighborhood data:', error);
+            return { center: [start_x_coord, start_y_coord], bounds: null };
+        }
+    }
 
+    // Helper function to get bounding box from polygon coordinates
+    function getBoundingBox(coords) {
+        let minLng = coords[0][0], maxLng = coords[0][0];
+        let minLat = coords[0][1], maxLat = coords[0][1];
+        coords.forEach(([lng, lat]) => {
+            if (lng < minLng) minLng = lng;
+            if (lng > maxLng) maxLng = lng;
+            if (lat < minLat) minLat = lat;
+            if (lat > maxLat) maxLat = lat;
+        });
+        return [[minLng, minLat], [maxLng, maxLat]];
+    }
+
+    // Helper function to calculate the minimum zoom that fits the bounds
+    function getMinZoomForBounds(map, bounds) {
+        // Mapbox GL JS fitBounds returns the zoom level that fits the bounds
+        // We'll use a temporary fitBounds call to get the zoom
+        const options = { padding: 0, linear: true }; // No padding for strict fit
+        map.fitBounds(bounds, { ...options, animate: false });
+        return map.getZoom();
+    }
+
+    // Initialize home page map
+    async function initializeHomeMap() {
+        const homeMapContainer = document.getElementById('map');
+        if (!homeMapContainer) return;
+        if (map) map.remove();
+        const neighborhoodData = await getNeighborhoodData();
+        let mapOptions = {
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v12',
+            center: neighborhoodData.center,
+            zoom: 13
+        };
+        let bounds;
+        if (neighborhoodData.bounds) {
+            bounds = getBoundingBox(neighborhoodData.bounds);
+            mapOptions.maxBounds = bounds;
+        }
+        map = new mapboxgl.Map(mapOptions);
+        map.addControl(new mapboxgl.NavigationControl());
+        if (bounds) {
+            map.on('load', () => {
+                map.fitBounds(bounds, { padding: 0, animate: false });
+                // Calculate minZoom that fits the bounds
+                const minZoom = map.getZoom();
+                map.setMinZoom(minZoom);
+                map.setMaxZoom(20); // Allow zooming in, but not out past bounds
+            });
+        }
         // The markers will be added by fetchPings and updateMapMarkers
     }
 
     // Initialize live map
-    function initializeLiveMap() {
+    async function initializeLiveMap() {
         const liveMapContainer = document.getElementById('live-map-full');
         if (!liveMapContainer) return;
-        
-        if (liveMap) liveMap.remove(); // Remove existing map instance before creating a new one
-        liveMap = new mapboxgl.Map({
+        if (liveMap) liveMap.remove();
+        const neighborhoodData = await getNeighborhoodData();
+        let mapOptions = {
             container: 'live-map-full',
             style: 'mapbox://styles/mapbox/streets-v12',
-            center: [start_x_coord, start_y_coord],
+            center: neighborhoodData.center,
             zoom: 13
-        });
-        
-        // Add navigation controls
+        };
+        let bounds;
+        if (neighborhoodData.bounds) {
+            bounds = getBoundingBox(neighborhoodData.bounds);
+            mapOptions.maxBounds = bounds;
+        }
+        liveMap = new mapboxgl.Map(mapOptions);
         liveMap.addControl(new mapboxgl.NavigationControl());
+        if (bounds) {
+            liveMap.on('load', () => {
+                liveMap.fitBounds(bounds, { padding: 0, animate: false });
+                const minZoom = liveMap.getZoom();
+                liveMap.setMinZoom(minZoom);
+                liveMap.setMaxZoom(20);
+            });
+        }
+        // The markers will be added by fetchPings and updateMapMarkers
     }
 
     // Greeting messages for each tab
@@ -565,7 +652,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabLinks = document.querySelectorAll('.sidebar-nav a');
 
     tabLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
+        link.addEventListener('click', async (e) => {
             e.preventDefault();
             const targetTab = link.getAttribute('data-tab');
 
@@ -591,19 +678,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadUserSettings();
             }
 
-            // Re-initialize maps when their tab becomes active
+            // Re-initialize maps only if not already initialized
             if (targetTab === 'home') {
-                initializeHomeMap();
+                await initializeHomeMap();
                 updateMapMarkers(map);
-                fetchPings(); // Fetch fresh data when switching to home tab
-            } else if (targetTab === 'map-full') {
-                initializeMapFull();
-                updateMapMarkers(mapFull);
-                fetchPings(); // Fetch fresh data when switching to full map tab
+                fetchPings();
+                // Optionally render pings for home tab if needed
             } else if (targetTab === 'live-map') {
-                initializeLiveMap();
+                await initializeLiveMap();
                 updateMapMarkers(liveMap);
-                fetchPings(); // Fetch fresh data when switching to live map tab
+                fetchPings();
+                setTimeout(() => {
+                    if (document.getElementById('ping-details-container')) {
+                        renderPings(allPings, 'ping-details-container');
+                    }
+                    // If there is a pending flyTo, do it now
+                    if (pendingFlyTo && liveMap) {
+                        liveMap.flyTo({ center: [pendingFlyTo.lng, pendingFlyTo.lat], zoom: 20, essential: true });
+                        if (pendingFlyTo.showPopup) {
+                            setTimeout(() => openPingPopupOnLiveMap(pendingFlyTo.lng, pendingFlyTo.lat), 500);
+                        }
+                        pendingFlyTo = null;
+                    }
+                }, 100);
             }
 
             // Scroll to top after switching tab
@@ -629,7 +726,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add event listener for window resize
     window.addEventListener('resize', () => {
         if (map) map.resize();
-        if (mapFull) mapFull.resize();
         if (liveMap) liveMap.resize();
     });
 
@@ -891,118 +987,129 @@ document.addEventListener('DOMContentLoaded', () => {
             pingMapPreview = null;
         }
 
-        pingMapPreview = new mapboxgl.Map({
-            container: 'pingMapPreview',
-            style: 'mapbox://styles/mapbox/streets-v12',
-            center: [-81.24, 43.02], // Default center
-            zoom: 13,
-            interactive: true // Ensure it's interactive for clicking
-        });
-
-        pingMapPreview.on('click', (e) => {
-            selectedPingLocation = {
-                lat: e.lngLat.lat,
-                lng: e.lngLat.lng
+        // Use the same logic as other maps for neighborhood bounds and center
+        (async () => {
+            const neighborhoodData = await getNeighborhoodData();
+            let mapOptions = {
+                container: 'pingMapPreview',
+                style: 'mapbox://styles/mapbox/streets-v12',
+                center: neighborhoodData.center,
+                zoom: 13,
+                interactive: true
             };
-
-            if (tempPingMarker) {
-                tempPingMarker.remove();
+            let bounds;
+            if (neighborhoodData.bounds) {
+                bounds = getBoundingBox(neighborhoodData.bounds);
+                mapOptions.maxBounds = bounds;
+            }
+            pingMapPreview = new mapboxgl.Map(mapOptions);
+            pingMapPreview.addControl(new mapboxgl.NavigationControl());
+            if (bounds) {
+                pingMapPreview.on('load', () => {
+                    pingMapPreview.fitBounds(bounds, { padding: 0, animate: false });
+                    const minZoom = pingMapPreview.getZoom();
+                    pingMapPreview.setMinZoom(minZoom);
+                    pingMapPreview.setMaxZoom(20);
+                });
             }
 
-            const el = document.createElement('div');
-            el.className = 'marker';
-            el.style.backgroundColor = 'var(--primary-color)';
-            el.style.width = '24px';
-            el.style.height = '24px';
-            el.style.borderRadius = '50%';
-            el.style.border = '2px solid white';
-            el.style.boxShadow = '0 0 0 2px var(--primary-color)';
+            pingMapPreview.on('click', (e) => {
+                selectedPingLocation = {
+                    lat: e.lngLat.lat,
+                    lng: e.lngLat.lng
+                };
 
-            tempPingMarker = new mapboxgl.Marker(el)
-                .setLngLat(e.lngLat)
-                .addTo(pingMapPreview);
-
-            document.getElementById('ping-lat').value = selectedPingLocation.lat;
-            document.getElementById('ping-lng').value = selectedPingLocation.lng;
-        });
-
-        pingMapPreview.addControl(new mapboxgl.NavigationControl());
-
-        // Address search logic (binds only when modal is open)
-        const pingAddressSearch = document.getElementById('pingAddressSearch');
-        const pingAddressSuggestions = document.getElementById('pingAddressSuggestions');
-        if (pingAddressSearch) {
-            pingAddressSearch.value = '';
-            pingAddressSuggestions.innerHTML = '';
-            pingAddressSearch.oninput = debounce(async function() {
-                const query = this.value.trim();
-                if (query.length < 3) {
-                    pingAddressSuggestions.innerHTML = '';
-                    return;
+                if (tempPingMarker) {
+                    tempPingMarker.remove();
                 }
-                const suggestions = await fetchAddressSuggestions(query);
-                renderSuggestions(suggestions);
-            }, 350);
-        }
 
-        function renderSuggestions(suggestions) {
-            pingAddressSuggestions.innerHTML = '';
-            if (!suggestions.length) return;
-            const list = document.createElement('ul');
-            list.style.position = 'absolute';
-            list.style.top = '100%';
-            list.style.left = '0';
-            list.style.right = '0';
-            list.style.background = '#fff';
-            list.style.border = '1px solid #eee';
-            list.style.zIndex = '1000';
-            list.style.listStyle = 'none';
-            list.style.margin = '0';
-            list.style.padding = '0';
-            list.style.maxHeight = '180px';
-            list.style.overflowY = 'auto';
-            suggestions.forEach(feature => {
-                const item = document.createElement('li');
-                item.textContent = feature.place_name;
-                item.style.padding = '0.7rem 1rem';
-                item.style.cursor = 'pointer';
-                item.style.borderBottom = '1px solid #f0f0f0';
-                item.addEventListener('mousedown', () => {
-                    // Center map and set marker
-                    if (pingMapPreview) {
-                        pingMapPreview.flyTo({ center: feature.center, zoom: 15 });
-                        // Simulate a click to place marker
-                        const lngLat = { lng: feature.center[0], lat: feature.center[1] };
-                        selectedPingLocation = lngLat;
-                        if (tempPingMarker) tempPingMarker.remove();
-                        const el = document.createElement('div');
-                        el.className = 'marker';
-                        el.style.backgroundColor = 'var(--primary-color)';
-                        el.style.width = '24px';
-                        el.style.height = '24px';
-                        el.style.borderRadius = '50%';
-                        el.style.border = '2px solid white';
-                        el.style.boxShadow = '0 0 0 2px var(--primary-color)';
-                        tempPingMarker = new mapboxgl.Marker(el)
-                            .setLngLat(lngLat)
-                            .addTo(pingMapPreview);
-                        document.getElementById('ping-lat').value = lngLat.lat;
-                        document.getElementById('ping-lng').value = lngLat.lng;
-                    }
-                    pingAddressSearch.value = feature.place_name;
-                    pingAddressSuggestions.innerHTML = '';
-                });
-                list.appendChild(item);
+                const el = document.createElement('div');
+                el.className = 'marker';
+                el.style.backgroundColor = 'var(--primary-color)';
+                el.style.width = '24px';
+                el.style.height = '24px';
+                el.style.borderRadius = '50%';
+                el.style.border = '2px solid white';
+                el.style.boxShadow = '0 0 0 2px var(--primary-color)';
+
+                tempPingMarker = new mapboxgl.Marker(el)
+                    .setLngLat(e.lngLat)
+                    .addTo(pingMapPreview);
+
+                document.getElementById('ping-lat').value = selectedPingLocation.lat;
+                document.getElementById('ping-lng').value = selectedPingLocation.lng;
             });
-            pingAddressSuggestions.appendChild(list);
-        }
-    }
 
-    // Initial calls for map and feed updates (should be done after fetchPings)
-    // updateMapMarkers(map); // Now handled by fetchPings
-    // updateMapMarkers(mapFull); // Now handled by fetchPings
-    // updateMapMarkers(liveMap); // Now handled by fetchPings
-    // updatePingsFeed(allPings); // Now handled by fetchPings
+            // Address search logic (binds only when modal is open)
+            const pingAddressSearch = document.getElementById('pingAddressSearch');
+            const pingAddressSuggestions = document.getElementById('pingAddressSuggestions');
+            if (pingAddressSearch) {
+                pingAddressSearch.value = '';
+                pingAddressSuggestions.innerHTML = '';
+                pingAddressSearch.oninput = debounce(async function() {
+                    const query = this.value.trim();
+                    if (query.length < 3) {
+                        pingAddressSuggestions.innerHTML = '';
+                        return;
+                    }
+                    const suggestions = await fetchAddressSuggestions(query);
+                    renderSuggestions(suggestions);
+                }, 350);
+            }
+
+            function renderSuggestions(suggestions) {
+                pingAddressSuggestions.innerHTML = '';
+                if (!suggestions.length) return;
+                const list = document.createElement('ul');
+                list.style.position = 'absolute';
+                list.style.top = '100%';
+                list.style.left = '0';
+                list.style.right = '0';
+                list.style.background = '#fff';
+                list.style.border = '1px solid #eee';
+                list.style.zIndex = '1000';
+                list.style.listStyle = 'none';
+                list.style.margin = '0';
+                list.style.padding = '0';
+                list.style.maxHeight = '180px';
+                list.style.overflowY = 'auto';
+                suggestions.forEach(feature => {
+                    const item = document.createElement('li');
+                    item.textContent = feature.place_name;
+                    item.style.padding = '0.7rem 1rem';
+                    item.style.cursor = 'pointer';
+                    item.style.borderBottom = '1px solid #f0f0f0';
+                    item.addEventListener('mousedown', () => {
+                        // Center map and set marker
+                        if (pingMapPreview) {
+                            pingMapPreview.flyTo({ center: feature.center, zoom: 15 });
+                            // Simulate a click to place marker
+                            const lngLat = { lng: feature.center[0], lat: feature.center[1] };
+                            selectedPingLocation = lngLat;
+                            if (tempPingMarker) tempPingMarker.remove();
+                            const el = document.createElement('div');
+                            el.className = 'marker';
+                            el.style.backgroundColor = 'var(--primary-color)';
+                            el.style.width = '24px';
+                            el.style.height = '24px';
+                            el.style.borderRadius = '50%';
+                            el.style.border = '2px solid white';
+                            el.style.boxShadow = '0 0 0 2px var(--primary-color)';
+                            tempPingMarker = new mapboxgl.Marker(el)
+                                .setLngLat(lngLat)
+                                .addTo(pingMapPreview);
+                            document.getElementById('ping-lat').value = lngLat.lat;
+                            document.getElementById('ping-lng').value = lngLat.lng;
+                        }
+                        pingAddressSearch.value = feature.place_name;
+                        pingAddressSuggestions.innerHTML = '';
+                    });
+                    list.appendChild(item);
+                });
+                pingAddressSuggestions.appendChild(list);
+            }
+        })();
+    }
 
     // Load settings when settings tab is clicked
     const settingsTab = document.querySelector('a[href="#settings"]');
@@ -1349,14 +1456,6 @@ setupMapFilters({
     timeFilterSelector: '.map-section .time-filter'
 });
 
-// Full map tab filters
-setupMapFilters({
-    mapInstance: mapFull,
-    feedContainerId: null, // If you want to update a feed here, provide its container ID
-    categoryTogglesSelector: '#map .map-filters-left .category-filter',
-    timeFilterSelector: '#map .map-filters-right .time-filter'
-});
-
 // Live map tab filters
 setupMapFilters({
     mapInstance: liveMap,
@@ -1372,4 +1471,16 @@ if (liveMapTab) {
         currentPingsDisplayed = 0;
         renderPings(allPings, 'ping-details-container');
     });
+}
+
+function openPingPopupOnLiveMap(lng, lat) {
+    if (!liveMap || !liveMap._markers) return;
+    // Find the marker with matching coordinates
+    const marker = liveMap._markers.find(m => {
+        const markerLngLat = m.getLngLat();
+        return Math.abs(markerLngLat.lng - lng) < 1e-6 && Math.abs(markerLngLat.lat - lat) < 1e-6;
+    });
+    if (marker && marker.getPopup()) {
+        marker.togglePopup();
+    }
 }
