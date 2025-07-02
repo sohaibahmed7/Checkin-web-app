@@ -8,6 +8,12 @@ let allPings = []; // Array to store all fetched pings
 let activityChart = null; // Global variable to track the activity chart instance
 let pendingFlyTo = null; // Store flyTo target if switching tabs
 
+window.addEventListener('pageshow', () => {
+    if (!localStorage.getItem('user')) {
+        window.location.href = '/pages/auth/login.html';
+    }
+});
+
 // Global function to create a modern ping marker
 function createModernPingMarker(ping, targetMap) {
     const el = document.createElement('div');
@@ -703,6 +709,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 100);
             }
 
+            // Push a new dummy state for back button modal
+            history.pushState({ dashboard: true, tab: targetTab }, '', location.href); // Modified to include tab info
+
             // Scroll to top after switching tab
             window.scrollTo({top: 0, behavior: 'smooth'});
         });
@@ -1381,6 +1390,46 @@ document.addEventListener('DOMContentLoaded', () => {
             renderSuggestions(suggestions);
         }, 350));
     }
+
+    // Sign Out Modal Logic
+    (function() {
+        const modal = document.getElementById('signoutModal');
+        const cancelBtn = document.getElementById('cancelSignoutBtn');
+        const confirmBtn = document.getElementById('confirmSignoutBtn');
+        let popstateTriggered = false;
+
+        window.addEventListener('popstate', function(e) {
+            // Only show modal if on dashboard and not already triggered
+            if (!popstateTriggered && modal) {
+                popstateTriggered = true;
+                modal.classList.add('active');
+                // Prevent navigation
+                history.pushState({dashboard: true}, '', location.href);
+            }
+        });
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function() {
+                modal.classList.remove('active');
+                popstateTriggered = false;
+            });
+        }
+
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', async function() {
+                // Call backend logout endpoint
+                try {
+                    await fetch('http://localhost:3000/api/logout', { method: 'POST', credentials: 'include' });
+                } catch (e) {
+                    // Ignore errors for now
+                }
+                // Clear localStorage
+                localStorage.removeItem('user');
+                // Redirect to login
+                window.location.href = '/pages/auth/login.html';
+            });
+        }
+    })();
 }); 
 
 // Helper function to compare only year, month, and day

@@ -95,6 +95,24 @@
     </style>
 </head>
 <body>
+<script>
+  function clearUser() {
+    localStorage.removeItem('user');
+    // For debugging:
+    // console.log('User removed from localStorage on login page load or bfcache restore');
+  }
+  window.addEventListener('pageshow', clearUser);
+
+  function resetLoginButton() {
+    var loginButton = document.getElementById('login-button');
+    if (loginButton) {
+      loginButton.disabled = false;
+      loginButton.textContent = 'Login';
+      loginButton.classList.remove('loading');
+    }
+  }
+  window.addEventListener('pageshow', resetLoginButton);
+</script>
     <nav class="navbar">
         <div class="logo">
             <a href="../../index.html"><h1>Check-In</h1></a>
