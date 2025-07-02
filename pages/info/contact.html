@@ -83,18 +83,18 @@
                 </div>
                 <!-- Right: Contact Form -->
                 <div style="flex: 1; background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(70,102,229,0.07); padding: 2.5rem 2rem; display: flex; flex-direction: column; gap: 1.2rem;">
-                    <form id="contactForm">
+                    <form id="contactForm" autocomplete="off">
                         <div class="form-group" style="margin-bottom: 1.2rem;">
                             <label for="name" style="font-weight: 500;">Name</label>
-                            <input type="text" id="name" name="name" required style="width: 100%; padding: 0.7rem; border-radius: 8px; border: 1px solid #d1d5db; margin-top: 0.3rem;">
+                            <input type="text" id="name" name="name" required autocomplete="off" style="width: 100%; padding: 0.7rem; border-radius: 8px; border: 1px solid #d1d5db; margin-top: 0.3rem;">
                         </div>
                         <div class="form-group" style="margin-bottom: 1.2rem;">
                             <label for="email" style="font-weight: 500;">Email</label>
-                            <input type="email" id="email" name="email" required style="width: 100%; padding: 0.7rem; border-radius: 8px; border: 1px solid #d1d5db; margin-top: 0.3rem;">
+                            <input type="email" id="email" name="email" required autocomplete="off" style="width: 100%; padding: 0.7rem; border-radius: 8px; border: 1px solid #d1d5db; margin-top: 0.3rem;">
                         </div>
                         <div class="form-group" style="margin-bottom: 1.2rem;">
                             <label for="message" style="font-weight: 500;">Message</label>
-                            <textarea id="message" name="message" rows="5" required style="width: 100%; padding: 0.7rem; border-radius: 8px; border: 1px solid #d1d5db; margin-top: 0.3rem;"></textarea>
+                            <textarea id="message" name="message" rows="5" required autocomplete="off" style="width: 100%; padding: 0.7rem; border-radius: 8px; border: 1px solid #d1d5db; margin-top: 0.3rem;"></textarea>
                         </div>
                         <button type="submit" class="submit-button" style="background: #4666e5; color: #fff; border: none; border-radius: 8px; padding: 0.9rem 2rem; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: background 0.2s;">Send Message</button>
                     </form>
