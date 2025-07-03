@@ -1036,6 +1036,7 @@ app.post('/api/reset-password', async (req, res) => {
 // Logout Endpoint (TODO WHEN NEEDED)
 app.post('/api/logout', (req, res) => {
   res.json({ message: 'Logged out successfully' });
+});
 
 // Get user's neighborhood
 app.get('/api/user/neighborhood/:userId', async (req, res) => {
@@ -1056,4 +1057,4 @@ app.get('/api/user/neighborhood/:userId', async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
-}); 
+});
