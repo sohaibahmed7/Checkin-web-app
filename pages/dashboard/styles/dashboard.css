@@ -726,12 +726,6 @@ body.dashboard {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.pin-tooltip {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
 .pin-category {
     display: inline-flex;
     align-items: center;
@@ -3124,27 +3118,18 @@ input:checked + .slider:before {
     }
 }
 
-
 .ping-tooltip {
     padding: 8px;
     border-radius: 8px;
     background: white;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
     min-width: 200px;
-    /* opacity: 0; */           /* Removed to allow default visibility */
-    /* visibility: hidden; */   /* Removed to allow default visibility */
     transition: opacity 0.2s ease, visibility 0.2s ease;
     pointer-events: none;
     position: absolute;
     bottom: 100%;
     left: 50%;
-    transform: translateX(-50%) translateY(-10px);
+    transform: translateX(-50%) translateY(25px);
     z-index: 1000;
-}
-
-.marker:hover .ping-tooltip {
-    opacity: 1;
-    visibility: visible;
 }
 
 .ping-tooltip .ping-category {
@@ -3157,16 +3142,51 @@ input:checked + .slider:before {
 }
 
 .ping-tooltip .ping-message {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--text-color);
     margin: 4px 0;
 }
 
-.ping-tooltip .ping-timestamp {
-    display: block;
-    font-size: 11px;
-    color: var(--text-secondary);
+.ping-tooltip .ping-meta-line {
+    font-size: 10px;
+    color: var(--text-muted);
     margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.ping-image-indicator-top {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: #eaf0ff;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ping-image-indicator-top i {
+    background: #fff;
+    border-radius: 50%;
+    padding: 4px;
+    font-size: 14px;
+    color: #4a6bff;
+    box-shadow: 0 1px 4px rgba(74,107,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.marker:hover .ping-tooltip {
+    opacity: 1;
+    visibility: visible;
 }
 
 .marker {
@@ -3219,6 +3239,20 @@ input:checked + .slider:before {
     border-color: #4caf50;
     color: #4caf50;
     background-color: #4caf50;
+}
+
+.marker::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 11px;
+    height: 11px;
+    background: #fff;
+    border-radius: 50%;
+    z-index: 1;
+    /* box-shadow: 0 1px 4px rgba(0,0,0,0.04); */
 }
 
 .live-map-layout {

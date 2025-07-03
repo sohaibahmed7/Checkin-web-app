@@ -20,16 +20,20 @@ function createModernPingMarker(ping, targetMap) {
     console.log('Creating marker for type:', ping.type); // Debugging: Check the type being applied
     el.className = `marker ${ping.type}`;
     
-    // Create popup with timestamp
+    // Create popup with timestamp, user, and image indicator
+    const userName = ping.user && ping.user.name ? ping.user.name : 'Community User';
+    let metaLine = `By ${userName}, ${formatTimestamp(ping.timestamp)}`;
+    let imageIndicator = ping.photoPath ? '<span class="ping-image-indicator-top"><i class="fas fa-image"></i></span>' : '';
     const popup = new mapboxgl.Popup({
         offset: 25,
         closeButton: false,
         closeOnClick: true
     }).setHTML(`
         <div class="ping-tooltip">
+            ${imageIndicator}
             <span class="ping-category ${ping.type}">${formatPingTypeDisplay(ping.type)}</span>
             <p class="ping-message">${ping.description}</p>
-            <span class="ping-timestamp">${formatTimestamp(ping.timestamp)}</span>
+            <div class="ping-meta-line">${metaLine}</div>
         </div>
     `);
 
@@ -210,7 +214,7 @@ async function fetchPings() {
                 description: ping.description,
                 coordinates: coordinates, // Ensure this is [lng, lat] or null
                 timestamp: new Date(ping.createdAt), // Use createdAt for timestamp
-                photo: ping.photo, // Include photo if available
+                photoPath: ping.photoPath, // Include photo if available
                 user: ping.user // <-- Add this line to include user info
             };
         });
