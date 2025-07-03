@@ -111,13 +111,9 @@ function renderPings(pingsToRender, containerId = 'recent-updates-container') {
     }
 
     pingsToDisplay.forEach(ping => {
-        const user = ping.user || {};
-        const userName = user.name || 'Community User';
-        // Ensure the profile picture URL is absolute if needed
-        let userAvatar = user.profile_picture_url || 'assets/avatar.svg';
-        if (userAvatar && userAvatar.startsWith('/uploads/')) {
-            userAvatar = 'http://localhost:3000' + userAvatar;
-        }
+        const pingUser = ping.user
+        const userName = pingUser.name || 'Community User';
+        let userAvatar = pingUser ? `http://localhost:3000/api/user/${pingUser._id}/profile-picture` : 'assets/avatar.svg';
         const pingTypeIcon = getPingTypeIcon(ping.type);
         const pingTypeLabel = formatPingTypeDisplay(ping.type);
         const pingElement = document.createElement('div');
@@ -125,7 +121,6 @@ function renderPings(pingsToRender, containerId = 'recent-updates-container') {
         pingElement.innerHTML = `
             <div class="feed-avatar">
                 <img src="${userAvatar}" alt="Profile Picture" onerror="this.onerror=null;this.src='assets/avatar.svg';">
-                <span class="status active"></span>
             </div>
             <div class="feed-content">
                 <div class="feed-header feed-header-flex">
@@ -467,6 +462,14 @@ document.addEventListener('DOMContentLoaded', () => {
         greetingText.textContent = `${greeting}, ${userName}!`;
     }
 
+    // Set greeting bar avatar immediately on load
+    const greetingBarAvatar = document.getElementById('greetingBarAvatar');
+    if (greetingBarAvatar && user && user._id) {
+        let avatarUrl = user._id ? `http://localhost:3000/api/user/${user._id}/profile-picture` : 'assets/avatar.svg';
+        greetingBarAvatar.src = avatarUrl;
+        greetingBarAvatar.onerror = function() { this.onerror = null; this.src = avatarUrl; };
+    }
+
     // Initialize Mapbox with the correct token
     mapboxgl.accessToken = 'pk.eyJ1IjoiYW5zaG1ha2thciIsImEiOiJjbTl2ams5OGcwbGwwMm1vbGpiaDduczg1In0.4yzUyxSxV9lHLtbRQfjdWA';
     
@@ -619,27 +622,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // Greeting messages for each tab
     const tabGreetings = {
         home: {
-            greeting: (userName, time) => `${time}, ${userName}!`,
+            greeting: (userName, time) => `👋🏼 ${time}, ${userName}!`,
             subtitle: 'Welcome back to your dashboard'
         },
         'live-map': {
-            greeting: () => 'Welcome to your Neighbourhood Map!',
+            greeting: () => '🗺️ Welcome to your Neighbourhood Map!',
             subtitle: 'See live updates and activity in your area'
         },
         chat: {
-            greeting: () => 'Community Chat',
+            greeting: () => '💬 Community Chat',
             subtitle: 'Connect and communicate with your neighbors'
         },
         reports: {
-            greeting: () => 'Reports Overview',
+            greeting: () => '📑 Reports Overview',
             subtitle: 'View and manage all reports here'
         },
         contacts: {
-            greeting: () => 'Key Contacts',
+            greeting: () => '🔑 Key Contacts',
             subtitle: 'Important contacts for your community'
         },
         settings: {
-            greeting: () => 'Settings',
+            greeting: () => '⚙️ Settings',
             subtitle: 'Manage your account and preferences'
         }
     };
@@ -1145,7 +1148,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const previewImg = document.querySelector('.profile-preview-avatar img');
+                    let avatarUrl = user._id ? `http://localhost:3000/api/user/${user._id}/profile-picture` : 'assets/avatar.svg';
                     previewImg.src = e.target.result;
+                    previewImg.onerror = function() { this.onerror = null; this.src = avatarUrl; };
                 }
                 reader.readAsDataURL(file);
             }
@@ -1166,16 +1171,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const profilePreviewEmail = document.querySelector('.profile-preview-info p');
 
         if (profilePreviewAvatar) {
-            let avatarUrl = user.profile_picture_url || 'assets/avatar.svg';
-            if (avatarUrl && avatarUrl.startsWith('/uploads/')) {
-                avatarUrl = 'http://localhost:3000' + avatarUrl;
-            }
+            let avatarUrl = user._id ? `http://localhost:3000/api/user/${user._id}/profile-picture` : 'assets/avatar.svg';
             profilePreviewAvatar.src = avatarUrl;
-            // Add fallback for broken images
-            profilePreviewAvatar.onerror = function() {
-                this.onerror = null;
-                this.src = 'assets/avatar.svg';
-            };
+            profilePreviewAvatar.onerror = function() { this.onerror = null; this.src = avatarUrl; };
         }
         if (profilePreviewName) {
             profilePreviewName.textContent = user.name;
@@ -1236,14 +1234,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Reload settings to show updated data
                 loadUserSettings();
                 
-                // Update greeting
-                updateGreeting();
-                
-                // Update user avatar in top bar and dropdown
-                const userAvatarImg = document.querySelector('#userAvatar img');
-                if (userAvatarImg) {
-                    userAvatarImg.src = updatedUser.profile_picture_url || 'assets/avatar.svg';
-                }
                 // Show success message
                 alert('Settings saved successfully!');
             } else {
@@ -1252,23 +1242,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error saving settings:', error);
             alert('An error occurred while saving settings');
-        }
-    }
-
-    // Set greeting with user's full name
-    function updateGreeting() {
-        const greetingText = document.getElementById('greeting-text');
-        if (greetingText) {
-            const hour = new Date().getHours();
-            let greeting = 'Good Morning';
-            if (hour >= 12 && hour < 18) {
-                greeting = 'Good Afternoon';
-            } else if (hour >= 18) {
-                greeting = 'Good Evening';
-            }
-            const user = JSON.parse(localStorage.getItem('user'));
-            const name = user && user.name ? user.name : 'User';
-            greetingText.textContent = `${greeting}, ${name}!`;
         }
     }
 
