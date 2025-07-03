@@ -111,13 +111,9 @@ function renderPings(pingsToRender, containerId = 'recent-updates-container') {
     }
 
     pingsToDisplay.forEach(ping => {
-        const user = ping.user || {};
-        const userName = user.name || 'Community User';
-        // Ensure the profile picture URL is absolute if needed
-        let userAvatar = user._id ? `http://localhost:3000/api/user/${user._id}/profile-picture` : 'assets/avatar.svg';
-        if (userAvatar && userAvatar.startsWith('/uploads/')) {
-            userAvatar = 'http://localhost:3000' + userAvatar;
-        }
+        const pingUser = ping.user
+        const userName = pingUser.name || 'Community User';
+        let userAvatar = pingUser ? `http://localhost:3000/api/user/${pingUser._id}/profile-picture` : 'assets/avatar.svg';
         const pingTypeIcon = getPingTypeIcon(ping.type);
         const pingTypeLabel = formatPingTypeDisplay(ping.type);
         const pingElement = document.createElement('div');
@@ -626,27 +622,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // Greeting messages for each tab
     const tabGreetings = {
         home: {
-            greeting: (userName, time) => `${time}, ${userName}!`,
+            greeting: (userName, time) => `👋🏼 ${time}, ${userName}!`,
             subtitle: 'Welcome back to your dashboard'
         },
         'live-map': {
-            greeting: () => 'Welcome to your Neighbourhood Map!',
+            greeting: () => '🗺️ Welcome to your Neighbourhood Map!',
             subtitle: 'See live updates and activity in your area'
         },
         chat: {
-            greeting: () => 'Community Chat',
+            greeting: () => '💬 Community Chat',
             subtitle: 'Connect and communicate with your neighbors'
         },
         reports: {
-            greeting: () => 'Reports Overview',
+            greeting: () => '📑 Reports Overview',
             subtitle: 'View and manage all reports here'
         },
         contacts: {
-            greeting: () => 'Key Contacts',
+            greeting: () => '🔑 Key Contacts',
             subtitle: 'Important contacts for your community'
         },
         settings: {
-            greeting: () => 'Settings',
+            greeting: () => '⚙️ Settings',
             subtitle: 'Manage your account and preferences'
         }
     };
