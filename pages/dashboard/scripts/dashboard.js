@@ -23,7 +23,7 @@ function createModernPingMarker(ping, targetMap) {
     // Create popup with timestamp, user, and image indicator
     const userName = ping.user && ping.user.name ? ping.user.name : 'Community User';
     let metaLine = `By ${userName}, ${formatTimestamp(ping.timestamp)}`;
-    let imageIndicator = ping.photoPath ? '<span class="ping-image-indicator-top"><i class="fas fa-camera"></i></span>' : '';
+    let imageIndicator = ping.photoPath ? '<span class="ping-image-indicator-top"><i class="fas fa-image"></i></span>' : '';
     const popup = new mapboxgl.Popup({
         offset: 25,
         closeButton: false,
