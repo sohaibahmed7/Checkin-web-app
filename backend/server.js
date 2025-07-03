@@ -68,9 +68,9 @@ io.on('connection', (socket) => {
   // Handle chat messages
   socket.on('chat message', async (data) => {
     try {
-      const messageRoom = data.room || 'community-chat'; // Default to community-chat if no room specified
-      console.log('Received chat message:', { ...data, room: messageRoom });
-      
+      const messageRoom = data.room || 'community-chat';
+      // Look up user by username to get userId
+      const user = await User.findOne({ name: data.username });
       // Save message to database
       const chatMessage = new ChatMessage({
         username: data.username,
@@ -79,18 +79,16 @@ io.on('connection', (socket) => {
         filePath: data.filePath
       });
       await chatMessage.save();
-
-      // Broadcast message to all clients in the correct room
+      // Broadcast message to all clients in the correct room, including userId
       io.to(messageRoom).emit('chat message', {
         username: data.username,
+        userId: user ? user._id : null,
         message: data.message,
         filePath: data.filePath,
         timestamp: chatMessage.createdAt,
         room: messageRoom,
-        createdAt: chatMessage.createdAt // Include createdAt for consistency
+        createdAt: chatMessage.createdAt
       });
-      
-      console.log('Broadcasted message to room:', messageRoom);
     } catch (error) {
       console.error('Error saving chat message:', error);
     }
@@ -112,7 +110,10 @@ const pingSchema = new mongoose.Schema({
     enum: ['suspicious', 'break-enter', 'fire', 'other'],
     default: 'other'
   },
-  photoPath: String,
+  photo: {
+    data: Buffer,
+    contentType: String
+  },
   createdAt: { type: Date, default: Date.now },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   neighborhoodId: { type: mongoose.Schema.Types.ObjectId, ref: 'Neighborhood' }
@@ -127,7 +128,10 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   is_moderator: { type: Boolean, default: false },
-  profile_picture_url: { type: String },
+  profile_picture: {
+    data: Buffer,
+    contentType: String
+  },
   verification_code: { type: String },
   verification_expiry: { type: Date },
   is_verified: { type: Boolean, default: false },
@@ -150,18 +154,9 @@ const ContactMessage = mongoose.model('ContactMessage', contactMessageSchema);
 
 // Middleware
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Multer setup for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, 'uploads'));
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);
-  },
-});
-const upload = multer({ storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Routes
 app.get('/', (req, res) => {
@@ -265,7 +260,8 @@ app.get('/api/pings', async (req, res) => {
   if (neighborhoodId && mongoose.Types.ObjectId.isValid(neighborhoodId)) {
     filter.neighborhoodId = neighborhoodId;
   }
-  const pings = await Ping.find(filter).sort({ createdAt: -1 }).populate('user', 'name profile_picture_url');
+  // Populate user with _id and name only
+  const pings = await Ping.find(filter).sort({ createdAt: -1 }).populate('user', '_id name');
   res.json(pings);
 });
 
@@ -287,18 +283,24 @@ app.post('/api/pings', upload.single('photo'), async (req, res) => {
     console.error('Ping creation failed: user not found for userId', userId);
     return res.status(404).json({ message: 'User not found.' });
   }
-  const photoPath = req.file ? '/uploads/' + req.file.filename : null;
+  let photo = undefined;
+  if (req.file) {
+    photo = {
+      data: req.file.buffer,
+      contentType: req.file.mimetype
+    };
+  }
   const ping = new Ping({
     description,
     location: { lat: parseFloat(lat), lng: parseFloat(lng) },
     type,
-    photoPath,
+    photo,
     user: userId,
     neighborhoodId: user.neighborhoodId
   });
   await ping.save();
   // Populate the user field before sending the response
-  await ping.populate('user', 'name profile_picture_url');
+  await ping.populate('user', 'name profile_picture');
   console.log('Created ping:', ping);
   res.status(201).json(ping);
 });
@@ -321,7 +323,7 @@ app.get('/view-pings', async (req, res) => {
             <td>${ping.description}</td>
             <td>${ping.location.lat}</td>
             <td>${ping.location.lng}</td>
-            <td>${ping.photoPath ? `<img src="${ping.photoPath}" alt="Ping Photo" width="100">` : 'No Photo'}</td>
+            <td>${ping.photo ? `<img src="${ping.photo}" alt="Ping Photo" width="100">` : 'No Photo'}</td>
             <td>${ping.createdAt}</td>
             <td><b>${ping.user ? `${ping.user.name} (${ping.user.email})` : 'Unknown'}</b></td>
           </tr>
@@ -357,7 +359,8 @@ app.get('/view-users', async (req, res) => {
             <td>${user.is_moderator ? 'Yes' : 'No'}</td>
             <td>${user.is_verified ? 'Yes' : 'No'}</td>
             <td>${user.createdAt}</td>
-            <td>${user.profile_picture_url ? `<img src="${user.profile_picture_url}" alt="Profile" width="50">` : 'No Photo'}</td>
+            <td>${user.profile_picture ? `<img src="/api/user/${user._id}/profile-picture" alt="Profile" width="50">` : 'No Photo'}</td>
+            
           </tr>
         `;
       });
@@ -453,7 +456,13 @@ const validatePassword = (password) => {
 app.post('/api/register', upload.single('profile_picture'), async (req, res) => {
   try {
     const { name, number, email, password, is_moderator, inviteCode, neighborhoodId } = req.body;
-    const profile_picture_url = req.file ? '/uploads/' + req.file.filename : null;
+    let profile_picture = undefined;
+    if (req.file) {
+      profile_picture = {
+        data: req.file.buffer,
+        contentType: req.file.mimetype
+      };
+    }
 
     // Validate password
     if (!validatePassword(password)) {
@@ -492,7 +501,7 @@ app.post('/api/register', upload.single('profile_picture'), async (req, res) => 
       email,
       password: hashedPassword,
       is_moderator: is_moderator === 'true',
-      profile_picture_url,
+      profile_picture,
       verification_code: verificationCode,
       verification_expiry: verificationExpiry,
       is_verified: false,
@@ -807,7 +816,7 @@ app.get('/api/user/settings', async (req, res) => {
       name: user.name,
       email: user.email,
       number: user.number,
-      profile_picture_url: user.profile_picture_url,
+      profile_picture: user.profile_picture,
       is_moderator: user.is_moderator
     });
   } catch (err) {
@@ -832,7 +841,12 @@ app.put('/api/user/settings', upload.single('profile_picture'), async (req, res)
     // Update user fields
     if (req.body.name) user.name = req.body.name;
     if (req.body.number) user.number = req.body.number;
-    if (req.file) user.profile_picture_url = '/uploads/' + req.file.filename;
+    if (req.file) {
+      user.profile_picture = {
+        data: req.file.buffer,
+        contentType: req.file.mimetype
+      };
+    }
 
     // If password is being updated
     if (req.body.password) {
@@ -855,7 +869,7 @@ app.put('/api/user/settings', upload.single('profile_picture'), async (req, res)
         name: user.name,
         email: user.email,
         number: user.number,
-        profile_picture_url: user.profile_picture_url,
+        profile_picture: user.profile_picture,
         is_moderator: user.is_moderator
       }
     });
@@ -1052,6 +1066,33 @@ app.get('/api/user/neighborhood/:userId', async (req, res) => {
   } catch (error) {
     console.error('Error fetching user neighborhood:', error);
     res.status(500).json({ message: 'Error fetching neighborhood' });
+  }
+});
+
+// Add endpoints to serve images from MongoDB
+app.get('/api/user/:id/profile-picture', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user || !user.profile_picture || !user.profile_picture.data) {
+      return res.status(404).send('No profile picture');
+    }
+    res.set('Content-Type', user.profile_picture.contentType);
+    res.send(user.profile_picture.data);
+  } catch (err) {
+    res.status(500).send('Error fetching profile picture');
+  }
+});
+
+app.get('/api/ping/:id/photo', async (req, res) => {
+  try {
+    const ping = await Ping.findById(req.params.id);
+    if (!ping || !ping.photo || !ping.photo.data) {
+      return res.status(404).send('No photo');
+    }
+    res.set('Content-Type', ping.photo.contentType);
+    res.send(ping.photo.data);
+  } catch (err) {
+    res.status(500).send('Error fetching ping photo');
   }
 });
 

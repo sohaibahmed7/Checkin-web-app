@@ -171,9 +171,10 @@ function displayMessage(msg) {
         }
     }
     
+    let avatarSrc = msg.userId ? `http://localhost:3000/api/user/${msg.userId}/profile-picture` : 'assets/avatar.svg';
     messageDiv.innerHTML = `
         <div class="message-avatar">
-            <img src="assets/avatar.svg" alt="${msg.username}">
+            <img src="${avatarSrc}" alt="${msg.username}" onerror="this.onerror=null;this.src='assets/avatar.svg';">
         </div>
         <div class="message-content">
             <div class="message-header">

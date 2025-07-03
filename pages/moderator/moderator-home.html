@@ -40,7 +40,7 @@
             </div>
             <div class="user-menu">
                 <div class="user-avatar">
-                    <img src="dashboard/assets/avatar.svg" alt="User Avatar">
+                    <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="User Avatar" onerror="this.onerror=null;this.src='assets/avatar.svg';">
                 </div>
                 <div class="dropdown-menu">
                     <a href="#"><i class="fas fa-user"></i> Profile</a>
@@ -164,7 +164,7 @@
                             <div class="feed-items">
                                 <div class="feed-item urgent">
                                     <div class="feed-avatar">
-                                        <img src="dashboard/assets/avatar.svg" alt="John D">
+                                        <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="John D" onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                         <span class="status urgent"></span>
                                     </div>
                                     <div class="feed-content">
@@ -185,7 +185,7 @@
                                 </div>
                                 <div class="feed-item">
                                     <div class="feed-avatar">
-                                        <img src="dashboard/assets/avatar.svg" alt="Sarah M.">
+                                        <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="Sarah M." onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                         <span class="status active"></span>
                                     </div>
                                     <div class="feed-content">
@@ -206,7 +206,7 @@
                                 </div>
                                 <div class="feed-item">
                                     <div class="feed-avatar">
-                                        <img src="dashboard/assets/avatar.svg" alt="Mike R.">
+                                        <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="Mike R." onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                         <span class="status active"></span>
                                     </div>
                                     <div class="feed-content">
@@ -310,7 +310,7 @@
                                 <div class="ping-detail-item">
                                     <div class="ping-header">
                                         <div class="ping-user">
-                                            <img src="dashboard/assets/avatar.svg" alt="John D.">
+                                            <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="John D." onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                             <div class="ping-user-info">
                                                 <h4>John D.</h4>
                                                 <span class="ping-time">5m ago</span>
@@ -330,7 +330,7 @@
                                     <div class="ping-replies">
                                         <div class="reply">
                                             <div class="reply-user">
-                                                <img src="dashboard/assets/avatar.svg" alt="Sarah M.">
+                                                <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="Sarah M." onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                                 <span class="reply-name">Sarah M.</span>
                                             </div>
                                             <p>I can see the smoke from my window. Fire trucks are arriving now.</p>
@@ -353,7 +353,7 @@
                                 <div class="ping-details">
                                     <div class="ping-header">
                                         <div class="ping-user">
-                                            <img src="dashboard/assets/avatar.svg" alt="Sarah M.">
+                                            <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="Sarah M." onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                             <div class="ping-user-info">
                                                 <h4>Sarah M.</h4>
                                                 <span class="ping-time">30m ago</span>
@@ -365,14 +365,14 @@
                                     </div>
                                     <div class="ping-replies">
                                         <div class="reply">
-                                            <img src="dashboard/assets/avatar.svg" alt="John D.">
+                                            <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="John D." onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                             <div class="reply-content">
                                                 <h5>John D. <span>25m ago</span></h5>
                                                 <p>Thanks for the update, Sarah. I'll join the next patrol.</p>
                                             </div>
                                         </div>
                                         <div class="reply">
-                                            <img src="dashboard/assets/avatar.svg" alt="Mike R.">
+                                            <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="Mike R." onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                             <div class="reply-content">
                                                 <h5>Mike R. <span>20m ago</span></h5>
                                                 <p>I'll be there in 10 minutes to help with the rounds.</p>
@@ -430,7 +430,7 @@
                         <div class="chat-list">
                             <div class="chat-item active" data-chat-id="community">
                                 <div class="chat-item-avatar">
-                                    <img src="dashboard/assets/avatar.svg" alt="Community Chat">
+                                    <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="Community Chat" onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                     <span class="status-dot active"></span>
                                 </div>
                                 <div class="chat-item-content">
@@ -444,7 +444,7 @@
 
                             <div class="chat-item" data-chat-id="watch">
                                 <div class="chat-item-avatar">
-                                    <img src="dashboard/assets/avatar.svg" alt="Neighborhood Watch">
+                                    <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="Neighborhood Watch" onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                     <span class="status-dot active"></span>
                                 </div>
                                 <div class="chat-item-content">
@@ -458,7 +458,7 @@
 
                             <div class="chat-item" data-chat-id="safety">
                                 <div class="chat-item-avatar">
-                                    <img src="dashboard/assets/avatar.svg" alt="Safety Committee">
+                                    <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="Safety Committee" onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                     <span class="status-dot"></span>
                                 </div>
                                 <div class="chat-item-content">
@@ -472,7 +472,7 @@
 
                             <div class="chat-item" data-chat-id="events">
                                 <div class="chat-item-avatar">
-                                    <img src="dashboard/assets/avatar.svg" alt="Community Events">
+                                    <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="Community Events" onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                     <span class="status-dot active"></span>
                                 </div>
                                 <div class="chat-item-content">
@@ -491,7 +491,7 @@
                         <div class="chat-window-header">
                             <div class="chat-window-title">
                                 <div class="chat-title-avatar">
-                                    <img src="dashboard/assets/avatar.svg" alt="Community Chat">
+                                    <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="Community Chat" onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                     <span class="status-dot active"></span>
                                 </div>
                                 <div class="chat-header" id="community-chat-header" style="cursor: pointer;">
@@ -512,7 +512,7 @@
                             <div class="message-group" data-chat="community">
                                 <div class="message received">
                                     <div class="message-avatar">
-                                        <img src="dashboard/assets/avatar.svg" alt="Emma">
+                                        <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="Emma" onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                     </div>
                                     <div class="message-content">
                                         <span class="message-author">Emma</span>
@@ -558,7 +558,7 @@
 
                                 <div class="message received">
                                     <div class="message-avatar">
-                                        <img src="dashboard/assets/avatar.svg" alt="Mike">
+                                        <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="Mike" onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                     </div>
                                     <div class="message-content">
                                         <span class="message-author">Mike</span>
@@ -589,7 +589,7 @@
                             <div class="message-group" data-chat="watch" style="display: none;">
                                 <div class="message received">
                                     <div class="message-avatar">
-                                        <img src="dashboard/assets/avatar.svg" alt="John">
+                                        <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="John" onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                     </div>
                                     <div class="message-content">
                                         <span class="message-author">John</span>
@@ -632,7 +632,7 @@
                             <div class="message-group" data-chat="safety" style="display: none;">
                                 <div class="message received">
                                     <div class="message-avatar">
-                                        <img src="dashboard/assets/avatar.svg" alt="Sarah">
+                                        <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="Sarah" onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                     </div>
                                     <div class="message-content">
                                         <span class="message-author">Sarah</span>
@@ -675,7 +675,7 @@
                             <div class="message-group" data-chat="events" style="display: none;">
                                 <div class="message received">
                                     <div class="message-avatar">
-                                        <img src="dashboard/assets/avatar.svg" alt="Emma">
+                                        <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="Emma" onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                     </div>
                                     <div class="message-content">
                                         <span class="message-author">Emma</span>
@@ -715,7 +715,7 @@
 
                                 <div class="message received">
                                     <div class="message-avatar">
-                                        <img src="dashboard/assets/avatar.svg" alt="Emma">
+                                        <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="Emma" onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                     </div>
                                     <div class="message-content">
                                         <span class="message-author">Emma</span>
@@ -824,7 +824,7 @@
                             <div class="feed-items">
                                 <div class="feed-item urgent">
                                     <div class="feed-avatar">
-                                        <img src="dashboard/assets/avatar.svg" alt="John D.">
+                                        <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="John D." onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                         <span class="status urgent"></span>
                                     </div>
                                     <div class="feed-content">
@@ -846,7 +846,7 @@
 
                                 <div class="feed-item resolved">
                                     <div class="feed-avatar">
-                                        <img src="dashboard/assets/avatar.svg" alt="Sarah M.">
+                                        <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="Sarah M." onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                         <span class="status resolved"></span>
                                     </div>
                                     <div class="feed-content">
@@ -868,7 +868,7 @@
 
                                 <div class="feed-item">
                                     <div class="feed-avatar">
-                                        <img src="dashboard/assets/avatar.svg" alt="Mike R.">
+                                        <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="Mike R." onerror="this.onerror=null;this.src='assets/avatar.svg';">
                                         <span class="status active"></span>
                                     </div>
                                     <div class="feed-content">
@@ -1016,7 +1016,7 @@
                     <!-- Profile Preview Card -->
                     <div class="profile-preview-card">
                         <div class="profile-preview-avatar">
-                            <img src="assets/avatar.svg" alt="User Avatar">
+                            <img src="http://localhost:3000/api/user/${user._id}/profile-picture" alt="User Avatar" onerror="this.onerror=null;this.src='assets/avatar.svg';">
                         </div>
                         <div class="profile-preview-info">
                             <h2>User Name</h2>

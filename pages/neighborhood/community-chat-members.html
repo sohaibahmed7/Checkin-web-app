@@ -253,9 +253,10 @@
                 <div class="user-card">
                     <div style="display: flex; align-items: center; gap: 1rem;">
                         <img 
-                            src="account-avatar-profile-user-16-svgrepo-com.svg" 
+                            src="${user._id ? `http://localhost:3000/api/user/${user._id}/profile-picture` : (user.avatar || 'assets/avatar.svg')}" 
                             alt="avatar" 
                             class="avatar" 
+                            onerror="this.onerror=null;this.src='assets/avatar.svg';" 
                         />
                         <div class="user-info">
                             <strong>Ansh Makkar</strong>
@@ -299,7 +300,7 @@
                 const userCard = `
                     <div class="user-card">
                         <div style="display: flex; align-items: center; gap: 1rem;">
-                            <img src="${user.avatar}" alt="avatar" class="avatar" />
+                            <img src="${user._id ? `http://localhost:3000/api/user/${user._id}/profile-picture` : (user.avatar || 'assets/avatar.svg')}" alt="avatar" class="avatar" onerror="this.onerror=null;this.src='assets/avatar.svg';" />
                             <div class="user-info">
                                 <strong>${user.name}</strong>
                             </div>
