@@ -15,9 +15,9 @@ const crypto = require('crypto');
 const app = express();
 
 // CORS middleware must be applied before any routes or other middleware
-const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:8000', 'http://127.0.0.1:8000'];
+const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',');
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',')[0] : 'http://localhost:8000',
+  origin: process.env.ALLOWED_ORIGINS.split(',')[0],
   credentials: true
 }));
 
@@ -30,7 +30,7 @@ const io = socketIo(server, {
   }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT
 
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI, {
@@ -517,7 +517,7 @@ app.post('/api/register', upload.single('profile_picture'), async (req, res) => 
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: process.env.VERIFICATION_EMAIL_SUBJECT || 'Email Verification - CheckIn',
+      subject: 'Email Verification - CheckIn',
       html: `
         <h1>Welcome to CheckIn!</h1>
         <p>Thank you for registering. Please use the following code to verify your email address:</p>
@@ -690,7 +690,7 @@ app.post('/api/contact', async (req, res) => {
     const mailOptionsTeam = {
       from: process.env.EMAIL_USER,
       to: process.env.EMAIL_USER,
-      subject: process.env.CONTACT_EMAIL_SUBJECT || 'New Contact Form Submission - CheckIn',
+      subject: 'New Contact Form Submission - CheckIn',
       html: `
         <h2>New Contact Form Submission</h2>
         <p><strong>Name:</strong> ${name}</p>

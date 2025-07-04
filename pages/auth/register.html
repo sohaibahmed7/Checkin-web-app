@@ -130,6 +130,7 @@
             display: none;
         }
     </style>
+    <script src="/config.js"></script>
 </head>
 <body>
     <nav class="navbar">
@@ -319,7 +320,7 @@
 
             // Validate invite code first
             try {
-                const inviteResponse = await fetch('http://localhost:3000/api/validate-invite-code', {
+                const inviteResponse = await fetch(config.getApiUrl(`${config.API_ENDPOINTS.VALIDATE_INVITE}`), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -356,7 +357,7 @@
                     formData.append('profile_picture', profilePicture);
                 }
 
-                const response = await fetch('http://localhost:3000/api/register', {
+                const response = await fetch(config.getApiUrl(`${config.API_ENDPOINTS.REGISTER}`), {
                     method: 'POST',
                     body: formData
                 });
