@@ -12,6 +12,7 @@
     <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.5.0/mapbox-gl-draw.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.5.0/mapbox-gl-draw.js"></script>
     <link rel="icon" type="image/png" href="/favicon.png">
+    <script src="/config.js"></script>
     <style>
         .container {
             max-width: 800px;
@@ -317,7 +318,7 @@
             const moderators = Array.from(document.querySelectorAll('#moderatorsList li')).map(li => li.textContent.replace('×', '').trim());
             const permissions = Array.from(document.querySelectorAll('.permissions-list input:checked')).map(input => input.parentElement.textContent.trim());
             try {
-                const response = await fetch('http://localhost:3000/api/create-neighborhood', {
+                const response = await fetch(config.getApiUrl(`${config.API_ENDPOINTS.NEIGHBORHOOD}/create-neighborhood`), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -1,3 +1,6 @@
+// Load environment variables
+require('dotenv').config();
+
 const express = require('express');
 const mongoose = require('mongoose');
 const multer = require('multer');
@@ -12,9 +15,9 @@ const crypto = require('crypto');
 const app = express();
 
 // CORS middleware must be applied before any routes or other middleware
-const allowedOrigins = ['http://localhost:8000', 'http://127.0.0.1:8000'];
+const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',');
 app.use(cors({
-  origin: 'http://localhost:8000',
+  origin: process.env.ALLOWED_ORIGINS.split(',')[0],
   credentials: true
 }));
 
@@ -27,10 +30,10 @@ const io = socketIo(server, {
   }
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT
 
 // MongoDB connection
-mongoose.connect('mongodb+srv://checkin_team123:Checkin2025@cluster0.2doejzi.mongodb.net/checkin?retryWrites=true&w=majority&appName=Cluster0', {
+mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
@@ -438,10 +441,10 @@ app.get('/view-contacts', async (req, res) => {
 
 // Nodemailer configuration
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: process.env.EMAIL_SERVICE || 'gmail',
   auth: {
-    user: 'teamatcheckin@gmail.com',
-    pass: 'bbus awsq szse dtun'
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD
   },
 });
 
@@ -512,7 +515,7 @@ app.post('/api/register', upload.single('profile_picture'), async (req, res) => 
 
     // Send verification email
     const mailOptions = {
-      from: 'teamatcheckin@gmail.com',
+      from: process.env.EMAIL_USER,
       to: email,
       subject: 'Email Verification - CheckIn',
       html: `
@@ -626,7 +629,7 @@ app.post('/api/resend-code', async (req, res) => {
 
     // Send new verification email
     const mailOptions = {
-      from: 'teamatcheckin@gmail.com',
+      from: process.env.EMAIL_USER,
       to: email,
       subject: 'New Verification Code - CheckIn',
       html: `
@@ -685,8 +688,8 @@ app.post('/api/contact', async (req, res) => {
 
     // Send email to team
     const mailOptionsTeam = {
-      from: 'teamatcheckin@gmail.com',
-      to: 'teamatcheckin@gmail.com',
+      from: process.env.EMAIL_USER,
+      to: process.env.EMAIL_USER,
       subject: 'New Contact Form Submission - CheckIn',
       html: `
         <h2>New Contact Form Submission</h2>
@@ -699,7 +702,7 @@ app.post('/api/contact', async (req, res) => {
 
     // Send confirmation email to user
     const mailOptionsUser = {
-      from: 'teamatcheckin@gmail.com',
+      from: process.env.EMAIL_USER,
       to: email,
       subject: 'Thank you for contacting CheckIn',
       html: `
@@ -760,9 +763,9 @@ app.post('/contact', express.urlencoded({ extended: true }), async (req, res) =>
     await contactMsg.save();
     // Send email to team
     const mailOptionsTeam = {
-      from: 'teamatcheckin@gmail.com',
-      to: 'teamatcheckin@gmail.com',
-      subject: 'New Contact Form Submission - CheckIn',
+      from: process.env.EMAIL_USER,
+      to: process.env.EMAIL_USER,
+      subject: process.env.CONTACT_EMAIL_SUBJECT || 'New Contact Form Submission - CheckIn',
       html: `
         <h2>New Contact Form Submission</h2>
         <p><strong>Name:</strong> ${name}</p>
@@ -773,7 +776,7 @@ app.post('/contact', express.urlencoded({ extended: true }), async (req, res) =>
     };
     // Send confirmation email to user
     const mailOptionsUser = {
-      from: 'teamatcheckin@gmail.com',
+      from: process.env.EMAIL_USER,
       to: email,
       subject: 'Thank you for contacting CheckIn',
       html: `

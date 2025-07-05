@@ -23,7 +23,7 @@ function createModernPingMarker(ping, targetMap) {
     // Create popup with timestamp, user, and image indicator
     const userName = ping.user && ping.user.name ? ping.user.name : 'Community User';
     let metaLine = `By ${userName}, ${formatTimestamp(ping.timestamp)}`;
-    let imageIndicator = ping.photoPath ? '<span class="ping-image-indicator-top"><i class="fas fa-image"></i></span>' : '';
+    let imageIndicator = ping.photo ? '<span class="ping-image-indicator-top"><i class="fas fa-image"></i></span>' : '';
     const popup = new mapboxgl.Popup({
         offset: 25,
         closeButton: false,
@@ -113,7 +113,7 @@ function renderPings(pingsToRender, containerId = 'recent-updates-container') {
     pingsToDisplay.forEach(ping => {
         const pingUser = ping.user
         const userName = pingUser.name || 'Community User';
-        let userAvatar = pingUser ? `http://localhost:3000/api/user/${pingUser._id}/profile-picture` : 'assets/avatar.svg';
+        let userAvatar = config.getUserAvatarUrl(pingUser._id);
         const pingTypeIcon = getPingTypeIcon(ping.type);
         const pingTypeLabel = formatPingTypeDisplay(ping.type);
         const pingElement = document.createElement('div');
@@ -171,7 +171,7 @@ async function fetchPings() {
         const user = JSON.parse(localStorage.getItem('user'));
         let neighborhoodId = null;
         if (user && user._id) {
-            const nRes = await fetch(`http://localhost:3000/api/user/neighborhood/${user._id}`);
+            const nRes = await fetch(config.getApiUrl(`${config.API_ENDPOINTS.NEIGHBORHOOD}/${user._id}`));
             if (nRes.ok) {
                 const neighborhood = await nRes.json();
                 if (neighborhood && neighborhood._id) {
@@ -181,8 +181,8 @@ async function fetchPings() {
         }
         const response = await fetch(
             neighborhoodId
-                ? `http://localhost:3000/api/pings?neighborhoodId=${neighborhoodId}`
-                : 'http://localhost:3000/api/pings'
+                ? config.getApiUrl(`${config.API_ENDPOINTS.PINGS}?neighborhoodId=${neighborhoodId}`)
+                : config.getApiUrl(config.API_ENDPOINTS.PINGS)
         );
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -209,7 +209,7 @@ async function fetchPings() {
                 description: ping.description,
                 coordinates: coordinates, // Ensure this is [lng, lat] or null
                 timestamp: new Date(ping.createdAt), // Use createdAt for timestamp
-                photoPath: ping.photoPath, // Include photo if available
+                photo: ping.photo, // Include photo if available
                 user: ping.user // <-- Add this line to include user info
             };
         });
@@ -465,13 +465,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Set greeting bar avatar immediately on load
     const greetingBarAvatar = document.getElementById('greetingBarAvatar');
     if (greetingBarAvatar && user && user._id) {
-        let avatarUrl = user._id ? `http://localhost:3000/api/user/${user._id}/profile-picture` : 'assets/avatar.svg';
+        let avatarUrl = config.getUserAvatarUrl(user._id);
         greetingBarAvatar.src = avatarUrl;
-        greetingBarAvatar.onerror = function() { this.onerror = null; this.src = avatarUrl; };
+        greetingBarAvatar.onerror = function() { this.onerror = null; this.src = 'assets/avatar.svg'; };
     }
 
     // Initialize Mapbox with the correct token
-    mapboxgl.accessToken = 'pk.eyJ1IjoiYW5zaG1ha2thciIsImEiOiJjbTl2ams5OGcwbGwwMm1vbGpiaDduczg1In0.4yzUyxSxV9lHLtbRQfjdWA';
+    mapboxgl.accessToken = config.MAPBOX_ACCESS_TOKEN;
     
     // Add navigation handlers
     document.querySelectorAll('[data-navigate-to]').forEach(element => {
@@ -509,7 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return { center: [start_x_coord, start_y_coord], bounds: null };
         }
         try {
-            const response = await fetch(`http://localhost:3000/api/user/neighborhood/${user._id}`);
+            const response = await fetch(config.getApiUrl(`${config.API_ENDPOINTS.NEIGHBORHOOD}/${user._id}`));
             if (!response.ok) {
                 console.log('No neighborhood found for user, using default coordinates');
                 return { center: [start_x_coord, start_y_coord], bounds: null };
@@ -775,7 +775,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (photo) formData.append('photo', photo);
             if (userId) formData.append('userId', userId);
             try {
-                const response = await fetch('http://localhost:3000/api/pings', {
+                const response = await fetch(config.getApiUrl(config.API_ENDPOINTS.PINGS), {
                     method: 'POST',
                     body: formData
                 });
@@ -990,7 +990,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 tempPingMarker = null;
             }
             selectedPingLocation = null; // Clear selected location
-            mapLocationInput.value = ''; // Clear location input
+            if (mapLocationInput) {
+                mapLocationInput.value = '';
+            }
             if (pingMapPreview) {
                 pingMapPreview.remove(); // Dispose of the map instance
                 pingMapPreview = null;
@@ -1046,13 +1048,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 const el = document.createElement('div');
-                el.className = 'marker';
-                el.style.backgroundColor = 'var(--primary-color)';
-                el.style.width = '24px';
-                el.style.height = '24px';
-                el.style.borderRadius = '50%';
-                el.style.border = '2px solid white';
-                el.style.boxShadow = '0 0 0 2px var(--primary-color)';
+                el.className = 'marker preview';
 
                 tempPingMarker = new mapboxgl.Marker(el)
                     .setLngLat(e.lngLat)
@@ -1148,7 +1144,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const previewImg = document.querySelector('.profile-preview-avatar img');
-                    let avatarUrl = user._id ? `http://localhost:3000/api/user/${user._id}/profile-picture` : 'assets/avatar.svg';
+                    let avatarUrl = config.getUserAvatarUrl(user._id);
                     previewImg.src = e.target.result;
                     previewImg.onerror = function() { this.onerror = null; this.src = avatarUrl; };
                 }
@@ -1171,7 +1167,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const profilePreviewEmail = document.querySelector('.profile-preview-info p');
 
         if (profilePreviewAvatar) {
-            let avatarUrl = user._id ? `http://localhost:3000/api/user/${user._id}/profile-picture` : 'assets/avatar.svg';
+            let avatarUrl = config.getUserAvatarUrl(user._id);
             profilePreviewAvatar.src = avatarUrl;
             profilePreviewAvatar.onerror = function() { this.onerror = null; this.src = avatarUrl; };
         }
@@ -1219,7 +1215,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch('http://localhost:3000/api/user/settings', {
+            const response = await fetch(config.getApiUrl(`${config.API_ENDPOINTS.USERS}/settings`), {
                 method: 'PUT',
                 body: formData
             });
@@ -1244,9 +1240,6 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('An error occurred while saving settings');
         }
     }
-
-    // Call on page load
-    updateGreeting();
 
     // Handle alert links on the home tab
     document.querySelectorAll('.alert-link').forEach(link => {
@@ -1402,7 +1395,7 @@ document.addEventListener('DOMContentLoaded', () => {
             confirmBtn.addEventListener('click', async function() {
                 // Call backend logout endpoint
                 try {
-                    await fetch('http://localhost:3000/api/logout', { method: 'POST', credentials: 'include' });
+                    await fetch(config.getApiUrl(config.API_ENDPOINTS.LOGOUT), { method: 'POST', credentials: 'include' });
                 } catch (e) {
                     // Ignore errors for now
                 }
