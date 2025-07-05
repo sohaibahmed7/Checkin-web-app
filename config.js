@@ -1,7 +1,7 @@
 // Frontend Configuration
 const config = {
     // API Configuration
-    API_BASE_URL: 'http://localhost:3000',
+    API_BASE_URL: 'https://api-3ffpwchysq-uc.a.run.app',
     API_ENDPOINTS: {
         PINGS: '/api/pings',
         USERS: '/api/user',
@@ -22,7 +22,7 @@ const config = {
     MAPBOX_ACCESS_TOKEN: 'pk.eyJ1IjoiYW5zaG1ha2thciIsImEiOiJjbTl2ams5OGcwbGwwMm1vbGpiaDduczg1In0.4yzUyxSxV9lHLtbRQfjdWA',
     
     // Socket.IO Configuration
-    SOCKET_URL: 'http://localhost:3000',
+    SOCKET_URL: 'https://api-3ffpwchysq-uc.a.run.app',
     
     // App Configuration
     APP_NAME: 'CheckIn',
