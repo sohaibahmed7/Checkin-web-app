@@ -1569,6 +1569,20 @@ document.addEventListener('DOMContentLoaded', () => {
             placePingModal.classList.remove('active');
         });
     }
+
+    // Show password toggle for settings
+    const showSettingsPassword = document.getElementById('showSettingsPassword');
+    const oldPasswordInput = document.getElementById('oldPassword');
+    const newPasswordInput = document.getElementById('newPassword');
+    const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
+    if (showSettingsPassword && oldPasswordInput && newPasswordInput && confirmNewPasswordInput) {
+        showSettingsPassword.addEventListener('change', function() {
+            const type = this.checked ? 'text' : 'password';
+            oldPasswordInput.type = type;
+            newPasswordInput.type = type;
+            confirmNewPasswordInput.type = type;
+        });
+    }
 }); 
 
 // Helper function to compare only year, month, and day
