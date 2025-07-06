@@ -240,6 +240,11 @@
                         window.location.href = '/pages/dashboard/index.html';
                     }, 1000);
                 } else {
+                    // If the error is for unverified email, redirect to verification page
+                    if (response.status === 403 && data.message && data.message.includes('verify your email')) {
+                        window.location.href = `verify-email.html?email=${encodeURIComponent(email)}`;
+                        return;
+                    }
                     showError(document.getElementById('loginError'), data.message || 'Login failed. Please try again.');
                 }
             } catch (error) {
