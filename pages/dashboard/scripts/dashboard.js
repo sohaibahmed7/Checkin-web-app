@@ -1255,58 +1255,117 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Update form fields
-        const nameInput = document.getElementById('name');
         const emailInput = document.getElementById('email');
         const phoneInput = document.getElementById('phone');
-
-        if (nameInput) nameInput.value = user.name;
         if (emailInput) emailInput.value = user.email;
-        if (phoneInput) phoneInput.value = user.number;
+        if (phoneInput) phoneInput.value = user.number || '';
+        // Clear password fields
+        document.getElementById('oldPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmNewPassword').value = '';
+        // Hide password section
+        document.getElementById('changePasswordSection').style.display = 'none';
+    }
+
+    // Toggle password section
+    const toggleChangePasswordBtn = document.getElementById('toggleChangePassword');
+    if (toggleChangePasswordBtn) {
+        toggleChangePasswordBtn.addEventListener('click', function() {
+            const section = document.getElementById('changePasswordSection');
+            section.style.display = section.style.display === 'none' ? 'block' : 'none';
+        });
+    }
+
+    // Cancel button returns to home tab
+    const cancelSettingsBtn = document.getElementById('cancelSettingsBtn');
+    if (cancelSettingsBtn) {
+        cancelSettingsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Switch to home tab
+            document.querySelectorAll('.tab-pane').forEach(tabPane => {
+                tabPane.classList.remove('active');
+                if (tabPane.id === 'home') {
+                    tabPane.classList.add('active');
+                }
+            });
+            document.querySelectorAll('.sidebar-nav a').forEach(sidebarLink => {
+                sidebarLink.classList.remove('active');
+                if (sidebarLink.getAttribute('data-tab') === 'home') {
+                    sidebarLink.classList.add('active');
+                }
+            });
+        });
+    }
+
+    // Save button handler
+    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+    if (saveSettingsBtn) {
+        saveSettingsBtn.addEventListener('click', saveUserSettings);
     }
 
     async function saveUserSettings(event) {
-        event.preventDefault();
+        if (event) event.preventDefault();
         const user = JSON.parse(localStorage.getItem('user'));
-        if (!user) {
+        if (!user || !user._id) {
             alert('No user data found. Please log in again.');
-            window.location.href = '../login.html';
+            window.location.href = '/pages/auth/login.html';
             return;
         }
-        if (!user._id) {
-            alert('User ID is missing. Please log out and log in again.');
-            window.location.href = '../login.html';
-            return;
-        }
-
-        const nameInput = document.getElementById('name');
+        const emailInput = document.getElementById('email');
         const phoneInput = document.getElementById('phone');
         const profilePictureInput = document.getElementById('profilePicture');
-
-        const formData = new FormData();
-        formData.append('userId', user._id);
-        formData.append('name', nameInput.value);
-        formData.append('number', phoneInput.value);
-        if (profilePictureInput.files.length > 0) {
-            formData.append('profile_picture', profilePictureInput.files[0]);
+        const oldPassword = document.getElementById('oldPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+        let profilePictureBase64 = null;
+        if (profilePictureInput.files && profilePictureInput.files[0]) {
+            profilePictureBase64 = await toBase64(profilePictureInput.files[0]);
         }
-
+        // Build payload
+        const payload = {
+            userId: user._id,
+            email: emailInput.value,
+            number: phoneInput.value,
+        };
+        if (profilePictureBase64) payload.profile_picture_base64 = profilePictureBase64;
+        const passwordFieldsFilled = oldPassword && newPassword && confirmNewPassword;
+        if (passwordFieldsFilled) {
+            payload.oldPassword = oldPassword;
+            payload.newPassword = newPassword;
+            payload.confirmNewPassword = confirmNewPassword;
+        }
         try {
             const response = await fetch(config.getApiUrl(`${config.API_ENDPOINTS.USERS}/settings`), {
                 method: 'PUT',
-                body: formData
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
-
             const data = await response.json();
-
             if (response.ok) {
+                // If both email and password changed
+                if (data.emailChanged && passwordFieldsFilled) {
+                    alert('Email and password changed. Please check your new email for a verification code. After verifying, you will need to log in again.');
+                    localStorage.removeItem('user');
+                    window.location.href = '/pages/auth/verify-email.html';
+                    return;
+                }
+                // If only email changed
+                if (data.emailChanged) {
+                    alert('Email changed. Please check your new email for a verification code. Use this code next time you log in.');
+                    window.location.href = '/pages/auth/verify-email.html';
+                    return;
+                }
+                // If only password changed
+                if (passwordFieldsFilled) {
+                    alert('Password changed. Please sign in again.');
+                    localStorage.removeItem('user');
+                    window.location.href = '/pages/auth/login.html';
+                    return;
+                }
                 // Update localStorage with new user data
                 const updatedUser = { ...user, ...data.user };
                 localStorage.setItem('user', JSON.stringify(updatedUser));
-                
-                // Reload settings to show updated data
                 loadUserSettings();
-                
-                // Show success message
                 alert('Settings saved successfully!');
             } else {
                 alert(data.message || 'Failed to save settings');
@@ -1315,6 +1374,16 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error saving settings:', error);
             alert('An error occurred while saving settings');
         }
+    }
+
+    // Helper to convert file to base64
+    function toBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
     }
 
     // Handle alert links on the home tab
@@ -1482,6 +1551,24 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     })();
+
+    // Fix logout button in sidebar
+    const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
+    if (sidebarLogoutBtn) {
+        sidebarLogoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('user');
+            window.location.href = '/pages/auth/login.html';
+        });
+    }
+
+    // Fix cancel button for Place Ping modal
+    const cancelPingBtn = document.getElementById('cancelPingBtn');
+    if (cancelPingBtn && placePingModal) {
+        cancelPingBtn.addEventListener('click', function() {
+            placePingModal.classList.remove('active');
+        });
+    }
 }); 
 
 // Helper function to compare only year, month, and day

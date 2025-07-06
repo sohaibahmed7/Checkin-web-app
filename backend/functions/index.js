@@ -573,12 +573,12 @@ app.post("/api/login", async (req, res) => {
     if (!user) {
       return res.status(400).json({message: "Invalid email or password"});
     }
-    if (!user.is_verified) {
-      return res.status(403).json({message: "Please verify your email before logging in."});
-    }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({message: "Invalid email or password"});
+    }
+    if (!user.is_verified) {
+      return res.status(403).json({message: "Please verify your email before logging in."});
     }
     res.json({
       message: "Login successful",
@@ -712,7 +712,7 @@ app.get("/api/user/settings", async (req, res) => {
 
 app.put("/api/user/settings", express.json(), async (req, res) => {
   try {
-    const {userId, number, password, profile_picture_base64} = req.body;
+    const {userId, number, email, profile_picture_base64, oldPassword, newPassword, confirmNewPassword} = req.body;
     if (!userId || userId === "undefined") {
       return res.status(400).json({message: "User ID is required for updating settings."});
     }
@@ -720,49 +720,85 @@ app.put("/api/user/settings", express.json(), async (req, res) => {
     if (!user) {
       return res.status(404).json({message: "User not found"});
     }
-    // Prevent changing first/last name
-    // if (req.body.firstName) user.firstName = req.body.firstName;
-    // if (req.body.lastName) user.lastName = req.body.lastName;
+    let emailChanged = false;
     if (number) user.number = number;
-
+    if (email && email !== user.email) {
+      user.email = email;
+      user.is_verified = false;
+      // Generate new verification code and expiry
+      user.verification_code = Math.floor(100000 + Math.random() * 900000).toString();
+      user.verification_expiry = new Date(Date.now() + 10 * 60 * 1000);
+      emailChanged = true;
+    }
     // Upload new profile picture if provided
     if (profile_picture_base64) {
       try {
         const bucket = admin.storage().bucket();
         const fileName = `profile_pictures/${Date.now()}_profile.jpg`;
         const file = bucket.file(fileName);
-
-        // Convert base64 to buffer
         const base64Data = profile_picture_base64.replace(/^data:image\/[a-z]+;base64,/, "");
         const buffer = Buffer.from(base64Data, "base64");
-
         await file.save(buffer, {
           metadata: {
             contentType: "image/jpeg",
           },
         });
-
-        // Make the file publicly accessible
         await file.makePublic();
-
-        // Get the public URL
         user.profile_picture_url = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
       } catch (uploadError) {
         console.error("Error uploading profile picture:", uploadError);
         return res.status(500).json({message: "Error uploading profile picture"});
       }
     }
-
-    if (password) {
-      if (!validatePassword(password)) {
-        return res.status(400).json({
-          message: "Password must be at least 8 characters long and contain at least one special character",
-        });
+    // Password change logic
+    if (oldPassword || newPassword || confirmNewPassword) {
+      if (!oldPassword || !newPassword || !confirmNewPassword) {
+        return res.status(400).json({message: "To change your password, you must provide old password, new password, and confirm new password."});
       }
+      // Check old password
+      const isMatch = await bcrypt.compare(oldPassword, user.password);
+      if (!isMatch) {
+        return res.status(400).json({message: "Old password is incorrect."});
+      }
+      // Check new password requirements
+      if (!validatePassword(newPassword)) {
+        return res.status(400).json({message: "New password must be at least 8 characters long and contain at least one special character."});
+      }
+      // Check new/confirm match
+      if (newPassword !== confirmNewPassword) {
+        return res.status(400).json({message: "New password and confirm password do not match."});
+      }
+      // Check new password is not same as old
+      const isSame = await bcrypt.compare(newPassword, user.password);
+      if (isSame) {
+        return res.status(400).json({message: "New password must be different from the old password."});
+      }
+      // All good, update password
       const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(password, salt);
+      user.password = await bcrypt.hash(newPassword, salt);
     }
     await user.save();
+    // Send verification email if email was changed
+    if (emailChanged) {
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: user.email,
+        subject: "Email Verification - CheckIn",
+        html: `
+          <h1>Email Change Verification - CheckIn</h1>
+          <p>Your email was changed. Please use the following code to verify your new email address:</p>
+          <h2 style="color: #4CAF50; font-size: 24px; padding: 10px; background: #f5f5f5; text-align: center;">${user.verification_code}</h2>
+          <p>This code will expire in 10 minutes.</p>
+          <p>If you didn't request this change, please contact support.</p>
+        `,
+      };
+      try {
+        await getTransporter().sendMail(mailOptions);
+      } catch (error) {
+        console.error("Error sending verification email after email change:", error);
+        // Don't fail the request, but log the error
+      }
+    }
     res.json({
       message: "Settings updated successfully",
       user: {
@@ -774,6 +810,7 @@ app.put("/api/user/settings", express.json(), async (req, res) => {
         number: user.number,
         is_moderator: user.is_moderator,
       },
+      emailChanged,
     });
   } catch (err) {
     console.error("Error updating user settings:", err);

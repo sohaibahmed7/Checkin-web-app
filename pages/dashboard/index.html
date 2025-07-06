@@ -599,18 +599,14 @@
                     <!-- Account Settings -->
                     <div class="settings-section">
                         <h3>Account Settings</h3>
-                        <form class="settings-form">
-                            <div class="form-group">
-                                <label for="name">Full Name</label>
-                                <input type="text" id="name" value="User Name">
-                            </div>
+                        <form class="settings-form" id="accountSettingsForm">
                             <div class="form-group">
                                 <label for="email">Email Address</label>
-                                <input type="email" id="email" value="user@example.com" readonly>
+                                <input type="email" id="email" value="user@example.com">
                             </div>
                             <div class="form-group">
                                 <label for="phone">Phone Number</label>
-                                <input type="tel" id="phone" value="+1 (555) 123-4567">
+                                <input type="tel" id="phone" value="+1 (111) 111-1111">
                             </div>
                             <div class="form-group">
                                 <label for="profilePicture">Profile Picture</label>
@@ -621,61 +617,30 @@
                                     <input type="file" id="profilePicture" name="profile_picture" class="file-input" accept="image/*">
                                 </div>
                             </div>
-                            <button type="button" class="change-password-btn">
+                            <button type="button" class="change-password-btn" id="toggleChangePassword">
                                 <i class="fas fa-lock"></i> Change Password
                             </button>
+                            <div id="changePasswordSection" style="display:none; margin-top:1.5rem;">
+                                <div class="form-group">
+                                    <label for="oldPassword">Old Password</label>
+                                    <input type="password" id="oldPassword" autocomplete="current-password">
+                                </div>
+                                <div class="form-group">
+                                    <label for="newPassword">New Password</label>
+                                    <input type="password" id="newPassword" autocomplete="new-password">
+                                </div>
+                                <div class="form-group">
+                                    <label for="confirmNewPassword">Confirm New Password</label>
+                                    <input type="password" id="confirmNewPassword" autocomplete="new-password">
+                                </div>
+                            </div>
                         </form>
-                    </div>
-
-                    <!-- Notification Settings -->
-                    <div class="settings-section">
-                        <h3>Notification Settings</h3>
-                        <div class="toggle-group">
-                            <span>Email Notifications</span>
-                            <label class="switch">
-                                <input type="checkbox" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="toggle-group">
-                            <span>Push Notifications</span>
-                            <label class="switch">
-                                <input type="checkbox" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="toggle-group">
-                            <span>Community Alerts</span>
-                            <label class="switch">
-                                <input type="checkbox" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Privacy Settings -->
-                    <div class="settings-section">
-                        <h3>Privacy Settings</h3>
-                        <div class="toggle-group">
-                            <span>Show Location on Map</span>
-                            <label class="switch">
-                                <input type="checkbox" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        <div class="toggle-group">
-                            <span>Share Activity Status</span>
-                            <label class="switch">
-                                <input type="checkbox" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
                     </div>
 
                     <!-- Settings Actions -->
                     <div class="settings-actions">
-                        <button class="cancel-button">Cancel</button>
-                        <button class="save-button">Save Changes</button>
+                        <button class="cancel-button" id="cancelSettingsBtn">Cancel</button>
+                        <button class="save-button" id="saveSettingsBtn">Save Changes</button>
                     </div>
                 </div>
             </div>
@@ -734,49 +699,6 @@
 
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script src="scripts/chat.js"></script>
-
-    <script>
-        // Personalize greeting based on time and user name
-        function getGreeting() {
-            const hour = new Date().getHours();
-            if (hour < 12) return 'Good Morning';
-            if (hour < 18) return 'Good Afternoon';
-            return 'Good Evening';
-        }
-        // Get user's name from localStorage
-        const user = JSON.parse(localStorage.getItem('user'));
-        const userName = user && user.name ? user.name : 'User';
-        document.getElementById('greeting-text').textContent = `${getGreeting()}, ${userName}!`;
-
-        const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
-        const mainLogoLink = document.getElementById('mainLogoLink');
-
-        // Ensure sidebar logout clears user data and redirects
-        if (sidebarLogoutBtn) {
-            sidebarLogoutBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                localStorage.removeItem('user');
-                window.location.href = '/pages/auth/login.html';
-            });
-        }
-
-        // Ensure logo always redirects to landing page
-        if (mainLogoLink) {
-            mainLogoLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                window.location.href = 'index.html';
-            });
-        }
-
-        // Add event listener for Cancel button to close the modal
-        const cancelPingBtn = document.getElementById('cancelPingBtn');
-        const placePingModal = document.getElementById('placePingModal');
-        if (cancelPingBtn && placePingModal) {
-            cancelPingBtn.addEventListener('click', function() {
-                placePingModal.classList.remove('active');
-            });
-        }
-    </script>
 
     <!-- Place this just before </body> -->
     <div id="chatInfoModal" class="modal" style="display:none;">
