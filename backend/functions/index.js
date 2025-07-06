@@ -23,6 +23,8 @@ const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const {config} = require("dotenv");
+const fs = require('fs');
+const path = require('path');
 
 config({path: __dirname + "/.env"});
 
@@ -884,6 +886,23 @@ app.get("/api/ping/:id/photo", async (req, res) => {
   } catch (err) {
     res.status(500).send("Error fetching ping photo");
   }
+});
+
+// --- Chat File Upload API ---
+app.post('/api/chat/upload', upload.single('chatFile'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded.' });
+  }
+  // Ensure uploads directory exists
+  const uploadsDir = path.join(__dirname, '../uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  // Save file to disk
+  const filePath = path.join(uploadsDir, req.file.originalname);
+  fs.writeFileSync(filePath, req.file.buffer);
+  // Return the path where the file is accessible (relative to public server root)
+  res.json({ filePath: '/uploads/' + req.file.originalname });
 });
 
 // Export the Express app as a Firebase HTTPS function with environment variables
