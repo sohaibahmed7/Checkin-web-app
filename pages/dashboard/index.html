@@ -322,10 +322,34 @@
                         <div class="activity-chart-section">
                             <div class="chart-header">
                                 <h3><i class="fas fa-chart-bar"></i> Activity Overview</h3>
-                                <div class="chart-filters">
-                                    <button class="active">Week</button>
-                                    <button>Month</button>
-                                    <button>Year</button>
+                                <div style="display: flex; gap: 1rem; align-items: center;">
+                                    <div class="chart-filters">
+                                        <button class="active">Week</button>
+                                        <button>Month</button>
+                                        <button>Year</button>
+                                    </div>
+                                    <div class="chart-breakdown-filters">
+                                        <div class="filter-group">
+                                            <label for="chart-type-filter">Report Type</label>
+                                            <select id="chart-type-filter" class="chart-type-filter">
+                                                <option value="all">All</option>
+                                                <option value="fire">Fire</option>
+                                                <option value="suspicious">Suspicious</option>
+                                                <option value="break-enter">Break & Enter</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                        </div>
+                                        <div class="filter-group">
+                                            <label for="chart-status-filter">Status</label>
+                                            <select id="chart-status-filter" class="chart-status-filter">
+                                                <option value="all">All</option>
+                                                <option value="solved">Solved</option>
+                                                <option value="active">Active</option>
+                                                <option value="pending">Pending</option>
+                                                <option value="investigating">Investigating</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="chart-container">
@@ -338,9 +362,9 @@
                                     <span class="stat-change positive">+12% <i class="fas fa-arrow-up"></i></span>
                                 </div>
                                 <div class="stat-item">
-                                    <span class="stat-label">Response Time</span>
-                                    <span class="stat-value">8m</span>
-                                    <span class="stat-change negative">-5% <i class="fas fa-arrow-down"></i></span>
+                                    <span class="stat-label">Active Cases</span>
+                                    <span class="stat-value">8</span>
+                                    <span class="stat-change neutral">0 <i class="fas fa-minus"></i></span>
                                 </div>
                                 <div class="stat-item">
                                     <span class="stat-label">Resolution Rate</span>
@@ -360,71 +384,7 @@
                                 </div>
                             </div>
                             <div class="feed-items">
-                                <div class="feed-item urgent">
-                                    <div class="feed-avatar">
-                                        <img src="assets/avatar.svg" alt="John D." onerror="this.onerror=null;this.src='assets/avatar.svg';">
-                                        <span class="status urgent"></span>
-                                    </div>
-                                    <div class="feed-content">
-                                        <div class="feed-header">
-                                            <span class="feed-user">John D.</span>
-                                            <span class="feed-time">5m ago</span>
-                                        </div>
-                                        <p class="feed-text">Fire reported at Oak & Main. Fire department en route.</p>
-                                        <div class="feed-actions">
-                                            <a href="#map" class="view-on-map" data-coordinates="-81.24,43.02">
-                                                <i class="fas fa-map-marker-alt"></i> View Location
-                                            </a>
-                                            <span class="feed-category fire">
-                                                <i class="fas fa-fire"></i> Fire Alert
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="feed-item resolved">
-                                    <div class="feed-avatar">
-                                        <img src="assets/avatar.svg" alt="Sarah M." onerror="this.onerror=null;this.src='assets/avatar.svg';">
-                                        <span class="status resolved"></span>
-                                    </div>
-                                    <div class="feed-content">
-                                        <div class="feed-header">
-                                            <span class="feed-user">Sarah M.</span>
-                                            <span class="feed-time">15m ago</span>
-                                        </div>
-                                        <p class="feed-text">Suspicious activity report resolved. Area secured by patrol.</p>
-                                        <div class="feed-actions">
-                                            <button class="feed-action">
-                                                <i class="fas fa-check-circle"></i> Resolved
-                                            </button>
-                                            <span class="feed-category resolved">
-                                                <i class="fas fa-shield-alt"></i> Case Closed
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="feed-item">
-                                    <div class="feed-avatar">
-                                        <img src="assets/avatar.svg" alt="Mike R." onerror="this.onerror=null;this.src='assets/avatar.svg';">
-                                        <span class="status active"></span>
-                                    </div>
-                                    <div class="feed-content">
-                                        <div class="feed-header">
-                                            <span class="feed-user">Mike R.</span>
-                                            <span class="feed-time">30m ago</span>
-                                        </div>
-                                        <p class="feed-text">Suspicious vehicle spotted - Silver van circling Elm Street.</p>
-                                        <div class="feed-actions">
-                                            <a href="#map" class="view-on-map" data-coordinates="-81.25,43.01">
-                                                <i class="fas fa-map-marker-alt"></i> View Location
-                                            </a>
-                                            <span class="feed-category suspicious">
-                                                <i class="fas fa-exclamation-triangle"></i> Under Investigation
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
+                                <!-- Dynamic content will be rendered here by JS -->
                             </div>
                         </div>
                     </div>
