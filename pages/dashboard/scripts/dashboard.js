@@ -1869,12 +1869,11 @@ function renderReportsTable(reports) {
                     <div class="report-avatar-wrapper">${avatarHtml}</div>
                 </td>
                 <td>${report.user ? report.user.name : 'Unknown'}</td>
-                <td><span class="badge ${report.type}">${formatPingTypeDisplay(report.type)}</span></td>
+                <td class="type-col"><span class="badge ${report.type}">${formatPingTypeDisplay(report.type)}</span></td>
                 <td class="description-cell" title="${report.description}">${report.description}</td>
                 <td>${formatTimestamp(createdAt)}</td>
-                <td>${statusHtml}</td>
+                <td class="status-col">${statusHtml}</td>
                 <td>${timeToResolve}</td>
-                <td>${report.escalatedTo || '-'}</td>
                 <td>${evidenceHtml}</td>
                 <td>
                     <div class="action-buttons">

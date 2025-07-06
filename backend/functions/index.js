@@ -109,6 +109,24 @@ const pingSchema = new mongoose.Schema({
   createdAt: {type: Date, default: Date.now},
   user: {type: mongoose.Schema.Types.ObjectId, ref: "User"},
   neighborhoodId: {type: mongoose.Schema.Types.ObjectId, ref: "Neighborhood"},
+  status: {
+    type: String,
+    enum: ["pending", "investigating", "resolved", "escalated", "solved"],
+    default: "pending"
+  },
+  timeResolved: { type: Date },
+  escalatedTo: { type: String },
+  notes: [{
+    content: String,
+    addedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    addedAt: { type: Date, default: Date.now }
+  }],
+  followUps: [{
+    action: String,
+    description: String,
+    addedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    addedAt: { type: Date, default: Date.now }
+  }]
 });
 
 const Ping = mongoose.model("Ping", pingSchema);
@@ -368,7 +386,7 @@ app.get("/api/pings", async (req, res) => {
 });
 
 app.post("/api/pings", upload.single("photo"), async (req, res) => {
-  const {description, lat, lng, type, userId} = req.body;
+  const {description, lat, lng, type, userId, status, timeResolved, escalatedTo, notes, followUps} = req.body;
   if (!userId || userId === "null" || userId === "undefined") {
     return res.status(400).json({message: "User ID is required to create a ping."});
   }
@@ -386,6 +404,11 @@ app.post("/api/pings", upload.single("photo"), async (req, res) => {
     type,
     user: userId,
     neighborhoodId: user.neighborhoodId,
+    status,
+    timeResolved,
+    escalatedTo,
+    notes,
+    followUps
   };
 
   // Handle file upload if present
