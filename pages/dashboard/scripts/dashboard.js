@@ -20,22 +20,35 @@ function createModernPingMarker(ping, targetMap) {
     console.log('Creating marker for type:', ping.type); // Debugging: Check the type being applied
     el.className = `marker ${ping.type}`;
     
+    // Determine if this is the home map or live map
+    const isHomeMap = targetMap && targetMap.getContainer && targetMap.getContainer().id === 'map';
+    
     // Create popup with timestamp, user, and image indicator
-    const userName = ping.user && ping.user.name ? ping.user.name : 'Community User';
+    let userName = 'Community User';
+    if (ping.user) {
+        if (ping.user.name) {
+            userName = ping.user.name;
+        } else if (ping.user.firstName && ping.user.lastName) {
+            userName = `${ping.user.firstName} ${ping.user.lastName}`;
+        } else if (ping.user.firstName) {
+            userName = ping.user.firstName;
+        }
+    }
     let metaLine = `By ${userName}, ${formatTimestamp(ping.timestamp)}`;
-    let imageIndicator = ping.photo ? '<span class="ping-image-indicator-top"><i class="fas fa-image"></i></span>' : '';
+    let imageIndicator = ping.photo_url ? '<span class="ping-image-indicator-top"><i class="fas fa-image"></i></span>' : '';
+    
+    // Only show photo in popup if not on the home map
+    let photoHtml = '';
+    if (ping.photo_url && !isHomeMap) {
+        photoHtml = `<div class=\"ping-photo-popup\"><img src=\"${ping.photo_url}\" alt=\"Ping Photo\" style=\"max-width: 200px; height: auto; border-radius: 8px; margin-top: 8px;\"></div>`;
+    }
+    
     const popup = new mapboxgl.Popup({
         offset: 25,
         closeButton: false,
         closeOnClick: true
     }).setHTML(`
-        <div class="ping-tooltip">
-            ${imageIndicator}
-            <span class="ping-category ${ping.type}">${formatPingTypeDisplay(ping.type)}</span>
-            <p class="ping-message">${ping.description}</p>
-            <div class="ping-meta-line">${metaLine}</div>
-        </div>
-    `);
+        <div class=\"ping-tooltip\">\n            ${imageIndicator}\n            <span class=\"ping-category ${ping.type}\">${formatPingTypeDisplay(ping.type)}</span>\n            <p class=\"ping-message\">${ping.description}</p>\n            ${photoHtml}\n            <div class=\"ping-meta-line\">${metaLine}</div>\n        </div>\n    `);
 
     // Create and return the marker
     const marker = new mapboxgl.Marker(el)
@@ -111,11 +124,28 @@ function renderPings(pingsToRender, containerId = 'recent-updates-container') {
     }
 
     pingsToDisplay.forEach(ping => {
-        const pingUser = ping.user
-        const userName = pingUser.name || 'Community User';
-        let userAvatar = config.getUserAvatarUrl(pingUser._id);
+        const pingUser = ping.user;
+        // Robust user name handling for all user shapes
+        let userName = 'Community User';
+        if (pingUser) {
+            if (pingUser.name) {
+                userName = pingUser.name;
+            } else if (pingUser.firstName && pingUser.lastName) {
+                userName = `${pingUser.firstName} ${pingUser.lastName}`;
+            } else if (pingUser.firstName) {
+                userName = pingUser.firstName;
+            }
+        }
+        let userAvatar = config.getUserAvatarUrl(pingUser && pingUser._id ? pingUser._id : null);
         const pingTypeIcon = getPingTypeIcon(ping.type);
         const pingTypeLabel = formatPingTypeDisplay(ping.type);
+        
+        // Handle photo display - only show image if not in the home tab preview
+        let photoHtml = '';
+        if (ping.photo_url) {
+            photoHtml = `<div class=\"ping-photo\"><img src=\"${ping.photo_url}\" alt=\"Ping Photo\" style=\"width: 50%; height: auto; object-fit: cover; border-radius: 8px; margin-top: 8px;\"></div>`;
+        }
+        
         const pingElement = document.createElement('div');
         pingElement.className = 'feed-item';
         pingElement.innerHTML = `
@@ -131,6 +161,7 @@ function renderPings(pingsToRender, containerId = 'recent-updates-container') {
                     </div>
                 </div>
                 <p class="feed-text">${ping.description || ''}</p>
+                ${photoHtml}
                 <div class="feed-actions">
                     <a href="#" class="view-on-map" data-lat="${ping.coordinates ? ping.coordinates[1] : ''}" data-lng="${ping.coordinates ? ping.coordinates[0] : ''}">View on Map</a>
                 </div>
@@ -209,7 +240,7 @@ async function fetchPings() {
                 description: ping.description,
                 coordinates: coordinates, // Ensure this is [lng, lat] or null
                 timestamp: new Date(ping.createdAt), // Use createdAt for timestamp
-                photo: ping.photo, // Include photo if available
+                photo_url: ping.photo_url, // Include photo_url if available
                 user: ping.user // <-- Add this line to include user info
             };
         });
@@ -449,7 +480,7 @@ function clearAllFilters() {
 document.addEventListener('DOMContentLoaded', () => {
     // Retrieve username from localStorage and update greeting
     const user = JSON.parse(localStorage.getItem('user'));
-    const userName = user && user.name ? user.name : 'User';
+    const userName = user && user.firstName ? user.firstName : 'User';
     const greetingText = document.getElementById('greeting-text');
     if (greetingText) {
         const hour = new Date().getHours();
@@ -590,33 +621,56 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize live map
     async function initializeLiveMap() {
         const liveMapContainer = document.getElementById('live-map-full');
-        if (!liveMapContainer) return;
-        if (liveMap) liveMap.remove();
-        const neighborhoodData = await getNeighborhoodData();
-        let mapOptions = {
-            container: 'live-map-full',
-            style: 'mapbox://styles/mapbox/streets-v12',
-            center: neighborhoodData.center,
-            zoom: 13
-        };
-        let bounds;
-        if (neighborhoodData.bounds) {
-            bounds = getBoundingBox(neighborhoodData.bounds);
-            mapOptions.maxBounds = bounds;
+        console.log('Live map container:', liveMapContainer); // Debug
+        if (!liveMapContainer) {
+            console.error('Live map container not found!');
+            return;
         }
-        liveMap = new mapboxgl.Map(mapOptions);
-        liveMap.scrollZoom.disable();
-        liveMap.touchZoomRotate.disable();
-        liveMap.addControl(new mapboxgl.NavigationControl());
-        if (bounds) {
-            liveMap.on('load', () => {
-                liveMap.fitBounds(bounds, { padding: 0, animate: false });
-                const minZoom = liveMap.getZoom();
-                liveMap.setMinZoom(minZoom);
-                liveMap.setMaxZoom(20);
-            });
+        
+        if (liveMap) {
+            console.log('Removing existing live map');
+            liveMap.remove();
         }
-        // The markers will be added by fetchPings and updateMapMarkers
+        
+        try {
+            const neighborhoodData = await getNeighborhoodData();
+            console.log('Neighborhood data for live map:', neighborhoodData);
+            
+            let mapOptions = {
+                container: 'live-map-full',
+                style: 'mapbox://styles/mapbox/streets-v12',
+                center: neighborhoodData.center,
+                zoom: 13
+            };
+            let bounds;
+            if (neighborhoodData.bounds) {
+                bounds = getBoundingBox(neighborhoodData.bounds);
+                mapOptions.maxBounds = bounds;
+            }
+            
+            console.log('Creating live map with options:', mapOptions);
+            liveMap = new mapboxgl.Map(mapOptions);
+            
+            // Enable zoom controls for live map
+            liveMap.scrollZoom.enable();
+            liveMap.touchZoomRotate.enable();
+            liveMap.addControl(new mapboxgl.NavigationControl());
+            
+            if (bounds) {
+                liveMap.on('load', () => {
+                    console.log('Live map loaded, fitting bounds');
+                    liveMap.fitBounds(bounds, { padding: 0, animate: false });
+                    const minZoom = liveMap.getZoom();
+                    liveMap.setMinZoom(minZoom);
+                    liveMap.setMaxZoom(20);
+                });
+            }
+            
+            console.log('Live map initialized successfully');
+            // The markers will be added by fetchPings and updateMapMarkers
+        } catch (error) {
+            console.error('Error initializing live map:', error);
+        }
     }
 
     // Greeting messages for each tab
@@ -651,7 +705,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const greetingText = document.getElementById('greeting-text');
         const subtitle = greetingText && greetingText.nextElementSibling;
         const user = JSON.parse(localStorage.getItem('user'));
-        const userName = user && user.name ? user.name : 'User';
+        
+        // Handle the new user structure with firstName/lastName
+        let userName = user && user.firstName ? user.firstName : 'User';
+
         const hour = new Date().getHours();
         let time = 'Good Morning';
         if (hour >= 12 && hour < 18) {
@@ -711,7 +768,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     // If there is a pending flyTo, do it now
                     if (pendingFlyTo && liveMap) {
-                        liveMap.flyTo({ center: [pendingFlyTo.lng, pendingFlyTo.lat], zoom: 20, essential: true });
+                        liveMap.flyTo({ center: [pendingFlyTo.lng, pendingFlyTo.lat], zoom: 18, essential: true });
                         if (pendingFlyTo.showPopup) {
                             setTimeout(() => openPingPopupOnLiveMap(pendingFlyTo.lng, pendingFlyTo.lat), 500);
                         }
@@ -767,17 +824,36 @@ document.addEventListener('DOMContentLoaded', () => {
             // Get userId from the user object in localStorage
             const user = JSON.parse(localStorage.getItem('user'));
             const userId = user && user._id ? user._id : null;
-            const formData = new FormData();
-            formData.append('description', description);
-            formData.append('type', category);
-            formData.append('lat', lat);
-            formData.append('lng', lng);
-            if (photo) formData.append('photo', photo);
-            if (userId) formData.append('userId', userId);
+            
+            // Convert photo to base64 if provided
+            let photo_base64 = null;
+            if (photo) {
+                photo_base64 = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.readAsDataURL(photo);
+                });
+            }
+            
+            const requestData = {
+                description: description,
+                type: category,
+                lat: lat,
+                lng: lng,
+                userId: userId
+            };
+            
+            if (photo_base64) {
+                requestData.photo_base64 = photo_base64;
+            }
+            
             try {
                 const response = await fetch(config.getApiUrl(config.API_ENDPOINTS.PINGS), {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
                 });
                 if (response.ok) {
                     alert('Ping posted successfully!');
@@ -1509,3 +1585,8 @@ function openPingPopupOnLiveMap(lng, lat) {
         marker.togglePopup();
     }
 }
+
+// Helper function to get user profile picture URL
+config.getUserAvatarUrl = function(userId) {
+    return userId ? config.getApiUrl(`/api/user/${userId}/profile-picture`) : config.DEFAULT_AVATAR;
+};

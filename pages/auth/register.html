@@ -41,6 +41,13 @@
             outline: none;
             border-color: #4a6bff;
         }
+        .name-row {
+            display: flex;
+            gap: 1rem;
+        }
+        .name-row .form-group {
+            flex: 1;
+        }
         .checkbox-group {
             display: flex;
             align-items: center;
@@ -129,8 +136,43 @@
         .file-input {
             display: none;
         }
+        .password-toggle {
+            position: relative;
+        }
+        .password-toggle input {
+            padding-right: 3rem;
+        }
+        .password-toggle-btn {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+        }
+        .password-toggle-btn:hover {
+            color: #333;
+        }
+        .notice-message {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        .invite-code-section {
+            display: none;
+        }
+        .invite-code-section.show {
+            display: block;
+        }
     </style>
     <script src="/config.js"></script>
+    
 </head>
 <body>
     <nav class="navbar">
@@ -148,23 +190,39 @@
 
     <div class="register-container">
         <h2>Create Your Account</h2>
+        
+        <div class="notice-message">
+            <i class="fas fa-info-circle"></i>
+            <strong>Important:</strong> Your first and last name cannot be changed after account creation.
+        </div>
+        
         <form class="register-form" id="registerForm" autocomplete="off">
-            <div class="form-group">
-                <label for="name">Full Name</label>
-                <input type="text" id="name" name="name" required autocomplete="off">
-                <div class="error-message" id="nameError"></div>
+            <div class="name-row">
+                <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" name="firstName" required autocomplete="off">
+                    <div class="error-message" id="firstNameError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" name="lastName" required autocomplete="off">
+                    <div class="error-message" id="lastNameError"></div>
+                </div>
             </div>
+            
             <div class="form-group">
-                <label for="email">Email</label>
+                <label for="email">Email Address</label>
                 <input type="email" id="email" name="email" required autocomplete="off">
                 <div class="error-message" id="emailError"></div>
             </div>
+            
             <div class="form-group">
-                <label for="number">Phone Number</label>
-                <input type="tel" id="number" name="number" required autocomplete="off">
+                <label for="number">Phone Number (Optional)</label>
+                <input type="tel" id="number" name="number" autocomplete="off">
                 <div class="error-message" id="numberError"></div>
             </div>
-            <div class="form-group">
+            
+            <div class="form-group password-toggle">
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required autocomplete="off">
                 <div class="password-requirements">
@@ -172,32 +230,35 @@
                 </div>
                 <div class="error-message" id="passwordError"></div>
             </div>
-            <div class="form-group">
-                <label for="inviteCode">Invite Code</label>
-                <input type="text" id="inviteCode" name="inviteCode" required placeholder="Enter the 5-digit invite code" autocomplete="off">
-                <div class="error-message" id="inviteCodeError"></div>
-            </div>
-            <div class="form-group">
+            
+            <div class="form-group password-toggle">
                 <label for="confirmPassword">Confirm Password</label>
                 <input type="password" id="confirmPassword" name="confirmPassword" required autocomplete="off">
                 <div class="error-message" id="confirmPasswordError"></div>
             </div>
-            <div class="form-group">
-                <label>Profile Picture</label>
-                <div class="file-input-container">
-                    <label class="file-input-label" for="profilePicture">
-                        Choose File
-                    </label>
-                    <input type="file" id="profilePicture" name="profile_picture" class="file-input" accept="image/*">
-                </div>
-                <img id="profilePreview" class="profile-picture-preview" alt="Profile Preview">
-                <div class="error-message" id="profileError"></div>
+            <div class="checkbox-group" style="margin-top: 0.3rem;">
+                <input type="checkbox" id="showPasswordRegister" style="margin-right: 0.4rem;">
+                <label for="showPasswordRegister" style="font-size: 0.97rem; color: #444; cursor: pointer;">Show Password</label>
             </div>
+            
+            <div class="form-group">
+                <label for="profile_picture">Profile Picture (optional):</label>
+                <input type="file" id="profile_picture" name="profile_picture" accept="image/*">
+                <input type="hidden" id="profile_picture_url" name="profile_picture_url">
+            </div>
+            
             <div class="form-group checkbox-group">
                 <input type="checkbox" id="moderator-checkbox" name="is_moderator">
-                <label for="moderator-checkbox">I am a moderator</label>
+                <label for="moderator-checkbox">Are you a moderator?</label>
             </div>
-            <button type="submit" class="register-button" id="register-button">Create Account</button>
+            
+            <div class="form-group" id="inviteCodeSection">
+                <label for="inviteCode">Neighborhood Invite Code</label>
+                <input type="text" id="inviteCode" name="inviteCode" placeholder="Enter the 5-digit invite code" autocomplete="off">
+                <div class="error-message" id="inviteCodeError"></div>
+            </div>
+            
+            <button type="submit" class="register-button" id="register-button">Create Account and Verify Email</button>
             <div class="error-message" id="registerError"></div>
             <div class="success-message" id="registerSuccess"></div>
             <div class="login-link">
@@ -232,7 +293,37 @@
         const registerForm = document.getElementById('registerForm');
         const registerButton = document.getElementById('register-button');
         const profilePreview = document.getElementById('profilePreview');
-        const profileInput = document.getElementById('profilePicture');
+        const profileInput = document.getElementById('profile_picture');
+        const profileUrlInput = document.getElementById('profile_picture_url');
+        const moderatorCheckbox = document.getElementById('moderator-checkbox');
+        const inviteCodeSection = document.getElementById('inviteCodeSection');
+
+        // Toggle password visibility
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const button = input.parentNode.querySelector('.password-toggle-btn i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                button.className = 'fas fa-eye';
+            }
+        }
+
+        // Toggle invite code section based on moderator checkbox
+        function updateInviteCodeSection() {
+            if (moderatorCheckbox.checked) {
+                inviteCodeSection.style.display = 'none';
+                document.getElementById('inviteCode').value = '';
+            } else {
+                inviteCodeSection.style.display = '';
+            }
+        }
+        moderatorCheckbox.addEventListener('change', updateInviteCodeSection);
+        // Set initial state on page load
+        updateInviteCodeSection();
 
         // Function to show error message
         function showError(element, message) {
@@ -253,15 +344,15 @@
             }, 5000);
         }
 
-        // Handle profile picture preview
+        // Handle profile picture selection
         profileInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
+                // Convert file to base64
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    profilePreview.src = e.target.result;
-                    profilePreview.style.display = 'block';
-                }
+                    profileUrlInput.value = e.target.result; // Store base64 data
+                };
                 reader.readAsDataURL(file);
             }
         });
@@ -282,26 +373,27 @@
             document.getElementById('registerSuccess').style.display = 'none';
 
             // Get form values
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const number = document.getElementById('number').value;
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const number = document.getElementById('number').value.trim();
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             const isModerator = document.getElementById('moderator-checkbox').checked;
-            const inviteCode = document.getElementById('inviteCode').value;
-            const profilePicture = document.getElementById('profilePicture').files[0];
+            const inviteCode = document.getElementById('inviteCode').value.trim();
+            const profilePictureUrl = document.getElementById('profile_picture_url').value;
 
             // Basic validation
-            if (!name) {
-                showError(document.getElementById('nameError'), 'Please enter your name');
+            if (!firstName) {
+                showError(document.getElementById('firstNameError'), 'Please enter your first name');
+                return;
+            }
+            if (!lastName) {
+                showError(document.getElementById('lastNameError'), 'Please enter your last name');
                 return;
             }
             if (!email) {
                 showError(document.getElementById('emailError'), 'Please enter your email');
-                return;
-            }
-            if (!number) {
-                showError(document.getElementById('numberError'), 'Please enter your phone number');
                 return;
             }
             if (!validatePassword(password)) {
@@ -313,31 +405,33 @@
                 showError(document.getElementById('confirmPasswordError'), 'Passwords do not match');
                 return;
             }
-            if (!inviteCode) {
+
+            // Validate invite code only if not a moderator
+            if (!isModerator && !inviteCode) {
                 showError(document.getElementById('inviteCodeError'), 'Please enter the invite code');
                 return;
             }
 
-            // Validate invite code first
-            try {
-                const inviteResponse = await fetch(config.getApiUrl(`${config.API_ENDPOINTS.VALIDATE_INVITE}`), {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ inviteCode })
-                });
+            // Validate invite code if provided
+            if (inviteCode) {
+                try {
+                    const inviteResponse = await fetch(config.getApiUrl(`${config.API_ENDPOINTS.VALIDATE_INVITE}`), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ inviteCode })
+                    });
 
-                const inviteData = await inviteResponse.json();
-                
-                if (!inviteData.valid) {
-                    showError(document.getElementById('inviteCodeError'), 'Invalid invite code. Please try again.');
+                    const inviteData = await inviteResponse.json();
+                    
+                    if (!inviteData.valid) {
+                        showError(document.getElementById('inviteCodeError'), 'Invalid invite code. Please try again.');
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Error validating invite code:', error);
+                    showError(document.getElementById('inviteCodeError'), 'Error validating invite code. Please try again.');
                     return;
                 }
-            } catch (error) {
-                console.error('Error validating invite code:', error);
-                showError(document.getElementById('inviteCodeError'), 'Error validating invite code. Please try again.');
-                return;
             }
 
             // Show loading state
@@ -345,37 +439,67 @@
             registerButton.disabled = true;
 
             try {
-                // Use FormData for file upload
-                const formData = new FormData();
-                formData.append('name', name);
-                formData.append('number', number);
-                formData.append('email', email);
-                formData.append('password', password);
-                formData.append('is_moderator', isModerator);
-                formData.append('inviteCode', inviteCode);
-                if (profilePicture) {
-                    formData.append('profile_picture', profilePicture);
+                // Create JSON data for registration
+                const data = {
+                    firstName,
+                    lastName,
+                    number,
+                    email,
+                    password,
+                    is_moderator: isModerator,
+                    inviteCode,
+                    profile_picture_base64: profilePictureUrl || null
+                };
+
+                console.log('--- Debugging Registration Data ---');
+                for (let key in data) {
+                    if (key === 'profile_picture_base64' && data[key]) {
+                        console.log(`${key}:`, data[key].substring(0, 50) + '...');
+                    } else {
+                        console.log(`${key}:`, data[key]);
+                    }
                 }
+                console.log('--- End Registration Data Debug ---');
 
                 const response = await fetch(config.getApiUrl(`${config.API_ENDPOINTS.REGISTER}`), {
                     method: 'POST',
-                    body: formData
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
                 });
 
-                const data = await response.json();
+                // Check if response is NOT OK before attempting to parse as JSON
+                if (!response.ok) {
+                    const errorText = await response.text(); // Read as raw text
+                    console.error('Server error response (raw text):', errorText);
+                    try {
+                        const errorData = JSON.parse(errorText); // Try parsing as JSON if it looks like it
+                        showError(document.getElementById('registerError'), errorData.message || 'Registration failed. Please try again.');
+                    } catch (parseError) {
+                        // If it's not JSON, display a generic error
+                        showError(document.getElementById('registerError'), 'Registration failed. Server returned an unexpected error format.');
+                    }
+                    registerButton.classList.remove('loading');
+                    registerButton.disabled = false;
+                    return; // Stop further execution
+                }
 
-                if (response.ok) {
+                // Only proceed to parse as JSON if response.ok is true
+                const result = await response.json(); // This will now only run if response.ok is true
+
+                if (response.ok) { // This check is redundant if you return early for !response.ok
                     showSuccess('Registration successful! Please check your email for verification.');
                     // Redirect to verification page
                     setTimeout(() => {
                         window.location.href = `verify-email.html?email=${encodeURIComponent(email)}`;
                     }, 2000);
                 } else {
-                    showError(document.getElementById('registerError'), data.message || 'Registration failed. Please try again.');
+                    // This block will practically never be reached with the !response.ok check above
+                    showError(document.getElementById('registerError'), result.message || 'Registration failed. Please try again.');
                 }
             } catch (error) {
+                // This catch block handles network errors or errors in the response.json() call itself
                 showError(document.getElementById('registerError'), 'An error occurred. Please try again.');
-                console.error('Registration error:', error);
+                console.error('Registration error caught in catch block:', error);
             } finally {
                 // Remove loading state
                 registerButton.classList.remove('loading');
@@ -385,6 +509,17 @@
 
         // Add event listener to the form
         registerForm.addEventListener('submit', handleRegistration);
+
+        // Show/hide password toggle for registration
+        document.getElementById('showPasswordRegister').addEventListener('change', function() {
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            const type = this.checked ? 'text' : 'password';
+            passwordInput.type = type;
+            confirmPasswordInput.type = type;
+        });
+
+
     </script>
 </body>
 </html> 

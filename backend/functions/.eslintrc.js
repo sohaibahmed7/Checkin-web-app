@@ -18,6 +18,7 @@ module.exports = {
     "require-jsdoc": "off",
     "valid-jsdoc": "off",
     "camelcase": "off",
+    "new-cap": "off",
   },
   overrides: [
     {
