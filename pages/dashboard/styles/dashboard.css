@@ -317,6 +317,7 @@ body.dashboard {
     margin-top: 0.5rem;
     margin-bottom: 0.5rem;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
 }
 
 .feed-item:hover {
@@ -4213,4 +4214,113 @@ input:checked + .slider:before {
 .see-replies-btn:hover, .see-replies-btn:focus {
     color: #1d4ed8;
     text-decoration: underline;
+}
+
+.activity-feed-section .feed-items {
+    max-height: 540px; /* 3 cards at ~180px each, adjust as needed */
+    overflow-y: auto;
+    padding-right: 4px;
+    scroll-behavior: smooth;
+}
+.activity-feed-section .feed-items::-webkit-scrollbar {
+    width: 8px;
+    background: #f3f4f6;
+    border-radius: 8px;
+}
+.activity-feed-section .feed-items::-webkit-scrollbar-thumb {
+    background: #bdbdbd;
+    border-radius: 8px;
+}
+.feed-item .ping-photo img {
+    max-width: 120px;
+    height: auto;
+    border-radius: 10px;
+    margin-top: 8px;
+    display: block;
+}
+
+.feed-item .feed-actions-icons {
+    position: absolute;
+    right: 1.2rem;
+    bottom: 1.2rem;
+    display: flex;
+    gap: 0.4rem;
+    z-index: 2;
+}
+.feed-item .feed-action-icon {
+    background: #f3f4f6;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    color: #2563eb;
+    cursor: pointer;
+    box-shadow: 0 1px 4px 0 rgba(37,99,235,0.07);
+    transition: background 0.18s, color 0.18s;
+}
+.feed-item .feed-action-icon:hover, .feed-item .feed-action-icon:focus {
+    background: #e0e7ff;
+    color: #1d4ed8;
+}
+.feed-item {
+    position: relative;
+}
+
+.emoji-picker-pop {
+    position: absolute;
+    bottom: 38px;
+    right: 0;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px 0 rgba(37,99,235,0.13), 0 1.5px 6px 0 rgba(0,0,0,0.04);
+    padding: 0.4rem 0.7rem;
+    display: flex;
+    gap: 0.3rem;
+    z-index: 10;
+    animation: fadeInEmoji 0.18s;
+}
+.emoji-pick {
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0.18rem 0.3rem;
+    border-radius: 8px;
+    transition: background 0.15s;
+}
+.emoji-pick:hover, .emoji-pick:focus {
+    background: #e0e7ff;
+}
+.emoji-reactions-bar {
+    display: flex;
+    gap: 0.3rem;
+    margin: 0.3rem 0 0.2rem 0;
+    align-items: center;
+}
+.emoji-reaction {
+    background: #f3f4f6;
+    border-radius: 8px;
+    padding: 0.12rem 0.5rem 0.12rem 0.4rem;
+    font-size: 1.05rem;
+    color: #444;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.emoji-reaction.reacted {
+    background: #dbeafe;
+    color: #2563eb;
+    font-weight: 600;
+}
+.emoji-count {
+    font-size: 0.98rem;
+    margin-left: 0.18rem;
+    color: #666;
+}
+@keyframes fadeInEmoji {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }

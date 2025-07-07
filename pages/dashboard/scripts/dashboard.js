@@ -1792,8 +1792,22 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderRecentActivityFeed() {
         const container = document.querySelector('.activity-feed-section .feed-items');
         if (!container) return;
-        // Sort allPings by timestamp descending and take the latest 5
-        const sorted = [...allPings].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        // Stub: current user id
+        const currentUserId = (window.user && window.user._id) || 'currentUserId';
+        // Filter pings based on currentFeedFilter
+        let filtered = [...allPings];
+        if (currentFeedFilter === 'solved') {
+            filtered = filtered.filter(p => p.status === 'solved' || p.status === 'resolved');
+        } else if (currentFeedFilter === 'my-pings') {
+            filtered = filtered.filter(p => {
+                const pingUserId = p.user && (p.user._id || p.user.id || p.user.email);
+                const currentId = currentUserId || (window.user && (window.user._id || window.user.id || window.user.email));
+                console.log('Ping user:', p.user, 'Ping userId:', pingUserId, 'Current user ID:', currentId);
+                return pingUserId && currentId && String(pingUserId) === String(currentId);
+            });
+        }
+        // Sort by timestamp descending and take the latest 5
+        const sorted = filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
         const recent = sorted.slice(0, 5);
         container.innerHTML = '';
         if (recent.length === 0) {
@@ -1823,40 +1837,63 @@ document.addEventListener('DOMContentLoaded', () => {
             if (ping.photo_url) {
                 photoHtml = `<div class=\"ping-photo\"><img src=\"${ping.photo_url}\" alt=\"Ping Photo\" style=\"width: 50%; height: auto; object-fit: cover; border-radius: 8px; margin-top: 8px;\"></div>`;
             }
+            // Emoji reactions data (stub in-memory for now)
+            if (!ping.reactions) ping.reactions = {};
+            // Render emoji reactions bar (always show if any reaction, or if current user has reacted)
+            let reactionsBar = '';
+            const hasReactions = Object.keys(ping.reactions).length > 0;
+            if (hasReactions) {
+                reactionsBar = '<div class="emoji-reactions-bar">';
+                for (const emoji in ping.reactions) {
+                    const users = ping.reactions[emoji];
+                    const reacted = users.includes(currentUserId);
+                    reactionsBar += `<span class="emoji-reaction${reacted ? ' reacted' : ''}" data-emoji="${emoji}">${emoji} <span class="emoji-count">${users.length}</span></span>`;
+                }
+                reactionsBar += '</div>';
+            }
             const pingElement = document.createElement('div');
             pingElement.className = `feed-item ${statusClass} ${ping.type}`;
             pingElement.innerHTML = `
-                <div class="feed-avatar">
-                    <img src="${userAvatar}" alt="Profile Picture" onerror="this.onerror=null;this.src='assets/avatar.svg';">
-                    <span class="status ${statusClass}"></span>
-                </div>
-                <div class="feed-content">
-                    <div class="feed-header">
-                        <span class="feed-user">${userName}</span>
-                        <span class="feed-time">${formatTimestamp(ping.timestamp)}</span>
-                    </div>
-                    <p class="feed-text">${ping.description || ''}</p>
-                    <div class="feed-actions">
-                        <a href="#map" class="view-on-map" data-lat="${ping.coordinates ? ping.coordinates[1] : ''}" data-lng="${ping.coordinates ? ping.coordinates[0] : ''}">
-                            <i class="fas fa-map-marker-alt"></i> View Location
-                        </a>
-                        <span class="feed-category ${ping.type}">
-                            ${pingTypeIcon} ${pingTypeLabel}
-                        </span>
-                        <button class="reply-btn" data-ping-idx="${idx}"><i class="fas fa-reply"></i> Reply</button>
-                    </div>
-                    ${photoHtml}
-                    <div class="reply-section" style="display:none; margin-top:1rem;">
-                        <div class="reply-message-top"><strong>${userName}:</strong> ${ping.description || ''}</div>
-                        <textarea class="reply-input" rows="2" placeholder="Type your reply..."></textarea>
-                        <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
-                            <button class="send-reply-btn">Send</button>
-                            <button class="cancel-reply-btn">Cancel</button>
-                        </div>
-                    </div>
-                </div>
-            `;
+                <div class=\"feed-avatar\">\n                    <img src=\"${userAvatar}\" alt=\"Profile Picture\" onerror=\"this.onerror=null;this.src='assets/avatar.svg';\">\n                    <span class=\"status ${statusClass}\"></span>\n                </div>\n                <div class=\"feed-content\">\n                    <div class=\"feed-header\">\n                        <span class=\"feed-user\">${userName}</span>\n                        <span class=\"feed-time\">${formatTimestamp(ping.timestamp)}</span>\n                    </div>\n                    <p class=\"feed-text\">${ping.description || ''}</p>\n                    ${photoHtml}\n                    ${reactionsBar}\n                    <div class=\"feed-actions-icons\">\n                        <button class=\"feed-action-icon emoji-btn\" title=\"React\"><i class=\"far fa-smile\"></i></button>\n                        <button class=\"feed-action-icon reply-btn\" title=\"Reply\"><i class=\"fas fa-reply\"></i></button>\n                    </div>\n                </div>\n            `;
             container.appendChild(pingElement);
+        });
+        // Add emoji picker logic
+        container.querySelectorAll('.emoji-btn').forEach((btn, i) => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                // Remove any existing pickers
+                document.querySelectorAll('.emoji-picker-pop').forEach(p => p.remove());
+                // Create picker
+                const picker = document.createElement('div');
+                picker.className = 'emoji-picker-pop';
+                picker.innerHTML = ['😀','😮','😡','😢','👍','👎'].map(emoji => `<span class='emoji-pick' data-emoji='${emoji}'>${emoji}</span>`).join('');
+                btn.parentNode.appendChild(picker);
+                // Picker click
+                picker.querySelectorAll('.emoji-pick').forEach(span => {
+                    span.addEventListener('click', function(ev) {
+                        const emoji = this.getAttribute('data-emoji');
+                        const ping = recent[i];
+                        // Remove user from all reactions
+                        for (const em in ping.reactions) {
+                            ping.reactions[em] = ping.reactions[em].filter(uid => uid !== currentUserId);
+                            if (ping.reactions[em].length === 0) delete ping.reactions[em];
+                        }
+                        // Add user to selected emoji
+                        if (!ping.reactions[emoji]) ping.reactions[emoji] = [];
+                        ping.reactions[emoji].push(currentUserId);
+                        renderRecentActivityFeed();
+                    });
+                });
+                // Close picker on outside click
+                setTimeout(() => {
+                    document.addEventListener('click', function handler(ev) {
+                        if (!picker.contains(ev.target)) {
+                            picker.remove();
+                            document.removeEventListener('click', handler);
+                        }
+                    });
+                }, 10);
+            });
         });
         // Add event listeners for "View on Map" links
         container.querySelectorAll('.view-on-map').forEach(link => {
@@ -1926,7 +1963,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 replySection.querySelector('.reply-input').focus();
             });
         });
+        // Add event listeners for Reply buttons
+        container.querySelectorAll('.feed-action-icon.reply-btn').forEach((btn, i) => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const ping = recent[i];
+                if (ping && ping._id) {
+                    window.location.href = `/pages/dashboard/reply.html?pingId=${encodeURIComponent(ping._id)}`;
+                } else {
+                    alert('Ping ID not found.');
+                }
+            });
+        });
     }
+
+    // Add filter logic for feed-filters
+    const feedFilters = document.querySelectorAll('.feed-filters button');
+    let currentFeedFilter = 'latest';
+    feedFilters.forEach((btn, idx) => {
+        btn.addEventListener('click', function() {
+            feedFilters.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (idx === 0) currentFeedFilter = 'latest';
+            else if (idx === 1) currentFeedFilter = 'solved';
+            else if (idx === 2) currentFeedFilter = 'my-pings';
+            renderRecentActivityFeed();
+        });
+    });
 }); 
 
 // Helper function to compare only year, month, and day
