@@ -1583,6 +1583,22 @@ document.addEventListener('DOMContentLoaded', () => {
             confirmNewPasswordInput.type = type;
         });
     }
+
+    // Notification bell dropdown logic
+    const bell = document.getElementById('notificationBell');
+    const dropdown = document.getElementById('notificationsDropdown');
+    if (bell && dropdown) {
+        bell.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = dropdown.style.display === 'block';
+            dropdown.style.display = isOpen ? 'none' : 'block';
+        });
+        document.addEventListener('click', (e) => {
+            if (!dropdown.contains(e.target) && !bell.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    }
 }); 
 
 // Helper function to compare only year, month, and day
