@@ -7,6 +7,7 @@ let pingMapPreview = null; // Variable to hold the modal map instance (moved to 
 let allPings = []; // Array to store all fetched pings
 let activityChart = null; // Global variable to track the activity chart instance
 let pendingFlyTo = null; // Store flyTo target if switching tabs
+let reportsActivityChart = null;
 
 window.addEventListener('pageshow', () => {
     if (!localStorage.getItem('user')) {
@@ -275,6 +276,11 @@ async function fetchPings() {
         currentPingsDisplayed = 0;
         // Initialize the activity chart only after pings are loaded
         initializeActivityChart();
+
+        // In fetchPings, after allPings is updated, call renderRecentActivityFeed if reports tab is visible
+        if (document.querySelector('.tab-pane#reports').classList.contains('active')) {
+            renderRecentActivityFeed();
+        }
     } catch (error) {
         console.error('Error fetching pings:', error);
     }
@@ -1663,7 +1669,422 @@ document.addEventListener('DOMContentLoaded', () => {
             confirmNewPasswordInput.type = type;
         });
     }
-});
+
+    // --- Reports Tab Activity Chart ---
+    function initializeReportsActivityChart() {
+        const ctx = document.getElementById('reportsActivityChart');
+        if (!ctx) return;
+        if (reportsActivityChart) {
+            reportsActivityChart.destroy();
+            reportsActivityChart = null;
+        }
+        // Default to 7 days (Week)
+        renderReportsChart('week');
+        // Add filter button listeners
+        document.querySelectorAll('.activity-chart-section .chart-filters button').forEach((btn, idx) => {
+            btn.onclick = function() {
+                document.querySelectorAll('.activity-chart-section .chart-filters button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const period = btn.textContent.trim().toLowerCase();
+                renderReportsChart(period);
+            };
+        });
+        // Add listeners for new breakdown filters
+        const typeFilter = document.getElementById('chart-type-filter');
+        const statusFilter = document.getElementById('chart-status-filter');
+        if (typeFilter) typeFilter.addEventListener('change', () => {
+            const period = document.querySelector('.activity-chart-section .chart-filters button.active')?.textContent.trim().toLowerCase() || 'week';
+            renderReportsChart(period);
+        });
+        if (statusFilter) statusFilter.addEventListener('change', () => {
+            const period = document.querySelector('.activity-chart-section .chart-filters button.active')?.textContent.trim().toLowerCase() || 'week';
+            renderReportsChart(period);
+        });
+    }
+
+    function renderReportsChart(period) {
+        const ctx = document.getElementById('reportsActivityChart');
+        if (!ctx) return;
+        if (reportsActivityChart) {
+            reportsActivityChart.destroy();
+            reportsActivityChart = null;
+        }
+        // Get filter values
+        const typeFilter = document.getElementById('chart-type-filter');
+        const statusFilter = document.getElementById('chart-status-filter');
+        const selectedType = typeFilter ? typeFilter.value : 'all';
+        const selectedStatus = statusFilter ? statusFilter.value : 'all';
+        let daysToShow = 7;
+        if (period === 'month') daysToShow = 30;
+        if (period === 'year') daysToShow = 365;
+        let labels = [];
+        let data = [];
+        let periodStart = new Date();
+        if (period === 'year') {
+            periodStart.setMonth(0, 1); // Jan 1st
+            periodStart.setHours(0,0,0,0);
+            labels = Array.from({length: 12}, (_, i) => {
+                const d = new Date(periodStart.getFullYear(), i, 1);
+                return d.toLocaleString('en-US', { month: 'short' });
+            });
+            data = labels.map((label, i) => {
+                return allPings.filter(ping => {
+                    const d = new Date(ping.timestamp);
+                    let match = d.getFullYear() === periodStart.getFullYear() && d.getMonth() === i;
+                    if (selectedType !== 'all') match = match && ping.type === selectedType;
+                    if (selectedStatus !== 'all') match = match && ping.status === selectedStatus;
+                    return match;
+                }).length;
+            });
+        } else {
+            periodStart.setHours(0,0,0,0);
+            periodStart.setDate(periodStart.getDate() - (daysToShow - 1));
+            labels = Array.from({length: daysToShow}, (_, i) => {
+                const d = new Date();
+                d.setDate(d.getDate() - (daysToShow - 1 - i));
+                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            });
+            data = Array.from({length: daysToShow}, (_, i) => {
+                const d = new Date();
+                d.setDate(d.getDate() - (daysToShow - 1 - i));
+                return allPings.filter(ping => {
+                    let match = isSameDay(new Date(ping.timestamp), d);
+                    if (selectedType !== 'all') match = match && ping.type === selectedType;
+                    if (selectedStatus !== 'all') match = match && ping.status === selectedStatus;
+                    return match;
+                }).length;
+            });
+        }
+        reportsActivityChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Reports',
+                    data: data,
+                    borderColor: '#3B82F6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#3B82F6',
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    fill: true,
+                    tension: 0.4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'white',
+                        titleColor: '#111827',
+                        bodyColor: '#111827',
+                        borderColor: '#E5E7EB',
+                        borderWidth: 1,
+                        padding: 12,
+                        displayColors: false,
+                        callbacks: {
+                            title: items => items[0].label,
+                            label: item => `${item.formattedValue} reports`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#666', maxRotation: 45, minRotation: 45 }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#eee' },
+                        ticks: { color: '#666' }
+                    }
+                }
+            }
+        });
+
+        // --- Update Stat Boxes Below Chart ---
+        // Filter pings in the selected period AND by type/status
+        let filteredPings;
+        const now = new Date();
+        if (period === 'year') {
+            filteredPings = allPings.filter(ping => {
+                const d = new Date(ping.timestamp);
+                let match = d.getFullYear() === now.getFullYear();
+                if (selectedType !== 'all') match = match && ping.type === selectedType;
+                if (selectedStatus !== 'all') match = match && ping.status === selectedStatus;
+                return match;
+            });
+        } else {
+            filteredPings = allPings.filter(ping => {
+                const d = new Date(ping.timestamp);
+                let match = d >= periodStart && d <= now;
+                if (selectedType !== 'all') match = match && ping.type === selectedType;
+                if (selectedStatus !== 'all') match = match && ping.status === selectedStatus;
+                return match;
+            });
+        }
+        // 1. Total Reports
+        const totalReports = filteredPings.length;
+        // 2. Active Cases
+        const activeCases = filteredPings.filter(p => (p.status === 'active' || p.status === 'pending' || p.status === 'investigating')).length;
+        // 3. Resolution Rate
+        const solved = filteredPings.filter(p => p.status === 'solved').length;
+        const resolutionRate = totalReports > 0 ? Math.round((solved / totalReports) * 100) : 0;
+        // Update DOM
+        const statItems = document.querySelectorAll('.activity-chart-section .stat-item');
+        if (statItems.length >= 3) {
+            statItems[0].querySelector('.stat-value').textContent = totalReports;
+            statItems[1].querySelector('.stat-value').textContent = activeCases;
+            statItems[2].querySelector('.stat-value').textContent = resolutionRate + '%';
+        }
+    }
+
+    // Helper for day comparison
+    function isSameDay(d1, d2) {
+        return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+    }
+
+    // Call this when reports tab is shown or data is loaded
+    function showReportsTabActivityChart() {
+        setTimeout(() => initializeReportsActivityChart(), 100);
+    }
+
+    // Add tab switch handler for reports
+    const reportsTabLinks = document.querySelectorAll('.sidebar-nav a[data-tab="reports"]');
+    reportsTabLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            showReportsTabActivityChart();
+            renderRecentActivityFeed(); // Always update the feed on tab switch
+        });
+    });
+
+    // If reports tab is active on load
+    if (document.querySelector('.tab-pane#reports').classList.contains('active')) {
+        showReportsTabActivityChart();
+    }
+
+    // Add this function to render the recent activity feed in the reports tab
+    function renderRecentActivityFeed() {
+        const container = document.querySelector('.activity-feed-section .feed-items');
+        if (!container) return;
+        // Stub: current user id
+        const currentUserId = (window.user && window.user._id) || 'currentUserId';
+        // Filter pings based on currentFeedFilter
+        let filtered = [...allPings];
+        if (currentFeedFilter === 'solved') {
+            filtered = filtered.filter(p => p.status === 'solved' || p.status === 'resolved');
+        } else if (currentFeedFilter === 'my-pings') {
+            filtered = filtered.filter(p => {
+                const pingUserId = p.user && (p.user._id || p.user.id || p.user.email);
+                const currentId = currentUserId || (window.user && (window.user._id || window.user.id || window.user.email));
+                console.log('Ping user:', p.user, 'Ping userId:', pingUserId, 'Current user ID:', currentId);
+                return pingUserId && currentId && String(pingUserId) === String(currentId);
+            });
+        }
+        // Sort by timestamp descending and take the latest 5
+        const sorted = filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        const recent = sorted.slice(0, 5);
+        container.innerHTML = '';
+        if (recent.length === 0) {
+            container.innerHTML = '<p class="no-pings-message">No recent activity.</p>';
+            return;
+        }
+        recent.forEach((ping, idx) => {
+            const pingUser = ping.user;
+            let userName = 'Community User';
+            if (pingUser) {
+                if (pingUser.name) {
+                    userName = pingUser.name;
+                } else if (pingUser.firstName && pingUser.lastName) {
+                    userName = `${pingUser.firstName} ${pingUser.lastName}`;
+                } else if (pingUser.firstName) {
+                    userName = pingUser.firstName;
+                }
+            }
+            let userAvatar = config.getUserAvatarUrl(pingUser && pingUser._id ? pingUser._id : null);
+            const pingTypeIcon = getPingTypeIcon(ping.type);
+            const pingTypeLabel = formatPingTypeDisplay(ping.type);
+            let statusClass = '';
+            if (ping.status === 'solved' || ping.status === 'resolved') statusClass = 'resolved';
+            else if (ping.status === 'active' || ping.status === 'investigating' || ping.status === 'pending') statusClass = 'active';
+            else if (ping.status === 'urgent') statusClass = 'urgent';
+            let photoHtml = '';
+            if (ping.photo_url) {
+                photoHtml = `<div class=\"ping-photo\"><img src=\"${ping.photo_url}\" alt=\"Ping Photo\" style=\"width: 50%; height: auto; object-fit: cover; border-radius: 8px; margin-top: 8px;\"></div>`;
+            }
+            // Emoji reactions data (stub in-memory for now)
+            if (!ping.reactions) ping.reactions = {};
+            // Render emoji reactions bar (always show if any reaction, or if current user has reacted)
+            let reactionsBar = '';
+            const hasReactions = Object.keys(ping.reactions).length > 0;
+            if (hasReactions) {
+                reactionsBar = '<div class="emoji-reactions-bar">';
+                for (const emoji in ping.reactions) {
+                    const users = ping.reactions[emoji];
+                    const reacted = users.includes(currentUserId);
+                    reactionsBar += `<span class="emoji-reaction${reacted ? ' reacted' : ''}" data-emoji="${emoji}">${emoji} <span class="emoji-count">${users.length}</span></span>`;
+                }
+                reactionsBar += '</div>';
+            }
+            const pingElement = document.createElement('div');
+            pingElement.className = `feed-item ${statusClass} ${ping.type}`;
+            pingElement.innerHTML = `
+                <div class=\"feed-avatar\">\n                    <img src=\"${userAvatar}\" alt=\"Profile Picture\" onerror=\"this.onerror=null;this.src='assets/avatar.svg';\">\n                    <span class=\"status ${statusClass}\"></span>\n                </div>\n                <div class=\"feed-content\">\n                    <div class=\"feed-header\">\n                        <span class=\"feed-user\">${userName}</span>\n                        <span class=\"feed-time\">${formatTimestamp(ping.timestamp)}</span>\n                    </div>\n                    <p class=\"feed-text\">${ping.description || ''}</p>\n                    ${photoHtml}\n                    ${reactionsBar}\n                    <div class=\"view-on-map-bubble\">\n                        <button class=\"view-on-map-btn\" title=\"View on Map\" data-lat=\"${ping.coordinates ? ping.coordinates[1] : ''}\" data-lng=\"${ping.coordinates ? ping.coordinates[0] : ''}\">View on Map</button>\n                    </div>\n                    <div class=\"feed-actions-icons\">\n                        <button class=\"feed-action-icon emoji-btn\" title=\"React\"><i class=\"far fa-smile\"></i></button>\n                        <button class=\"feed-action-icon reply-btn\" title=\"Reply\"><i class=\"fas fa-reply\"></i></button>\n                    </div>\n                </div>\n            `;
+            container.appendChild(pingElement);
+        });
+        // Add emoji picker logic
+        container.querySelectorAll('.emoji-btn').forEach((btn, i) => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                // Remove any existing pickers
+                document.querySelectorAll('.emoji-picker-pop').forEach(p => p.remove());
+                // Create picker
+                const picker = document.createElement('div');
+                picker.className = 'emoji-picker-pop';
+                picker.innerHTML = ['😀','😮','😡','😢','👍','👎'].map(emoji => `<span class='emoji-pick' data-emoji='${emoji}'>${emoji}</span>`).join('');
+                btn.parentNode.appendChild(picker);
+                // Picker click
+                picker.querySelectorAll('.emoji-pick').forEach(span => {
+                    span.addEventListener('click', function(ev) {
+                        const emoji = this.getAttribute('data-emoji');
+                        const ping = recent[i];
+                        // Remove user from all reactions
+                        for (const em in ping.reactions) {
+                            ping.reactions[em] = ping.reactions[em].filter(uid => uid !== currentUserId);
+                            if (ping.reactions[em].length === 0) delete ping.reactions[em];
+                        }
+                        // Add user to selected emoji
+                        if (!ping.reactions[emoji]) ping.reactions[emoji] = [];
+                        ping.reactions[emoji].push(currentUserId);
+                        renderRecentActivityFeed();
+                    });
+                });
+                // Close picker on outside click
+                setTimeout(() => {
+                    document.addEventListener('click', function handler(ev) {
+                        if (!picker.contains(ev.target)) {
+                            picker.remove();
+                            document.removeEventListener('click', handler);
+                        }
+                    });
+                }, 10);
+            });
+        });
+        // Add event listeners for "View on Map" links
+        container.querySelectorAll('.view-on-map').forEach(link => {
+            if (!link.dataset.listenerAdded) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const lat = parseFloat(this.getAttribute('data-lat'));
+                    const lng = parseFloat(this.getAttribute('data-lng'));
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        const isLiveMapActive = document.getElementById('live-map').classList.contains('active');
+                        if (isLiveMapActive && liveMap) {
+                            liveMap.flyTo({ center: [lng, lat], zoom: 18, essential: true });
+                            setTimeout(() => openPingPopupOnLiveMap(lng, lat), 500);
+                        } else {
+                            pendingFlyTo = { lng, lat, showPopup: true };
+                            document.querySelector('a[data-tab="live-map"]').click();
+                        }
+                    } else {
+                        alert('Location not available for this ping.');
+                    }
+                });
+                link.dataset.listenerAdded = 'true';
+            }
+        });
+        // Add event listeners for Reply buttons
+        container.querySelectorAll('.reply-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const feedItem = this.closest('.feed-item');
+                const replySection = feedItem.querySelector('.reply-section');
+                // Hide all other reply sections
+                container.querySelectorAll('.reply-section').forEach(sec => { sec.style.display = 'none'; });
+                replySection.style.display = 'block';
+                replySection.querySelector('.reply-input').focus();
+            });
+        });
+        // Add event listeners for Cancel buttons
+        container.querySelectorAll('.cancel-reply-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const replySection = this.closest('.reply-section');
+                replySection.style.display = 'none';
+            });
+        });
+        // Add event listeners for Send buttons (stub)
+        container.querySelectorAll('.send-reply-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const replySection = this.closest('.reply-section');
+                const input = replySection.querySelector('.reply-input');
+                if (input.value.trim() === '') {
+                    input.focus();
+                    return;
+                }
+                // Stub: Show alert for now
+                alert('Reply sent: ' + input.value);
+                input.value = '';
+                replySection.style.display = 'none';
+            });
+        });
+        // Add event listeners for See replies links
+        container.querySelectorAll('.see-replies-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const feedItem = this.closest('.feed-item');
+                const replySection = feedItem.querySelector('.reply-section');
+                // Hide all other reply sections
+                container.querySelectorAll('.reply-section').forEach(sec => { sec.style.display = 'none'; });
+                replySection.style.display = 'block';
+                replySection.querySelector('.reply-input').focus();
+            });
+        });
+        // Add event listeners for Reply buttons
+        container.querySelectorAll('.feed-action-icon.reply-btn').forEach((btn, i) => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const ping = recent[i];
+                if (ping && ping._id) {
+                    window.location.href = `/pages/dashboard/reply.html?pingId=${encodeURIComponent(ping._id)}`;
+                } else {
+                    alert('Ping ID not found.');
+                }
+            });
+        });
+        // Add event listeners for View on Map buttons
+        container.querySelectorAll('.view-on-map-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const lat = parseFloat(this.getAttribute('data-lat'));
+                const lng = parseFloat(this.getAttribute('data-lng'));
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    pendingFlyTo = { lng, lat, showPopup: true };
+                    document.querySelector('a[data-tab="live-map"]').click();
+                } else {
+                    alert('Location not available for this ping.');
+                }
+            });
+        });
+    }
+
+    // Add filter logic for feed-filters
+    const feedFilters = document.querySelectorAll('.feed-filters button');
+    let currentFeedFilter = 'latest';
+    feedFilters.forEach((btn, idx) => {
+        btn.addEventListener('click', function() {
+            feedFilters.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (idx === 0) currentFeedFilter = 'latest';
+            else if (idx === 1) currentFeedFilter = 'solved';
+            else if (idx === 2) currentFeedFilter = 'my-pings';
+            renderRecentActivityFeed();
+        });
+    });
+}); 
 
 // Helper function to compare only year, month, and day
 function isSameDay(date1, date2) {
