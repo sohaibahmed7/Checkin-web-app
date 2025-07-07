@@ -7,6 +7,7 @@ let pingMapPreview = null; // Variable to hold the modal map instance (moved to 
 let allPings = []; // Array to store all fetched pings
 let activityChart = null; // Global variable to track the activity chart instance
 let pendingFlyTo = null; // Store flyTo target if switching tabs
+let reportsActivityChart = null;
 
 window.addEventListener('pageshow', () => {
     if (!localStorage.getItem('user')) {
@@ -275,6 +276,11 @@ async function fetchPings() {
         currentPingsDisplayed = 0;
         // Initialize the activity chart only after pings are loaded
         initializeActivityChart();
+
+        // In fetchPings, after allPings is updated, call renderRecentActivityFeed if reports tab is visible
+        if (document.querySelector('.tab-pane#reports').classList.contains('active')) {
+            renderRecentActivityFeed();
+        }
     } catch (error) {
         console.error('Error fetching pings:', error);
     }
@@ -1410,8 +1416,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Add user dropdown menu handlers
-    const userAvatar = document.getElementById('userAvatar');
-    const userDropdown = document.getElementById('userDropdown');
     const logoutBtn = document.getElementById('logoutBtn');
 
     // Handle logout
@@ -1552,6 +1556,88 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     })();
 
+    // Add Follow-up Modal: Toggle Suggestion/Evidence fields
+    function updateFollowUpModalFields() {
+        const suggestionFields = document.getElementById('suggestionFields');
+        const evidenceFields = document.getElementById('evidenceFields');
+        const typeRadios = document.querySelectorAll('input[name="followupType"]');
+        let selectedType = 'suggestion';
+        typeRadios.forEach(radio => {
+            if (radio.checked) selectedType = radio.value;
+        });
+        if (selectedType === 'evidence') {
+            suggestionFields.style.display = 'none';
+            evidenceFields.style.display = '';
+        } else {
+            suggestionFields.style.display = '';
+            evidenceFields.style.display = 'none';
+        }
+    }
+    // Attach event listeners to radio buttons
+    document.querySelectorAll('input[name="followupType"]').forEach(radio => {
+        radio.addEventListener('change', updateFollowUpModalFields);
+    });
+    // Also update fields when modal is opened
+    const addFollowUpModal = document.getElementById('addFollowUpModal');
+    if (addFollowUpModal) {
+        addFollowUpModal.addEventListener('transitionend', updateFollowUpModalFields);
+        // Or, if you have a function that opens the modal, call updateFollowUpModalFields() there
+    }
+    // Initial call in case modal is already open
+    updateFollowUpModalFields();
+
+    // Add Follow-up Modal: Drag-and-drop and click-to-upload for evidence image
+    const evidenceUploadArea = document.getElementById('evidenceUploadArea');
+    const evidenceImageInput = document.getElementById('evidenceImage');
+    const evidenceFilePreview = document.getElementById('evidenceFilePreview');
+    if (evidenceUploadArea && evidenceImageInput && evidenceFilePreview) {
+        // Click to upload
+        evidenceUploadArea.addEventListener('click', function(e) {
+            // Only trigger if not clicking on a file preview
+            if (!e.target.classList.contains('file-preview')) {
+                evidenceImageInput.click();
+            }
+        });
+        // Drag and drop
+        evidenceUploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            evidenceUploadArea.classList.add('dragover');
+        });
+        evidenceUploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            evidenceUploadArea.classList.remove('dragover');
+        });
+        evidenceUploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            evidenceUploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                evidenceImageInput.files = e.dataTransfer.files;
+                showEvidenceFilePreview();
+            }
+        });
+        // File input change
+        evidenceImageInput.addEventListener('change', showEvidenceFilePreview);
+        // Show preview
+        function showEvidenceFilePreview() {
+            const file = evidenceImageInput.files && evidenceImageInput.files[0];
+            if (!file) {
+                evidenceFilePreview.style.display = 'none';
+                evidenceFilePreview.innerHTML = '';
+                return;
+            }
+            evidenceFilePreview.style.display = 'block';
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    evidenceFilePreview.innerHTML = `<img src="${e.target.result}" alt="Preview"><span>${file.name}</span>`;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                evidenceFilePreview.innerHTML = `<span>${file.name}</span>`;
+            }
+        }
+    } 
+
     // Fix logout button in sidebar
     const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
     if (sidebarLogoutBtn) {
@@ -1599,6 +1685,421 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // --- Reports Tab Activity Chart ---
+    function initializeReportsActivityChart() {
+        const ctx = document.getElementById('reportsActivityChart');
+        if (!ctx) return;
+        if (reportsActivityChart) {
+            reportsActivityChart.destroy();
+            reportsActivityChart = null;
+        }
+        // Default to 7 days (Week)
+        renderReportsChart('week');
+        // Add filter button listeners
+        document.querySelectorAll('.activity-chart-section .chart-filters button').forEach((btn, idx) => {
+            btn.onclick = function() {
+                document.querySelectorAll('.activity-chart-section .chart-filters button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const period = btn.textContent.trim().toLowerCase();
+                renderReportsChart(period);
+            };
+        });
+        // Add listeners for new breakdown filters
+        const typeFilter = document.getElementById('chart-type-filter');
+        const statusFilter = document.getElementById('chart-status-filter');
+        if (typeFilter) typeFilter.addEventListener('change', () => {
+            const period = document.querySelector('.activity-chart-section .chart-filters button.active')?.textContent.trim().toLowerCase() || 'week';
+            renderReportsChart(period);
+        });
+        if (statusFilter) statusFilter.addEventListener('change', () => {
+            const period = document.querySelector('.activity-chart-section .chart-filters button.active')?.textContent.trim().toLowerCase() || 'week';
+            renderReportsChart(period);
+        });
+    }
+
+    function renderReportsChart(period) {
+        const ctx = document.getElementById('reportsActivityChart');
+        if (!ctx) return;
+        if (reportsActivityChart) {
+            reportsActivityChart.destroy();
+            reportsActivityChart = null;
+        }
+        // Get filter values
+        const typeFilter = document.getElementById('chart-type-filter');
+        const statusFilter = document.getElementById('chart-status-filter');
+        const selectedType = typeFilter ? typeFilter.value : 'all';
+        const selectedStatus = statusFilter ? statusFilter.value : 'all';
+        let daysToShow = 7;
+        if (period === 'month') daysToShow = 30;
+        if (period === 'year') daysToShow = 365;
+        let labels = [];
+        let data = [];
+        let periodStart = new Date();
+        if (period === 'year') {
+            periodStart.setMonth(0, 1); // Jan 1st
+            periodStart.setHours(0,0,0,0);
+            labels = Array.from({length: 12}, (_, i) => {
+                const d = new Date(periodStart.getFullYear(), i, 1);
+                return d.toLocaleString('en-US', { month: 'short' });
+            });
+            data = labels.map((label, i) => {
+                return allPings.filter(ping => {
+                    const d = new Date(ping.timestamp);
+                    let match = d.getFullYear() === periodStart.getFullYear() && d.getMonth() === i;
+                    if (selectedType !== 'all') match = match && ping.type === selectedType;
+                    if (selectedStatus !== 'all') match = match && ping.status === selectedStatus;
+                    return match;
+                }).length;
+            });
+        } else {
+            periodStart.setHours(0,0,0,0);
+            periodStart.setDate(periodStart.getDate() - (daysToShow - 1));
+            labels = Array.from({length: daysToShow}, (_, i) => {
+                const d = new Date();
+                d.setDate(d.getDate() - (daysToShow - 1 - i));
+                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            });
+            data = Array.from({length: daysToShow}, (_, i) => {
+                const d = new Date();
+                d.setDate(d.getDate() - (daysToShow - 1 - i));
+                return allPings.filter(ping => {
+                    let match = isSameDay(new Date(ping.timestamp), d);
+                    if (selectedType !== 'all') match = match && ping.type === selectedType;
+                    if (selectedStatus !== 'all') match = match && ping.status === selectedStatus;
+                    return match;
+                }).length;
+            });
+        }
+        reportsActivityChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Reports',
+                    data: data,
+                    borderColor: '#3B82F6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#3B82F6',
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    fill: true,
+                    tension: 0.4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'white',
+                        titleColor: '#111827',
+                        bodyColor: '#111827',
+                        borderColor: '#E5E7EB',
+                        borderWidth: 1,
+                        padding: 12,
+                        displayColors: false,
+                        callbacks: {
+                            title: items => items[0].label,
+                            label: item => `${item.formattedValue} reports`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#666', maxRotation: 45, minRotation: 45 }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#eee' },
+                        ticks: { color: '#666' }
+                    }
+                }
+            }
+        });
+
+        // --- Update Stat Boxes Below Chart ---
+        // Filter pings in the selected period AND by type/status
+        let filteredPings;
+        const now = new Date();
+        if (period === 'year') {
+            filteredPings = allPings.filter(ping => {
+                const d = new Date(ping.timestamp);
+                let match = d.getFullYear() === now.getFullYear();
+                if (selectedType !== 'all') match = match && ping.type === selectedType;
+                if (selectedStatus !== 'all') match = match && ping.status === selectedStatus;
+                return match;
+            });
+        } else {
+            filteredPings = allPings.filter(ping => {
+                const d = new Date(ping.timestamp);
+                let match = d >= periodStart && d <= now;
+                if (selectedType !== 'all') match = match && ping.type === selectedType;
+                if (selectedStatus !== 'all') match = match && ping.status === selectedStatus;
+                return match;
+            });
+        }
+        // 1. Total Reports
+        const totalReports = filteredPings.length;
+        // 2. Active Cases
+        const activeCases = filteredPings.filter(p => (p.status === 'active' || p.status === 'pending' || p.status === 'investigating')).length;
+        // 3. Resolution Rate
+        const solved = filteredPings.filter(p => p.status === 'solved').length;
+        const resolutionRate = totalReports > 0 ? Math.round((solved / totalReports) * 100) : 0;
+        // Update DOM
+        const statItems = document.querySelectorAll('.activity-chart-section .stat-item');
+        if (statItems.length >= 3) {
+            statItems[0].querySelector('.stat-value').textContent = totalReports;
+            statItems[1].querySelector('.stat-value').textContent = activeCases;
+            statItems[2].querySelector('.stat-value').textContent = resolutionRate + '%';
+        }
+    }
+
+    // Helper for day comparison
+    function isSameDay(d1, d2) {
+        return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+    }
+
+    // Call this when reports tab is shown or data is loaded
+    function showReportsTabActivityChart() {
+        setTimeout(() => initializeReportsActivityChart(), 100);
+    }
+
+    // Add tab switch handler for reports
+    const reportsTabLinks = document.querySelectorAll('.sidebar-nav a[data-tab="reports"]');
+    reportsTabLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            showReportsTabActivityChart();
+            renderRecentActivityFeed(); // Always update the feed on tab switch
+        });
+    });
+
+    // If reports tab is active on load
+    if (document.querySelector('.tab-pane#reports').classList.contains('active')) {
+        showReportsTabActivityChart();
+    }
+
+    // Add this function to render the recent activity feed in the reports tab
+    function renderRecentActivityFeed() {
+        const container = document.querySelector('.activity-feed-section .feed-items');
+        if (!container) return;
+        // Stub: current user id
+        const currentUserId = (window.user && window.user._id) || 'currentUserId';
+        // Filter pings based on currentFeedFilter
+        let filtered = [...allPings];
+        if (currentFeedFilter === 'solved') {
+            filtered = filtered.filter(p => p.status === 'solved' || p.status === 'resolved');
+        } else if (currentFeedFilter === 'my-pings') {
+            filtered = filtered.filter(p => {
+                const pingUserId = p.user && (p.user._id || p.user.id || p.user.email);
+                const currentId = currentUserId || (window.user && (window.user._id || window.user.id || window.user.email));
+                console.log('Ping user:', p.user, 'Ping userId:', pingUserId, 'Current user ID:', currentId);
+                return pingUserId && currentId && String(pingUserId) === String(currentId);
+            });
+        }
+        // Sort by timestamp descending and take the latest 5
+        const sorted = filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        const recent = sorted.slice(0, 5);
+        container.innerHTML = '';
+        if (recent.length === 0) {
+            container.innerHTML = '<p class="no-pings-message">No recent activity.</p>';
+            return;
+        }
+        recent.forEach((ping, idx) => {
+            const pingUser = ping.user;
+            let userName = 'Community User';
+            if (pingUser) {
+                if (pingUser.name) {
+                    userName = pingUser.name;
+                } else if (pingUser.firstName && pingUser.lastName) {
+                    userName = `${pingUser.firstName} ${pingUser.lastName}`;
+                } else if (pingUser.firstName) {
+                    userName = pingUser.firstName;
+                }
+            }
+            let userAvatar = config.getUserAvatarUrl(pingUser && pingUser._id ? pingUser._id : null);
+            const pingTypeIcon = getPingTypeIcon(ping.type);
+            const pingTypeLabel = formatPingTypeDisplay(ping.type);
+            let statusClass = '';
+            if (ping.status === 'solved' || ping.status === 'resolved') statusClass = 'resolved';
+            else if (ping.status === 'active' || ping.status === 'investigating' || ping.status === 'pending') statusClass = 'active';
+            else if (ping.status === 'urgent') statusClass = 'urgent';
+            let photoHtml = '';
+            if (ping.photo_url) {
+                photoHtml = `<div class=\"ping-photo\"><img src=\"${ping.photo_url}\" alt=\"Ping Photo\" style=\"width: 50%; height: auto; object-fit: cover; border-radius: 8px; margin-top: 8px;\"></div>`;
+            }
+            // Emoji reactions data (stub in-memory for now)
+            if (!ping.reactions) ping.reactions = {};
+            // Render emoji reactions bar (always show if any reaction, or if current user has reacted)
+            let reactionsBar = '';
+            const hasReactions = Object.keys(ping.reactions).length > 0;
+            if (hasReactions) {
+                reactionsBar = '<div class="emoji-reactions-bar">';
+                for (const emoji in ping.reactions) {
+                    const users = ping.reactions[emoji];
+                    const reacted = users.includes(currentUserId);
+                    reactionsBar += `<span class="emoji-reaction${reacted ? ' reacted' : ''}" data-emoji="${emoji}">${emoji} <span class="emoji-count">${users.length}</span></span>`;
+                }
+                reactionsBar += '</div>';
+            }
+            const pingElement = document.createElement('div');
+            pingElement.className = `feed-item ${statusClass} ${ping.type}`;
+            pingElement.innerHTML = `
+                <div class=\"feed-avatar\">\n                    <img src=\"${userAvatar}\" alt=\"Profile Picture\" onerror=\"this.onerror=null;this.src='assets/avatar.svg';\">\n                    <span class=\"status ${statusClass}\"></span>\n                </div>\n                <div class=\"feed-content\">\n                    <div class=\"feed-header\">\n                        <span class=\"feed-user\">${userName}</span>\n                        <span class=\"feed-time\">${formatTimestamp(ping.timestamp)}</span>\n                    </div>\n                    <p class=\"feed-text\">${ping.description || ''}</p>\n                    ${photoHtml}\n                    ${reactionsBar}\n                    <div class=\"view-on-map-bubble\">\n                        <button class=\"view-on-map-btn\" title=\"View on Map\" data-lat=\"${ping.coordinates ? ping.coordinates[1] : ''}\" data-lng=\"${ping.coordinates ? ping.coordinates[0] : ''}\">View on Map</button>\n                    </div>\n                    <div class=\"feed-actions-icons\">\n                        <button class=\"feed-action-icon emoji-btn\" title=\"React\"><i class=\"far fa-smile\"></i></button>\n                        <button class=\"feed-action-icon reply-btn\" title=\"Reply\"><i class=\"fas fa-reply\"></i></button>\n                    </div>\n                </div>\n            `;
+            container.appendChild(pingElement);
+        });
+        // Add emoji picker logic
+        container.querySelectorAll('.emoji-btn').forEach((btn, i) => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                // Remove any existing pickers
+                document.querySelectorAll('.emoji-picker-pop').forEach(p => p.remove());
+                // Create picker
+                const picker = document.createElement('div');
+                picker.className = 'emoji-picker-pop';
+                picker.innerHTML = ['😀','😮','😡','😢','👍','👎'].map(emoji => `<span class='emoji-pick' data-emoji='${emoji}'>${emoji}</span>`).join('');
+                btn.parentNode.appendChild(picker);
+                // Picker click
+                picker.querySelectorAll('.emoji-pick').forEach(span => {
+                    span.addEventListener('click', function(ev) {
+                        const emoji = this.getAttribute('data-emoji');
+                        const ping = recent[i];
+                        // Remove user from all reactions
+                        for (const em in ping.reactions) {
+                            ping.reactions[em] = ping.reactions[em].filter(uid => uid !== currentUserId);
+                            if (ping.reactions[em].length === 0) delete ping.reactions[em];
+                        }
+                        // Add user to selected emoji
+                        if (!ping.reactions[emoji]) ping.reactions[emoji] = [];
+                        ping.reactions[emoji].push(currentUserId);
+                        renderRecentActivityFeed();
+                    });
+                });
+                // Close picker on outside click
+                setTimeout(() => {
+                    document.addEventListener('click', function handler(ev) {
+                        if (!picker.contains(ev.target)) {
+                            picker.remove();
+                            document.removeEventListener('click', handler);
+                        }
+                    });
+                }, 10);
+            });
+        });
+        // Add event listeners for "View on Map" links
+        container.querySelectorAll('.view-on-map').forEach(link => {
+            if (!link.dataset.listenerAdded) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const lat = parseFloat(this.getAttribute('data-lat'));
+                    const lng = parseFloat(this.getAttribute('data-lng'));
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        const isLiveMapActive = document.getElementById('live-map').classList.contains('active');
+                        if (isLiveMapActive && liveMap) {
+                            liveMap.flyTo({ center: [lng, lat], zoom: 18, essential: true });
+                            setTimeout(() => openPingPopupOnLiveMap(lng, lat), 500);
+                        } else {
+                            pendingFlyTo = { lng, lat, showPopup: true };
+                            document.querySelector('a[data-tab="live-map"]').click();
+                        }
+                    } else {
+                        alert('Location not available for this ping.');
+                    }
+                });
+                link.dataset.listenerAdded = 'true';
+            }
+        });
+        // Add event listeners for Reply buttons
+        container.querySelectorAll('.reply-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const feedItem = this.closest('.feed-item');
+                const replySection = feedItem.querySelector('.reply-section');
+                // Hide all other reply sections
+                container.querySelectorAll('.reply-section').forEach(sec => { sec.style.display = 'none'; });
+                replySection.style.display = 'block';
+                replySection.querySelector('.reply-input').focus();
+            });
+        });
+        // Add event listeners for Cancel buttons
+        container.querySelectorAll('.cancel-reply-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const replySection = this.closest('.reply-section');
+                replySection.style.display = 'none';
+            });
+        });
+        // Add event listeners for Send buttons (stub)
+        container.querySelectorAll('.send-reply-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const replySection = this.closest('.reply-section');
+                const input = replySection.querySelector('.reply-input');
+                if (input.value.trim() === '') {
+                    input.focus();
+                    return;
+                }
+                // Stub: Show alert for now
+                alert('Reply sent: ' + input.value);
+                input.value = '';
+                replySection.style.display = 'none';
+            });
+        });
+        // Add event listeners for See replies links
+        container.querySelectorAll('.see-replies-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const feedItem = this.closest('.feed-item');
+                const replySection = feedItem.querySelector('.reply-section');
+                // Hide all other reply sections
+                container.querySelectorAll('.reply-section').forEach(sec => { sec.style.display = 'none'; });
+                replySection.style.display = 'block';
+                replySection.querySelector('.reply-input').focus();
+            });
+        });
+        // Add event listeners for Reply buttons
+        container.querySelectorAll('.feed-action-icon.reply-btn').forEach((btn, i) => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const ping = recent[i];
+                if (ping && ping._id) {
+                    window.location.href = `/pages/dashboard/reply.html?pingId=${encodeURIComponent(ping._id)}`;
+                } else {
+                    alert('Ping ID not found.');
+                }
+            });
+        });
+        // Add event listeners for View on Map buttons
+        container.querySelectorAll('.view-on-map-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const lat = parseFloat(this.getAttribute('data-lat'));
+                const lng = parseFloat(this.getAttribute('data-lng'));
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    pendingFlyTo = { lng, lat, showPopup: true };
+                    document.querySelector('a[data-tab="live-map"]').click();
+                } else {
+                    alert('Location not available for this ping.');
+                }
+            });
+        });
+    }
+
+    // Add filter logic for feed-filters
+    const feedFilters = document.querySelectorAll('.feed-filters button');
+    let currentFeedFilter = 'latest';
+    feedFilters.forEach((btn, idx) => {
+        btn.addEventListener('click', function() {
+            feedFilters.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (idx === 0) currentFeedFilter = 'latest';
+            else if (idx === 1) currentFeedFilter = 'solved';
+            else if (idx === 2) currentFeedFilter = 'my-pings';
+            renderRecentActivityFeed();
+        });
+    });
 }); 
 
 // Helper function to compare only year, month, and day
@@ -1701,6 +2202,731 @@ function openPingPopupOnLiveMap(lng, lat) {
     if (marker && marker.getPopup()) {
         marker.togglePopup();
     }
+}
+
+// Enhanced Reports Functionality
+let currentReports = [];
+let currentReportId = null;
+
+// Load reports from backend
+async function loadReports() {
+    try {
+        const response = await fetch(config.getApiUrl(config.API_ENDPOINTS.REPORTS));
+        if (!response.ok) {
+            throw new Error('Failed to fetch reports');
+        }
+        const reports = await response.json();
+        currentReports = reports;
+        applyReportFilters();
+        // Update the loading state
+        const loadingElement = document.querySelector('.reports-loading');
+        if (loadingElement) {
+            loadingElement.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error loading reports:', error);
+        showError('Failed to load reports');
+        // Show error state
+        const tbody = document.getElementById('reports-tbody');
+        if (tbody) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center">
+                        <div class="no-reports">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>Failed to load reports. Please try again.</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+    }
+}
+
+// Render reports table
+function renderReportsTable(reports) {
+    const tbody = document.getElementById('reports-tbody');
+    if (!tbody) return;
+
+    if (reports.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9" class="text-center">
+                    <div class="no-reports">
+                        <i class="fas fa-inbox"></i>
+                        <p>No reports found</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = reports.map(report => {
+        const createdAt = new Date(report.createdAt);
+        const timeResolved = report.timeResolved ? new Date(report.timeResolved) : null;
+        const hasEvidence = report.photo_url;
+        const isRecent = (Date.now() - createdAt.getTime()) < (7 * 24 * 60 * 60 * 1000); // 7 days
+
+        // Avatar logic
+        let userAvatar = config.getUserAvatarUrl(report.user && report.user._id ? report.user._id : null);
+        let reportAvatar = `<img src="${userAvatar}" alt="${report.user ? (report.user.firstName + ' ' + report.user.lastName) : 'User'}" class="report-avatar">`;
+
+        // Evidence icon
+        let evidenceHtml = hasEvidence
+            ? `<span class="evidence-icon has-evidence" title="Evidence attached"><i class="fas fa-paperclip"></i></span>`
+            : `<span class="evidence-icon no-evidence" title="No evidence">—</span>`;
+
+        // Status badge logic
+        let status = report.status ? report.status.toLowerCase() : 'active';
+        let statusIcon = '';
+        let statusClass = '';
+        let statusTooltip = '';
+        switch (status) {
+            case 'active':
+                statusIcon = '<i class="fas fa-circle"></i>';
+                statusClass = 'status-badge-active';
+                statusTooltip = 'Active';
+                break;
+            case 'resolved':
+                statusIcon = '<i class="fas fa-check-circle"></i>';
+                statusClass = 'status-badge-resolved';
+                statusTooltip = 'Resolved';
+                break;
+            case 'investigating':
+                statusIcon = '<i class="fas fa-search"></i>';
+                statusClass = 'status-badge-investigating';
+                statusTooltip = 'Investigating';
+                break;
+            case 'pending':
+                statusIcon = '<i class="fas fa-clock"></i>';
+                statusClass = 'status-badge-pending';
+                statusTooltip = 'Pending';
+                break;
+            default:
+                statusIcon = '<i class="fas fa-circle"></i>';
+                statusClass = 'status-badge-active';
+                statusTooltip = 'Active';
+        }
+        let statusHtml = `<span class="status-badge ${statusClass}" title="${statusTooltip}">${statusIcon} <span>${statusTooltip}</span></span>`;
+
+        // Time to resolve calculation
+        let timeToResolve = '-';
+        if (timeResolved && (report.status === 'resolved' || report.status === 'solved')) {
+            const diffMs = timeResolved - createdAt;
+            const diffMins = Math.floor(diffMs / 60000);
+            const days = Math.floor(diffMins / 1440);
+            const hours = Math.floor((diffMins % 1440) / 60);
+            const mins = diffMins % 60;
+            let parts = [];
+            if (days > 0) parts.push(`${days}d`);
+            if (hours > 0) parts.push(`${hours}h`);
+            if (mins > 0 || parts.length === 0) parts.push(`${mins}m`);
+            timeToResolve = parts.join(' ');
+        }
+
+        // Evidence display logic
+        let evidenceSectionHtml = '';
+        if (report.evidence && report.evidence.length > 0) {
+            evidenceSectionHtml = `<div class="evidence-list"></div>`;
+        } else if (hasEvidence) {
+            evidenceSectionHtml = `<div class="evidence-gallery">
+                <div class="evidence-item">
+                    <img src="https://api-3ffpwchysq-uc.a.run.app/api/ping/${report._id}/photo" 
+                         alt="Report evidence" 
+                         onerror="this.onerror=null;this.src='assets/avatar.svg';">
+                </div>
+            </div>`;
+        } else {
+            evidenceSectionHtml = '<div class="no-evidence-message">No evidence attached</div>';
+        }
+
+        return `
+            <tr class="report-row" data-report-id="${report._id}" style="font-size:0.95em;">
+                <td class="report-avatar">
+                    ${reportAvatar}
+                </td>
+                <td>${report.user ? `${report.user.firstName} ${report.user.lastName}` : 'Unknown'}</td>
+                <td class="type-col"><span class="badge ${report.type}">${formatPingTypeDisplay(report.type)}</span></td>
+                <td class="description-cell" title="${report.description}">${report.description}</td>
+                <td>${formatTimestamp(createdAt)}</td>
+                <td class="status-col">${statusHtml}</td>
+                <td>${timeToResolve}</td>
+                <td>${evidenceHtml}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="action-btn follow-up ${!isRecent ? 'disabled' : ''}" 
+                                onclick="addFollowUp('${report._id}')" 
+                                ${!isRecent ? 'disabled' : ''}
+                                title="Follow-Up">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="action-btn view-trail" onclick="viewReportTrail('${report._id}')">
+                            <i class="fas fa-history"></i>
+                        </button>
+                        <button class="expand-btn" onclick="toggleReportDetails('${report._id}')">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            <tr class="report-details" id="details-${report._id}" style="display: none; font-size:0.95em;">
+                <td colspan="10">
+                    <div class="report-card">
+                        <div class="report-info">
+                            <h4>Description</h4>
+                            <p class="report-description-long"></p>
+                            <div class="report-meta">
+                                <div class="report-photos">
+                                    <h5>Evidence</h5>
+                                    ${evidenceSectionHtml}
+                                </div>
+                                <div class="report-location">
+                                    <h5>Location</h5>
+                                    <div id="report-map-${report._id}" class="report-mini-map" data-lat="${report.location.lat}" data-lng="${report.location.lng}"></div>
+                                    <button class="view-location" onclick="viewLocationOnMap(${report.location.lat}, ${report.location.lng})">
+                                        <i class="fas fa-map-marker-alt"></i> View on Map
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="report-notes-replies">
+                                <h5>Notes / Replies</h5>
+                                <div class="notes-list">
+                                    ${report.notes && report.notes.length > 0 ?
+                                        report.notes.map(note => `
+                                            <div class="note-item">
+                                                <div class="note-meta">
+                                                    <span class="note-author">${note.addedBy && note.addedBy.name ? note.addedBy.name : 'Unknown'}</span>
+                                                    <span class="note-time">${note.addedAt ? formatTimestamp(new Date(note.addedAt)) : ''}</span>
+                                                </div>
+                                                <div class="note-content">${note.content}</div>
+                                            </div>
+                                        `).join('') :
+                                        '<div class="no-notes-message">No notes or replies yet.</div>'
+                                    }
+                                </div>
+                                <form class="add-note-inline-form" onsubmit="event.preventDefault(); addNote('${report._id}');">
+                                    <input type="text" name="content" placeholder="Add a note or reply..." required style="width:70%;padding:0.5em;margin-right:0.5em;">
+                                    <button type="submit" class="add-note-btn"><i class="fas fa-paper-plane"></i> Post</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    // Re-initialize resizable columns after table content is updated
+    initializeResizableColumns();
+}
+
+// Toggle report details
+function toggleReportDetails(reportId) {
+    const detailsRow = document.getElementById(`details-${reportId}`);
+    const expandBtn = document.querySelector(`[data-report-id="${reportId}"] .expand-btn i`);
+    
+    if (detailsRow.style.display === 'none') {
+        detailsRow.style.display = 'table-row';
+        expandBtn.className = 'fas fa-chevron-up';
+        window.renderReportMiniMaps();
+    } else {
+        detailsRow.style.display = 'none';
+        expandBtn.className = 'fas fa-chevron-down';
+        // Clean up map instance
+        const miniMapDiv = detailsRow.querySelector('.report-mini-map');
+        if (miniMapDiv && miniMapDiv._miniMap) {
+            miniMapDiv._miniMap.remove();
+            miniMapDiv._miniMap = null;
+        }
+    }
+}
+
+// Add note to report
+async function addNote(reportId) {
+    currentReportId = reportId;
+    const modal = document.getElementById('addNoteModal');
+    modal.classList.add('active');
+}
+
+// Add follow-up to report
+async function addFollowUp(reportId) {
+    currentReportId = reportId;
+    const modal = document.getElementById('addFollowUpModal');
+    modal.classList.add('active');
+}
+
+// View report trail
+async function viewReportTrail(reportId) {
+    try {
+        const response = await fetch(`${config.getApiUrl(config.API_ENDPOINTS.REPORT_TRAIL, reportId)}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch report trail');
+        }
+
+        const report = await response.json();
+        const modal = document.getElementById('reportTrailModal');
+        const content = document.getElementById('reportTrailContent');
+
+        let trailHtml = `
+            <div class="trail-item">
+                <div class="trail-header">
+                    <span class="trail-author">${report.user ? report.user.name : 'Unknown'}</span>
+                    <span class="trail-time">${formatTimestamp(new Date(report.createdAt))}</span>
+                </div>
+                <div class="trail-content">
+                    <strong>Report Created:</strong> ${report.description}
+                </div>
+            </div>
+        `;
+
+        // Add notes
+        if (report.notes && report.notes.length > 0) {
+            report.notes.forEach(note => {
+                trailHtml += `
+                    <div class="trail-item note">
+                        <div class="trail-header">
+                            <span class="trail-author">${note.addedBy ? note.addedBy.name : 'Unknown'}</span>
+                            <span class="trail-time">${formatTimestamp(new Date(note.addedAt))}</span>
+                        </div>
+                        <div class="trail-content">${note.content}</div>
+                    </div>
+                `;
+            });
+        }
+
+        // Add follow-ups
+        if (report.followUps && report.followUps.length > 0) {
+            report.followUps.forEach(followUp => {
+                trailHtml += `
+                    <div class="trail-item follow-up">
+                        <div class="trail-header">
+                            <span class="trail-author">${followUp.addedBy ? followUp.addedBy.name : 'Unknown'}</span>
+                            <span class="trail-time">${formatTimestamp(new Date(followUp.addedAt))}</span>
+                        </div>
+                        <div class="trail-content">
+                            <div class="trail-action">${followUp.action}</div>
+                            ${followUp.description ? `<div>${followUp.description}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        content.innerHTML = trailHtml;
+        modal.classList.add('active');
+    } catch (error) {
+        console.error('Error loading report trail:', error);
+        showError('Failed to load report trail');
+    }
+}
+
+// Modal functions
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.classList.remove('active');
+    
+    // Clear forms
+    if (modalId === 'addNoteModal') {
+        document.getElementById('addNoteForm').reset();
+    } else if (modalId === 'addFollowUpModal') {
+        document.getElementById('addFollowUpForm').reset();
+    }
+}
+
+// Global modal close handlers
+document.addEventListener('DOMContentLoaded', function() {
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            if (event.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+    });
+
+    // Close modal when clicking close button
+    const closeButtons = document.querySelectorAll('.close');
+    closeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const modal = this.closest('.modal');
+            modal.classList.remove('active');
+        });
+    });
+
+    // Handle note form submission
+    const addNoteForm = document.getElementById('addNoteForm');
+    if (addNoteForm) {
+        addNoteForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) {
+                showError('User not authenticated');
+                return;
+            }
+
+            const formData = new FormData(this);
+            const noteData = {
+                content: formData.get('content'),
+                addedBy: user._id
+            };
+
+            try {
+                const response = await fetch(`${config.getApiUrl(config.API_ENDPOINTS.REPORT_NOTE, currentReportId)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(noteData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to add note');
+                }
+
+                closeModal('addNoteModal');
+                loadReports(); // Refresh the reports
+                showSuccess('Note added successfully');
+            } catch (error) {
+                console.error('Error adding note:', error);
+                showError('Failed to add note');
+            }
+        });
+    }
+
+    // Handle follow-up form submission
+    const addFollowUpForm = document.getElementById('addFollowUpForm');
+    if (addFollowUpForm) {
+        addFollowUpForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) {
+                showError('User not authenticated');
+                return;
+            }
+
+            const formData = new FormData(this);
+            const followUpData = {
+                action: formData.get('action'),
+                description: formData.get('description'),
+                addedBy: user._id
+            };
+
+            try {
+                const response = await fetch(`${config.getApiUrl(config.API_ENDPOINTS.REPORT_FOLLOW_UP, currentReportId)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(followUpData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to add follow-up');
+                }
+
+                closeModal('addFollowUpModal');
+                loadReports(); // Refresh the reports
+                showSuccess('Follow-up added successfully');
+            } catch (error) {
+                console.error('Error adding follow-up:', error);
+                showError('Failed to add follow-up');
+            }
+        });
+    }
+
+    // Handle filter changes
+    const filters = document.querySelectorAll('.reports-filters select, .reports-filters input');
+    filters.forEach(filter => {
+        filter.addEventListener('change', applyReportFilters);
+    });
+
+    // Load reports when reports tab is opened
+    const reportsTab = document.querySelector('a[data-tab="reports"]');
+    if (reportsTab) {
+        reportsTab.addEventListener('click', () => {
+            // Load reports when tab is clicked
+            loadReports();
+        });
+    }
+
+    // Auto-load reports if reports tab is active on page load
+    const activeTab = document.querySelector('.tab-pane.active');
+    if (activeTab && activeTab.id === 'reports') {
+        loadReports();
+    }
+
+    // Initialize resizable columns
+    initializeResizableColumns();
+
+    // Add Follow-up Modal: Toggle Suggestion/Evidence fields
+    function updateFollowUpModalFields() {
+        const suggestionFields = document.getElementById('suggestionFields');
+        const evidenceFields = document.getElementById('evidenceFields');
+        const typeRadios = document.querySelectorAll('input[name="followupType"]');
+        let selectedType = 'suggestion';
+        typeRadios.forEach(radio => {
+            if (radio.checked) selectedType = radio.value;
+        });
+        if (selectedType === 'evidence') {
+            suggestionFields.style.display = 'none';
+            evidenceFields.style.display = '';
+        } else {
+            suggestionFields.style.display = '';
+            evidenceFields.style.display = 'none';
+        }
+    }
+    // Attach event listeners to radio buttons
+    document.querySelectorAll('input[name="followupType"]').forEach(radio => {
+        radio.addEventListener('change', updateFollowUpModalFields);
+    });
+    // Also update fields when modal is opened
+    const addFollowUpModal = document.getElementById('addFollowUpModal');
+    if (addFollowUpModal) {
+        addFollowUpModal.addEventListener('transitionend', updateFollowUpModalFields);
+        // Or, if you have a function that opens the modal, call updateFollowUpModalFields() there
+    }
+    // Initial call in case modal is already open
+    updateFollowUpModalFields();
+});
+
+// Utility functions
+function showError(message) {
+    // You can implement a toast notification system here
+    alert('Error: ' + message);
+}
+
+function showSuccess(message) {
+    // You can implement a toast notification system here
+    alert('Success: ' + message);
+}
+
+// Function to view location on map
+function viewLocationOnMap(lat, lng) {
+    // Switch to live map tab
+    const liveMapTab = document.querySelector('a[data-tab="live-map"]');
+    if (liveMapTab) {
+        liveMapTab.click();
+        
+        // Fly to location after a short delay to ensure map is loaded
+        setTimeout(() => {
+            if (liveMap) {
+                liveMap.flyTo({ 
+                    center: [lng, lat], 
+                    zoom: 18, 
+                    essential: true 
+                });
+                
+                // Show a temporary marker
+                if (tempPingMarker) {
+                    tempPingMarker.remove();
+                }
+                
+                const el = document.createElement('div');
+                el.className = 'marker selected-location';
+                el.style.width = '20px';
+                el.style.height = '20px';
+                el.style.borderRadius = '50%';
+                el.style.backgroundColor = '#ff6b6b';
+                el.style.border = '3px solid white';
+                el.style.boxShadow = '0 0 10px rgba(0,0,0,0.3)';
+                
+                tempPingMarker = new mapboxgl.Marker(el)
+                    .setLngLat([lng, lat])
+                    .addTo(liveMap);
+                
+                // Remove temporary marker after 5 seconds
+                setTimeout(() => {
+                    if (tempPingMarker) {
+                        tempPingMarker.remove();
+                        tempPingMarker = null;
+                    }
+                }, 5000);
+            }
+        }, 500);
+    }
+}
+
+// Function to refresh reports
+async function refreshReports() {
+    const refreshBtn = document.querySelector('.refresh-reports-btn');
+    if (refreshBtn) {
+        refreshBtn.disabled = true;
+        refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+    }
+    
+    try {
+        await loadReports();
+        showSuccess('Reports refreshed successfully');
+    } catch (error) {
+        console.error('Error refreshing reports:', error);
+        showError('Failed to refresh reports');
+    } finally {
+        if (refreshBtn) {
+            refreshBtn.disabled = false;
+            refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+        }
+    }
+}
+
+// Resizable columns functionality
+function initializeResizableColumns() {
+    const table = document.getElementById('reports-table');
+    if (!table) return;
+
+    let isResizing = false;
+    let currentHandle = null;
+    let startX = 0;
+    let startWidth = 0;
+    let currentColumn = null;
+
+    // Add event listeners to all resize handles
+    function addResizeListeners() {
+        const handles = table.querySelectorAll('.resize-handle');
+        handles.forEach(handle => {
+            if (handle.dataset.listenerAdded) return;
+            
+            handle.addEventListener('mousedown', startResize);
+            handle.dataset.listenerAdded = 'true';
+        });
+    }
+
+    function startResize(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        isResizing = true;
+        currentHandle = e.target;
+        startX = e.clientX;
+        currentColumn = currentHandle.parentElement;
+        startWidth = currentColumn.offsetWidth;
+        
+        // Add visual feedback
+        currentHandle.classList.add('resizing');
+        table.classList.add('resizing');
+        
+        // Add global event listeners
+        document.addEventListener('mousemove', resize);
+        document.addEventListener('mouseup', stopResize);
+        
+        // Prevent text selection
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'col-resize';
+    }
+
+    function resize(e) {
+        if (!isResizing) return;
+        
+        const deltaX = e.clientX - startX;
+        const newWidth = Math.max(50, startWidth + deltaX); // Minimum width of 50px
+        
+        // Set the width of the header cell
+        currentColumn.style.width = newWidth + 'px';
+        currentColumn.style.minWidth = newWidth + 'px';
+        
+        // Get the column index
+        const columnIndex = Array.from(currentColumn.parentElement.children).indexOf(currentColumn);
+        
+        // Set the width of all cells in this column
+        const rows = table.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            const cell = row.children[columnIndex];
+            if (cell) {
+                cell.style.width = newWidth + 'px';
+                cell.style.minWidth = newWidth + 'px';
+            }
+        });
+    }
+
+    function stopResize() {
+        if (!isResizing) return;
+        
+        isResizing = false;
+        
+        // Remove visual feedback
+        if (currentHandle) {
+            currentHandle.classList.remove('resizing');
+        }
+        table.classList.remove('resizing');
+        
+        // Remove global event listeners
+        document.removeEventListener('mousemove', resize);
+        document.removeEventListener('mouseup', stopResize);
+        
+        // Restore normal cursor and selection
+        document.body.style.userSelect = '';
+        document.body.style.cursor = '';
+        
+        currentHandle = null;
+        currentColumn = null;
+    }
+
+    // Initialize resize listeners
+    addResizeListeners();
+    
+    // Re-initialize when table content changes (for dynamic loading)
+    const observer = new MutationObserver(() => {
+        addResizeListeners();
+    });
+    
+    observer.observe(table, { childList: true, subtree: true });
+}
+
+// After renderReportsTable, add this function:
+window.renderReportMiniMaps = function() {
+    document.querySelectorAll('.report-mini-map').forEach(div => {
+        if (div.dataset.mapInitialized) return;
+        const lat = parseFloat(div.getAttribute('data-lat'));
+        const lng = parseFloat(div.getAttribute('data-lng'));
+        if (!window.mapboxgl || isNaN(lat) || isNaN(lng)) return;
+        div.dataset.mapInitialized = 'true';
+        const map = new mapboxgl.Map({
+            container: div,
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [lng, lat],
+            zoom: 16,
+            interactive: false,
+            attributionControl: false
+        });
+        new mapboxgl.Marker({color: '#3B82F6'})
+            .setLngLat([lng, lat])
+            .addTo(map);
+        // Store map instance for cleanup
+        div._miniMap = map;
+    });
+}
+
+function applyReportFilters() {
+    const type = document.querySelector('.type-filter')?.value || 'all';
+    const status = document.querySelector('.status-filter')?.value || 'all';
+    const dateFrom = document.querySelector('.date-from')?.value;
+    const dateTo = document.querySelector('.date-to')?.value;
+
+    let filtered = currentReports;
+
+    // Type filter
+    if (type !== 'all') {
+        filtered = filtered.filter(r => r.type === type);
+    }
+    // Status filter
+    if (status !== 'all') {
+        filtered = filtered.filter(r => (r.status || '').toLowerCase() === status.toLowerCase());
+    }
+    // Date range filter
+    if (dateFrom) {
+        const fromDate = new Date(dateFrom);
+        filtered = filtered.filter(r => new Date(r.createdAt) >= fromDate);
+    }
+    if (dateTo) {
+        const toDate = new Date(dateTo);
+        // Add 1 day to include the end date
+        toDate.setDate(toDate.getDate() + 1);
+        filtered = filtered.filter(r => new Date(r.createdAt) < toDate);
+    }
+    renderReportsTable(filtered);
 }
 
 // Helper function to get user profile picture URL

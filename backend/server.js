@@ -50,57 +50,57 @@ const chatMessageSchema = new mongoose.Schema({
 const ChatMessage = mongoose.model('ChatMessage', chatMessageSchema);
 
 // Socket.IO connection handling
-io.on('connection', (socket) => {
-  console.log('A user connected');
-
-  let currentRoom = 'general'; // Keep track of the room the socket is currently in
-  socket.join(currentRoom);
-
-  // Handle joining rooms
-  socket.on('joinRoom', (roomName) => {
-    if (currentRoom !== roomName) {
-      socket.leave(currentRoom);
-      socket.join(roomName);
-      currentRoom = roomName;
-      console.log(`User joined room: ${roomName}`);
-      // Optionally, send history of the new room to the user
-      // This will be handled by the frontend making a fetch request.
-    }
-  });
-
-  // Handle chat messages
-  socket.on('chat message', async (data) => {
-    try {
-      const messageRoom = data.room || 'community-chat';
-      // Look up user by username to get userId
-      const user = await User.findOne({ name: data.username });
-      // Save message to database
-      const chatMessage = new ChatMessage({
-        username: data.username,
-        message: data.message,
-        room: messageRoom,
-        filePath: data.filePath
-      });
-      await chatMessage.save();
-      // Broadcast message to all clients in the correct room, including userId
-      io.to(messageRoom).emit('chat message', {
-        username: data.username,
-        userId: user ? user._id : null,
-        message: data.message,
-        filePath: data.filePath,
-        timestamp: chatMessage.createdAt,
-        room: messageRoom,
-        createdAt: chatMessage.createdAt
-      });
-    } catch (error) {
-      console.error('Error saving chat message:', error);
-    }
-  });
-
-  socket.on('disconnect', () => {
-    console.log('User disconnected');
-  });
-});
+// io.on('connection', (socket) => {
+//   console.log('A user connected');
+//
+//   let currentRoom = 'general'; // Keep track of the room the socket is currently in
+//   socket.join(currentRoom);
+//
+//   // Handle joining rooms
+//   socket.on('joinRoom', (roomName) => {
+//     if (currentRoom !== roomName) {
+//       socket.leave(currentRoom);
+//       socket.join(roomName);
+//       currentRoom = roomName;
+//       console.log(`User joined room: ${roomName}`);
+//       // Optionally, send history of the new room to the user
+//       // This will be handled by the frontend making a fetch request.
+//     }
+//   });
+//
+//   // Handle chat messages
+//   socket.on('chat message', async (data) => {
+//     try {
+//       const messageRoom = data.room || 'community-chat';
+//       // Look up user by username to get userId
+//       const user = await User.findOne({ name: data.username });
+//       // Save message to database
+//       const chatMessage = new ChatMessage({
+//         username: data.username,
+//         message: data.message,
+//         room: messageRoom,
+//         filePath: data.filePath
+//       });
+//       await chatMessage.save();
+//       // Broadcast message to all clients in the correct room, including userId
+//       io.to(messageRoom).emit('chat message', {
+//         username: data.username,
+//         userId: user ? user._id : null,
+//         message: data.message,
+//         filePath: data.filePath,
+//         timestamp: chatMessage.createdAt,
+//         room: messageRoom,
+//         createdAt: chatMessage.createdAt
+//       });
+//     } catch (error) {
+//       console.error('Error saving chat message:', error);
+//     }
+//   });
+//
+//   socket.on('disconnect', () => {
+//     console.log('User disconnected');
+//   });
+// });
 
 const pingSchema = new mongoose.Schema({
   description: String,
@@ -119,7 +119,26 @@ const pingSchema = new mongoose.Schema({
   },
   createdAt: { type: Date, default: Date.now },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  neighborhoodId: { type: mongoose.Schema.Types.ObjectId, ref: 'Neighborhood' }
+  neighborhoodId: { type: mongoose.Schema.Types.ObjectId, ref: 'Neighborhood' },
+  // Enhanced fields for reports
+  status: {
+    type: String,
+    enum: ['pending', 'investigating', 'resolved', 'escalated'],
+    default: 'pending'
+  },
+  timeResolved: { type: Date },
+  escalatedTo: { type: String },
+  notes: [{
+    content: String,
+    addedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    addedAt: { type: Date, default: Date.now }
+  }],
+  followUps: [{
+    action: String,
+    description: String,
+    addedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    addedAt: { type: Date, default: Date.now }
+  }]
 });
 
 const Ping = mongoose.model('Ping', pingSchema);
