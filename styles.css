@@ -1,13 +1,13 @@
 :root {
-    --primary-color: #4a6bff;
-    --secondary-color: #6c8eff;
+    --primary-color: #a259e6;
+    --secondary-color: #c084fc;
     --text-color: #333;
     --light-gray: #f5f5f5;
     --white: #ffffff;
-    --gradient-start: #4a6bff;
-    --gradient-end: #6c8eff;
+    --gradient-start: #a259e6;
+    --gradient-end: #c084fc;
     --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    --button-shadow: 0 4px 12px rgba(74, 107, 255, 0.3);
+    --button-shadow: 0 4px 12px rgba(162, 89, 230, 0.3);
 }
 
 * {
@@ -86,7 +86,7 @@ body {
 
 .nav-cta:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(74, 107, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(162, 89, 230, 0.3);
     background: var(--secondary-color);
 }
 
@@ -110,7 +110,7 @@ body {
 .login-button:hover {
     background-color: var(--secondary-color);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(74, 107, 255, 0.4);
+    box-shadow: 0 6px 16px rgba(162, 89, 230, 0.4);
 }
 
 .download-button {
@@ -126,7 +126,7 @@ body {
 
 .download-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(74, 107, 255, 0.4);
+    box-shadow: 0 6px 16px rgba(162, 89, 230, 0.4);
 }
 
 /* Mobile Menu Toggle */
@@ -257,7 +257,7 @@ body {
 .mobile-button-primary:hover {
     background-color: var(--secondary-color);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(74, 107, 255, 0.4);
+    box-shadow: 0 6px 16px rgba(162, 89, 230, 0.4);
 }
 
 .mobile-button-secondary {
@@ -271,7 +271,7 @@ body {
     background-color: var(--primary-color);
     color: var(--white);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(74, 107, 255, 0.4);
+    box-shadow: 0 6px 16px rgba(162, 89, 230, 0.4);
 }
 
 /* Hero Section */
@@ -319,7 +319,7 @@ body {
 
 .cta-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(74, 107, 255, 0.4);
+    box-shadow: 0 6px 16px rgba(162, 89, 230, 0.4);
 }
 
 .hero-image {
@@ -955,7 +955,7 @@ body {
 .auth-button:hover {
     background: var(--secondary-color);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(74, 107, 255, 0.4);
+    box-shadow: 0 6px 16px rgba(162, 89, 230, 0.4);
 }
 
 /* Common button styles */
@@ -996,5 +996,5 @@ body {
 
 .button-secondary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(74, 107, 255, 0.4);
+    box-shadow: 0 6px 16px rgba(162, 89, 230, 0.4);
 } 

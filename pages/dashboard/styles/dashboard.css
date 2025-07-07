@@ -1,14 +1,14 @@
 :root {
-    --primary-color: #4a6bff;
-    --secondary-color: #6c8eff;
+    --primary-color: #a259e6;
+    --secondary-color: #c084fc;
     --text-color: #333;
     --text-dark: #333;
     --text-muted: #666;
     --light-gray: #f5f5f5;
     --white: #ffffff;
     --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    --button-shadow: 0 4px 12px rgba(74, 107, 255, 0.3);
-    --hover-bg: rgba(74, 107, 255, 0.05);
+    --button-shadow: 0 4px 12px rgba(162, 89, 230, 0.3);
+    --hover-bg: rgba(162, 89, 230, 0.08);
     --bg-color: #F9FAFB;
     --sidebar-bg: #ffffff;
     --text-light: #333;
@@ -229,7 +229,7 @@ body.dashboard {
 }
 
 .alert-item.msg {
-    border-left: 4px solid #4A6BFF;
+    border-left: 4px solid #a259e6;
 }
 
 .alert-item.suspicious {
@@ -463,7 +463,7 @@ body.dashboard {
 
 .ping-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(74, 107, 255, 0.4);
+    box-shadow: 0 6px 16px rgba(162, 89, 230, 0.4);
 }
 
 /* Alerts History */
@@ -2674,7 +2674,7 @@ input:checked + .slider:before {
 
 .quick-stats-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(74, 107, 255, 0.4);
+    box-shadow: 0 6px 16px rgba(162, 89, 230, 0.4);
 }
 
 /* Feed Status Colors */
