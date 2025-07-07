@@ -4324,3 +4324,32 @@ input:checked + .slider:before {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+.view-on-map-bubble {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin: 6px 0 0 0;
+}
+.view-on-map-btn {
+  background: #fff;
+  color: #666;
+  border: 1px solid #f3f3f3;
+  border-radius: 999px;
+  padding: 2px 14px;
+  font-size: 0.93rem;
+  font-family: 'Poppins', 'Inter', 'Segoe UI', Arial, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0;
+  box-shadow: none;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border 0.18s;
+  outline: none;
+  margin: 0;
+  display: inline-block;
+}
+.view-on-map-btn:hover, .view-on-map-btn:focus {
+  background: #f7f7f7;
+  color: #2563eb;
+  border: 1px solid #dbeafe;
+}
