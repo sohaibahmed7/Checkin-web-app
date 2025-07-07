@@ -81,15 +81,15 @@ function getTransporter() {
 }
 
 // Chat Message Schema
-const chatMessageSchema = new mongoose.Schema({
-  username: {type: String, required: true},
-  message: {type: String, required: true},
-  room: {type: String, default: "general"},
-  filePath: {type: String},
-  createdAt: {type: Date, default: Date.now},
-});
+// const chatMessageSchema = new mongoose.Schema({
+//   username: {type: String, required: true},
+//   message: {type: String, required: true},
+//   room: {type: String, default: "general"},
+//   filePath: {type: String},
+//   createdAt: {type: Date, default: Date.now},
+// });
 
-const ChatMessage = mongoose.model("ChatMessage", chatMessageSchema);
+// const ChatMessage = mongoose.model("ChatMessage", chatMessageSchema);
 
 const pingSchema = new mongoose.Schema({
   description: String,
@@ -106,6 +106,24 @@ const pingSchema = new mongoose.Schema({
   createdAt: {type: Date, default: Date.now},
   user: {type: mongoose.Schema.Types.ObjectId, ref: "User"},
   neighborhoodId: {type: mongoose.Schema.Types.ObjectId, ref: "Neighborhood"},
+  status: {
+    type: String,
+    enum: ["pending", "investigating", "resolved", "escalated", "solved"],
+    default: "pending",
+  },
+  timeResolved: {type: Date},
+  escalatedTo: {type: String},
+  notes: [{
+    content: String,
+    addedBy: {type: mongoose.Schema.Types.ObjectId, ref: "User"},
+    addedAt: {type: Date, default: Date.now},
+  }],
+  followUps: [{
+    action: String,
+    description: String,
+    addedBy: {type: mongoose.Schema.Types.ObjectId, ref: "User"},
+    addedAt: {type: Date, default: Date.now},
+  }],
 });
 
 const Ping = mongoose.model("Ping", pingSchema);
@@ -300,37 +318,6 @@ app.get("/view-users", async (req, res) => {
   }
 });
 
-// View Chats Route
-app.get("/view-chats", async (req, res) => {
-  try {
-    const messages = await ChatMessage.find().sort({createdAt: -1}).lean();
-
-    let html = "<h1>Chat Messages</h1>";
-    if (messages.length === 0) {
-      html += "<p>No chat messages found.</p>";
-    } else {
-      html += "<table border=\"1\">";
-      html += "<tr><th>Username</th><th>Message</th><th>Room</th><th>Timestamp</th></tr>";
-      messages.forEach((msg) => {
-        html += `
-          <tr>
-            <td>${msg.username}</td>
-            <td>${msg.message}</td>
-            <td>${msg.room}</td>
-            <td>${msg.createdAt}</td>
-          </tr>
-        `;
-      });
-      html += "</table>";
-    }
-
-    res.send(html);
-  } catch (err) {
-    console.error("Error fetching chat messages for view:", err);
-    res.status(500).send("Error loading chat messages.");
-  }
-});
-
 // View Neighborhoods Route
 app.get("/view-neighborhoods", async (req, res) => {
   try {
@@ -470,13 +457,13 @@ app.get("/api/pings", async (req, res) => {
   }
   const pings = await Ping.find(filter)
       .sort({createdAt: -1})
-      .populate("user", "firstName lastName name")
+      .populate("user", "_id firstName lastName name profile_picture_url")
       .lean();
   res.json(pings);
 });
 
 app.post("/api/pings", express.json(), async (req, res) => {
-  const {description, lat, lng, type, userId, photo_base64} = req.body;
+  const {description, lat, lng, type, userId, photo_base64, status, timeResolved, escalatedTo, notes, followUps} = req.body;
   if (!userId || userId === "null" || userId === "undefined") {
     return res.status(400).json({message: "User ID is required to create a ping."});
   }
@@ -494,6 +481,11 @@ app.post("/api/pings", express.json(), async (req, res) => {
     type,
     user: userId,
     neighborhoodId: user.neighborhoodId,
+    status,
+    timeResolved,
+    escalatedTo,
+    notes,
+    followUps,
   };
 
   // Upload photo to Firebase Storage if provided
@@ -935,18 +927,6 @@ app.get("/api/user/neighborhood/:userId", async (req, res) => {
   }
 });
 
-// --- Chat History API ---
-app.get("/api/chat/messages", async (req, res) => {
-  try {
-    const room = req.query.room || "general";
-    const messages = await ChatMessage.find({room}).sort({createdAt: 1}).lean();
-    res.json(messages);
-  } catch (error) {
-    console.error("Error fetching chat messages:", error);
-    res.status(500).json({error: "Failed to fetch chat messages"});
-  }
-});
-
 // Endpoint to serve user profile pictures
 app.get("/api/user/:id/profile-picture", async (req, res) => {
   try {
@@ -972,6 +952,132 @@ app.get("/api/ping/:id/photo", async (req, res) => {
     res.redirect(ping.photo_url);
   } catch (err) {
     res.status(500).send("Error fetching ping photo");
+  }
+});
+
+// --- Reports ---
+// Get reports with enhanced data
+app.get("/api/reports", async (req, res) => {
+  try {
+    const {neighborhoodId, status, type, dateFrom, dateTo} = req.query;
+    const filter = {};
+    if (neighborhoodId && mongoose.Types.ObjectId.isValid(neighborhoodId)) {
+      filter.neighborhoodId = neighborhoodId;
+    }
+    if (status && status !== "all") {
+      filter.status = status;
+    }
+    if (type && type !== "all") {
+      filter.type = type;
+    }
+    if (dateFrom || dateTo) {
+      filter.createdAt = {};
+      if (dateFrom) filter.createdAt.$gte = new Date(dateFrom);
+      if (dateTo) filter.createdAt.$lte = new Date(dateTo + "T23:59:59.999Z");
+    }
+    const reports = await Ping.find(filter)
+        .sort({createdAt: -1})
+        .populate("user", "_id firstName lastName name profile_picture_url")
+        .populate("notes.addedBy", "name")
+        .populate("followUps.addedBy", "name")
+        .lean();
+    res.json(reports);
+  } catch (err) {
+    console.error("Error fetching reports:", err);
+    res.status(500).json({message: "Error fetching reports"});
+  }
+});
+
+// Update report status
+app.put("/api/reports/:id/status", async (req, res) => {
+  try {
+    const {id} = req.params;
+    const {status, escalatedTo, timeResolved} = req.body;
+    const updateData = {status};
+    if (escalatedTo) updateData.escalatedTo = escalatedTo;
+    if (timeResolved) updateData.timeResolved = new Date(timeResolved);
+    if (status === "resolved" && !timeResolved) {
+      updateData.timeResolved = new Date();
+    }
+    const report = await Ping.findByIdAndUpdate(
+        id,
+        updateData,
+        {new: true},
+    ).populate("user", "_id firstName lastName name profile_picture_url");
+    if (!report) {
+      return res.status(404).json({message: "Report not found"});
+    }
+    res.json(report);
+  } catch (err) {
+    console.error("Error updating report status:", err);
+    res.status(500).json({message: "Error updating report status"});
+  }
+});
+
+// Add note to report
+app.post("/api/reports/:id/notes", async (req, res) => {
+  try {
+    const {id} = req.params;
+    const {content, addedBy} = req.body;
+    if (!content || !addedBy) {
+      return res.status(400).json({message: "Content and user ID are required"});
+    }
+    const report = await Ping.findByIdAndUpdate(
+        id,
+        {$push: {notes: {content, addedBy}}},
+        {new: true},
+    ).populate("user", "_id firstName lastName name profile_picture_url")
+        .populate("notes.addedBy", "name");
+    if (!report) {
+      return res.status(404).json({message: "Report not found"});
+    }
+    res.json(report);
+  } catch (err) {
+    console.error("Error adding note to report:", err);
+    res.status(500).json({message: "Error adding note"});
+  }
+});
+
+// Add follow-up to report
+app.post("/api/reports/:id/follow-ups", async (req, res) => {
+  try {
+    const {id} = req.params;
+    const {action, description, addedBy} = req.body;
+    if (!action || !addedBy) {
+      return res.status(400).json({message: "Action and user ID are required"});
+    }
+    const report = await Ping.findByIdAndUpdate(
+        id,
+        {$push: {followUps: {action, description, addedBy}}},
+        {new: true},
+    ).populate("user", "_id firstName lastName name profile_picture_url")
+        .populate("followUps.addedBy", "name");
+    if (!report) {
+      return res.status(404).json({message: "Report not found"});
+    }
+    res.json(report);
+  } catch (err) {
+    console.error("Error adding follow-up to report:", err);
+    res.status(500).json({message: "Error adding follow-up"});
+  }
+});
+
+// Get report trail (notes and follow-ups)
+app.get("/api/reports/:id/trail", async (req, res) => {
+  try {
+    const {id} = req.params;
+    const report = await Ping.findById(id)
+        .populate("user", "_id firstName lastName name profile_picture_url")
+        .populate("notes.addedBy", "name")
+        .populate("followUps.addedBy", "name")
+        .select("notes followUps createdAt user description type status");
+    if (!report) {
+      return res.status(404).json({message: "Report not found"});
+    }
+    res.json(report);
+  } catch (err) {
+    console.error("Error fetching report trail:", err);
+    res.status(500).json({message: "Error fetching report trail"});
   }
 });
 

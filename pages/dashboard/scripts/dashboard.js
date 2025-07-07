@@ -1774,98 +1774,21 @@ let currentReportId = null;
 // Load reports from backend
 async function loadReports() {
     try {
-        // Fetch the HTML table from the view-pings endpoint
-        const response = await fetch('https://api-3ffpwchysq-uc.a.run.app/view-pings');
+        const response = await fetch(config.getApiUrl(config.API_ENDPOINTS.REPORTS));
         if (!response.ok) {
             throw new Error('Failed to fetch reports');
         }
-
-        const htmlText = await response.text();
-        
-        // Parse the HTML table to extract ping data
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(htmlText, 'text/html');
-        const table = doc.querySelector('table');
-        
-        if (!table) {
-            throw new Error('No table found in response');
-        }
-
-        const rows = table.querySelectorAll('tbody tr');
-        const reports = [];
-
-        rows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            if (cells.length >= 6) {
-                const description = cells[0].textContent.trim();
-                const latitude = parseFloat(cells[1].textContent.trim());
-                const longitude = parseFloat(cells[2].textContent.trim());
-                const photoText = cells[3].textContent.trim();
-                const timestampText = cells[4].textContent.trim();
-                const postedByText = cells[5].textContent.trim();
-
-                // Parse the posted by text to extract name and email
-                let userName = 'Unknown';
-                let userEmail = '';
-                const match = postedByText.match(/^(.*?)\s*\(([^)]+)\)$/);
-                if (match) {
-                    userName = match[1].trim();
-                    userEmail = match[2].trim();
-                }
-
-                // Parse timestamp
-                const timestamp = new Date(timestampText);
-
-                // Determine ping type from description (simple heuristic)
-                let type = 'other';
-                const descLower = description.toLowerCase();
-                if (descLower.includes('suspicious')) {
-                    type = 'suspicious';
-                } else if (descLower.includes('break') || descLower.includes('enter') || descLower.includes('robbery')) {
-                    type = 'break-enter';
-                } else if (descLower.includes('fire')) {
-                    type = 'fire';
-                }
-
-                // Check if photo exists
-                const hasPhoto = photoText !== 'No Photo' && !photoText.includes('[object Object]');
-
-                reports.push({
-                    _id: `ping_${Date.now()}_${Math.random()}`,
-                    description: description,
-                    location: {
-                        lat: latitude,
-                        lng: longitude
-                    },
-                    type: type,
-                    photo: hasPhoto ? { data: true } : null,
-                    createdAt: timestamp,
-                    timestamp: timestamp,
-                    user: {
-                        name: userName,
-                        email: userEmail
-                    },
-                    status: 'active',
-                    timeResolved: null,
-                    escalatedTo: null,
-                    notes: []
-                });
-            }
-        });
-
+        const reports = await response.json();
         currentReports = reports;
         applyReportFilters();
-        
         // Update the loading state
         const loadingElement = document.querySelector('.reports-loading');
         if (loadingElement) {
             loadingElement.style.display = 'none';
         }
-        
     } catch (error) {
         console.error('Error loading reports:', error);
         showError('Failed to load reports');
-        
         // Show error state
         const tbody = document.getElementById('reports-tbody');
         if (tbody) {
@@ -1905,29 +1828,12 @@ function renderReportsTable(reports) {
     tbody.innerHTML = reports.map(report => {
         const createdAt = new Date(report.createdAt);
         const timeResolved = report.timeResolved ? new Date(report.timeResolved) : null;
-        const hasEvidence = report.photo && report.photo.data;
+        const hasEvidence = report.photo_url;
         const isRecent = (Date.now() - createdAt.getTime()) < (7 * 24 * 60 * 60 * 1000); // 7 days
 
-        // Avatar logic (same as feed)
-        let userAvatar = '';
-        if (report.user && report.user.profilePicture) {
-            userAvatar = report.user.profilePicture;
-        } else if (report.user && report.user.email) {
-            const email = report.user.email.trim().toLowerCase();
-            const hash = Array.from(email).reduce((acc, c) => acc + c.charCodeAt(0), 0);
-            userAvatar = `https://www.gravatar.com/avatar/${hash}?d=identicon`;
-        } else {
-            userAvatar = 'assets/avatar.svg';
-        }
-        let initials = '';
-        if (report.user && report.user.name && !userAvatar) {
-            initials = report.user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
-        }
-        // Avatar HTML
-        let avatarHtml = userAvatar
-            ? `<img src="${userAvatar}" alt="${report.user ? report.user.name : 'User'}" class="report-avatar" onerror="this.onerror=null;this.src='assets/avatar.svg';this.nextElementSibling.style.display='flex';">`
-            : '';
-        avatarHtml += `<span class="report-avatar-initials" style="display:${userAvatar ? 'none' : 'flex'}">${initials}</span>`;
+        // Avatar logic
+        let userAvatar = config.getUserAvatarUrl(report.user && report.user._id ? report.user._id : null);
+        let reportAvatar = `<img src="${userAvatar}" alt="${report.user ? (report.user.firstName + ' ' + report.user.lastName) : 'User'}" class="report-avatar">`;
 
         // Evidence icon
         let evidenceHtml = hasEvidence
@@ -1985,47 +1891,7 @@ function renderReportsTable(reports) {
         // Evidence display logic
         let evidenceSectionHtml = '';
         if (report.evidence && report.evidence.length > 0) {
-            evidenceSectionHtml = `<div class="evidence-list">` + report.evidence.map(ev => {
-                // Avatar logic for evidence
-                let evAvatar = '';
-                if (ev.user && ev.user.profilePicture) {
-                    evAvatar = ev.user.profilePicture;
-                } else if (ev.user && ev.user.email) {
-                    const email = ev.user.email.trim().toLowerCase();
-                    const hash = Array.from(email).reduce((acc, c) => acc + c.charCodeAt(0), 0);
-                    evAvatar = `https://www.gravatar.com/avatar/${hash}?d=identicon`;
-                } else {
-                    evAvatar = 'assets/avatar.svg';
-                }
-                let evInitials = '';
-                if (ev.user && ev.user.name && !evAvatar) {
-                    evInitials = ev.user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
-                }
-                let avatarHtml = evAvatar
-                    ? `<img src="${evAvatar}" alt="${ev.user ? ev.user.name : 'User'}" class="evidence-avatar" onerror="this.onerror=null;this.src='assets/avatar.svg';this.nextElementSibling.style.display='flex';">`
-                    : '';
-                avatarHtml += `<span class="evidence-avatar-initials" style="display:${evAvatar ? 'none' : 'flex'}">${evInitials}</span>`;
-                // Evidence content
-                let contentHtml = '';
-                if (ev.imageUrl) {
-                    contentHtml += `<div class="evidence-image"><img src="${ev.imageUrl}" alt="Evidence image"></div>`;
-                }
-                if (ev.text) {
-                    contentHtml += `<div class="evidence-text">${ev.text}</div>`;
-                }
-                return `
-                    <div class="evidence-post">
-                        <div class="evidence-meta">
-                            <div class="evidence-avatar-wrapper">${avatarHtml}</div>
-                            <div class="evidence-user-info">
-                                <span class="evidence-user-name">${ev.user && ev.user.name ? ev.user.name : 'Unknown'}</span>
-                                <span class="evidence-time">${ev.createdAt ? formatTimestamp(new Date(ev.createdAt)) : ''}</span>
-                            </div>
-                        </div>
-                        ${contentHtml}
-                    </div>
-                `;
-            }).join('') + `</div>`;
+            evidenceSectionHtml = `<div class="evidence-list"></div>`;
         } else if (hasEvidence) {
             evidenceSectionHtml = `<div class="evidence-gallery">
                 <div class="evidence-item">
@@ -2039,11 +1905,11 @@ function renderReportsTable(reports) {
         }
 
         return `
-            <tr class="report-row" data-report-id="${report._id}">
-                <td class="report-avatar-cell">
-                    <div class="report-avatar-wrapper">${avatarHtml}</div>
+            <tr class="report-row" data-report-id="${report._id}" style="font-size:0.95em;">
+                <td class="report-avatar">
+                    ${reportAvatar}
                 </td>
-                <td>${report.user ? report.user.name : 'Unknown'}</td>
+                <td>${report.user ? `${report.user.firstName} ${report.user.lastName}` : 'Unknown'}</td>
                 <td class="type-col"><span class="badge ${report.type}">${formatPingTypeDisplay(report.type)}</span></td>
                 <td class="description-cell" title="${report.description}">${report.description}</td>
                 <td>${formatTimestamp(createdAt)}</td>
@@ -2058,7 +1924,7 @@ function renderReportsTable(reports) {
                                 title="Follow-Up">
                             <i class="fas fa-plus"></i>
                         </button>
-                        <button class="action-btn view-trail" onclick="viewReportTrail('${report._id}')" title="View Report Trail">
+                        <button class="action-btn view-trail" onclick="viewReportTrail('${report._id}')">
                             <i class="fas fa-history"></i>
                         </button>
                         <button class="expand-btn" onclick="toggleReportDetails('${report._id}')">
@@ -2067,12 +1933,12 @@ function renderReportsTable(reports) {
                     </div>
                 </td>
             </tr>
-            <tr class="report-details" id="details-${report._id}" style="display: none;">
+            <tr class="report-details" id="details-${report._id}" style="display: none; font-size:0.95em;">
                 <td colspan="10">
                     <div class="report-card">
                         <div class="report-info">
                             <h4>Description</h4>
-                            <p class="report-description-long">${report.description}</p>
+                            <p class="report-description-long"></p>
                             <div class="report-meta">
                                 <div class="report-photos">
                                     <h5>Evidence</h5>
@@ -2089,7 +1955,7 @@ function renderReportsTable(reports) {
                             <div class="report-notes-replies">
                                 <h5>Notes / Replies</h5>
                                 <div class="notes-list">
-                                    ${(report.notes && report.notes.length > 0) ?
+                                    ${report.notes && report.notes.length > 0 ?
                                         report.notes.map(note => `
                                             <div class="note-item">
                                                 <div class="note-meta">
@@ -2113,18 +1979,6 @@ function renderReportsTable(reports) {
             </tr>
         `;
     }).join('');
-
-    // Add event listeners for view location buttons
-    tbody.querySelectorAll('.view-location').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const coords = this.getAttribute('data-coordinates');
-            if (coords) {
-                const [lat, lng] = coords.split(',').map(Number);
-                viewLocationOnMap(lat, lng);
-            }
-        });
-    });
 
     // Re-initialize resizable columns after table content is updated
     initializeResizableColumns();

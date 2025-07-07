@@ -50,57 +50,57 @@ const chatMessageSchema = new mongoose.Schema({
 const ChatMessage = mongoose.model('ChatMessage', chatMessageSchema);
 
 // Socket.IO connection handling
-io.on('connection', (socket) => {
-  console.log('A user connected');
-
-  let currentRoom = 'general'; // Keep track of the room the socket is currently in
-  socket.join(currentRoom);
-
-  // Handle joining rooms
-  socket.on('joinRoom', (roomName) => {
-    if (currentRoom !== roomName) {
-      socket.leave(currentRoom);
-      socket.join(roomName);
-      currentRoom = roomName;
-      console.log(`User joined room: ${roomName}`);
-      // Optionally, send history of the new room to the user
-      // This will be handled by the frontend making a fetch request.
-    }
-  });
-
-  // Handle chat messages
-  socket.on('chat message', async (data) => {
-    try {
-      const messageRoom = data.room || 'community-chat';
-      // Look up user by username to get userId
-      const user = await User.findOne({ name: data.username });
-      // Save message to database
-      const chatMessage = new ChatMessage({
-        username: data.username,
-        message: data.message,
-        room: messageRoom,
-        filePath: data.filePath
-      });
-      await chatMessage.save();
-      // Broadcast message to all clients in the correct room, including userId
-      io.to(messageRoom).emit('chat message', {
-        username: data.username,
-        userId: user ? user._id : null,
-        message: data.message,
-        filePath: data.filePath,
-        timestamp: chatMessage.createdAt,
-        room: messageRoom,
-        createdAt: chatMessage.createdAt
-      });
-    } catch (error) {
-      console.error('Error saving chat message:', error);
-    }
-  });
-
-  socket.on('disconnect', () => {
-    console.log('User disconnected');
-  });
-});
+// io.on('connection', (socket) => {
+//   console.log('A user connected');
+//
+//   let currentRoom = 'general'; // Keep track of the room the socket is currently in
+//   socket.join(currentRoom);
+//
+//   // Handle joining rooms
+//   socket.on('joinRoom', (roomName) => {
+//     if (currentRoom !== roomName) {
+//       socket.leave(currentRoom);
+//       socket.join(roomName);
+//       currentRoom = roomName;
+//       console.log(`User joined room: ${roomName}`);
+//       // Optionally, send history of the new room to the user
+//       // This will be handled by the frontend making a fetch request.
+//     }
+//   });
+//
+//   // Handle chat messages
+//   socket.on('chat message', async (data) => {
+//     try {
+//       const messageRoom = data.room || 'community-chat';
+//       // Look up user by username to get userId
+//       const user = await User.findOne({ name: data.username });
+//       // Save message to database
+//       const chatMessage = new ChatMessage({
+//         username: data.username,
+//         message: data.message,
+//         room: messageRoom,
+//         filePath: data.filePath
+//       });
+//       await chatMessage.save();
+//       // Broadcast message to all clients in the correct room, including userId
+//       io.to(messageRoom).emit('chat message', {
+//         username: data.username,
+//         userId: user ? user._id : null,
+//         message: data.message,
+//         filePath: data.filePath,
+//         timestamp: chatMessage.createdAt,
+//         room: messageRoom,
+//         createdAt: chatMessage.createdAt
+//       });
+//     } catch (error) {
+//       console.error('Error saving chat message:', error);
+//     }
+//   });
+//
+//   socket.on('disconnect', () => {
+//     console.log('User disconnected');
+//   });
+// });
 
 const pingSchema = new mongoose.Schema({
   description: String,
@@ -1115,154 +1115,6 @@ app.get('/api/ping/:id/photo', async (req, res) => {
     res.send(ping.photo.data);
   } catch (err) {
     res.status(500).send('Error fetching ping photo');
-  }
-});
-
-// Enhanced Reports API Endpoints
-
-// Get reports with enhanced data
-app.get('/api/reports', async (req, res) => {
-  try {
-    const { neighborhoodId, status, type, dateFrom, dateTo } = req.query;
-    let filter = {};
-    
-    if (neighborhoodId && mongoose.Types.ObjectId.isValid(neighborhoodId)) {
-      filter.neighborhoodId = neighborhoodId;
-    }
-    
-    if (status && status !== 'all') {
-      filter.status = status;
-    }
-    
-    if (type && type !== 'all') {
-      filter.type = type;
-    }
-    
-    if (dateFrom || dateTo) {
-      filter.createdAt = {};
-      if (dateFrom) filter.createdAt.$gte = new Date(dateFrom);
-      if (dateTo) filter.createdAt.$lte = new Date(dateTo + 'T23:59:59.999Z');
-    }
-    
-    const reports = await Ping.find(filter)
-      .sort({ createdAt: -1 })
-      .populate('user', '_id name')
-      .populate('notes.addedBy', 'name')
-      .populate('followUps.addedBy', 'name')
-      .lean();
-    
-    res.json(reports);
-  } catch (err) {
-    console.error('Error fetching reports:', err);
-    res.status(500).json({ message: 'Error fetching reports' });
-  }
-});
-
-// Update report status
-app.put('/api/reports/:id/status', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status, escalatedTo, timeResolved } = req.body;
-    
-    const updateData = { status };
-    if (escalatedTo) updateData.escalatedTo = escalatedTo;
-    if (timeResolved) updateData.timeResolved = new Date(timeResolved);
-    if (status === 'resolved' && !timeResolved) {
-      updateData.timeResolved = new Date();
-    }
-    
-    const report = await Ping.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true }
-    ).populate('user', '_id name');
-    
-    if (!report) {
-      return res.status(404).json({ message: 'Report not found' });
-    }
-    
-    res.json(report);
-  } catch (err) {
-    console.error('Error updating report status:', err);
-    res.status(500).json({ message: 'Error updating report status' });
-  }
-});
-
-// Add note to report
-app.post('/api/reports/:id/notes', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { content, addedBy } = req.body;
-    
-    if (!content || !addedBy) {
-      return res.status(400).json({ message: 'Content and user ID are required' });
-    }
-    
-    const report = await Ping.findByIdAndUpdate(
-      id,
-      { $push: { notes: { content, addedBy } } },
-      { new: true }
-    ).populate('user', '_id name')
-     .populate('notes.addedBy', 'name');
-    
-    if (!report) {
-      return res.status(404).json({ message: 'Report not found' });
-    }
-    
-    res.json(report);
-  } catch (err) {
-    console.error('Error adding note to report:', err);
-    res.status(500).json({ message: 'Error adding note' });
-  }
-});
-
-// Add follow-up to report
-app.post('/api/reports/:id/follow-ups', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { action, description, addedBy } = req.body;
-    
-    if (!action || !addedBy) {
-      return res.status(400).json({ message: 'Action and user ID are required' });
-    }
-    
-    const report = await Ping.findByIdAndUpdate(
-      id,
-      { $push: { followUps: { action, description, addedBy } } },
-      { new: true }
-    ).populate('user', '_id name')
-     .populate('followUps.addedBy', 'name');
-    
-    if (!report) {
-      return res.status(404).json({ message: 'Report not found' });
-    }
-    
-    res.json(report);
-  } catch (err) {
-    console.error('Error adding follow-up to report:', err);
-    res.status(500).json({ message: 'Error adding follow-up' });
-  }
-});
-
-// Get report trail (notes and follow-ups)
-app.get('/api/reports/:id/trail', async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    const report = await Ping.findById(id)
-      .populate('user', '_id name')
-      .populate('notes.addedBy', 'name')
-      .populate('followUps.addedBy', 'name')
-      .select('notes followUps createdAt user description type status');
-    
-    if (!report) {
-      return res.status(404).json({ message: 'Report not found' });
-    }
-    
-    res.json(report);
-  } catch (err) {
-    console.error('Error fetching report trail:', err);
-    res.status(500).json({ message: 'Error fetching report trail' });
   }
 });
 
