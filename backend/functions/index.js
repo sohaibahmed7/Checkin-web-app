@@ -14,17 +14,14 @@ const {setGlobalOptions} = require("firebase-functions");
 setGlobalOptions({maxInstances: 10});
 
 // Load Firebase Functions configuration
-const {onRequest} = require("firebase-functions/v2/https");
 const express = require("express");
 const mongoose = require("mongoose");
-const multer = require("multer");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const {config} = require("dotenv");
-const fs = require('fs');
-const path = require('path');
+const admin = require("firebase-admin");
 
 config({path: __dirname + "/.env"});
 
@@ -49,7 +46,8 @@ app.use(cors({
 app.options("*", cors());
 
 // Middleware
-app.use(express.json());
+// REMOVE or comment out the global body parser to avoid interfering with multer
+// app.use(express.json());
 
 // MongoDB connection middleware
 let isConnected = false;
@@ -104,46 +102,23 @@ const pingSchema = new mongoose.Schema({
     enum: ["suspicious", "break-enter", "fire", "other"],
     default: "other",
   },
-  photo: {
-    data: Buffer,
-    contentType: String,
-  },
+  photo_url: {type: String},
   createdAt: {type: Date, default: Date.now},
   user: {type: mongoose.Schema.Types.ObjectId, ref: "User"},
   neighborhoodId: {type: mongoose.Schema.Types.ObjectId, ref: "Neighborhood"},
-  status: {
-    type: String,
-    enum: ["pending", "investigating", "resolved", "escalated", "solved"],
-    default: "pending"
-  },
-  timeResolved: { type: Date },
-  escalatedTo: { type: String },
-  notes: [{
-    content: String,
-    addedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    addedAt: { type: Date, default: Date.now }
-  }],
-  followUps: [{
-    action: String,
-    description: String,
-    addedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    addedAt: { type: Date, default: Date.now }
-  }]
 });
 
 const Ping = mongoose.model("Ping", pingSchema);
 
 // User Schema
 const userSchema = new mongoose.Schema({
-  name: {type: String, required: true},
-  number: {type: String, required: true},
+  firstName: {type: String, required: true},
+  lastName: {type: String, required: true},
+  number: {type: String, default: "1111111111"},
   email: {type: String, required: true, unique: true},
   password: {type: String, required: true},
   is_moderator: {type: Boolean, default: false},
-  profile_picture: {
-    data: Buffer,
-    contentType: String,
-  },
+  profile_picture_url: {type: String},
   verification_code: {type: String},
   verification_expiry: {type: Date},
   is_verified: {type: Boolean, default: false},
@@ -152,7 +127,11 @@ const userSchema = new mongoose.Schema({
   resetTokenExpiry: {type: Date},
   neighborhoodId: {type: mongoose.Schema.Types.ObjectId, ref: "Neighborhood"},
 });
-
+userSchema.virtual("name").get(function() {
+  return `${this.firstName} ${this.lastName}`;
+});
+userSchema.set("toJSON", {virtuals: true});
+userSchema.set("toObject", {virtuals: true});
 const User = mongoose.model("User", userSchema);
 
 // Contact Message Schema
@@ -187,8 +166,14 @@ const neighborhoodSchema = new mongoose.Schema({
 
 const Neighborhood = mongoose.model("Neighborhood", neighborhoodSchema);
 
-// Multer setup for file uploads (memory storage for Firebase Functions)
-const upload = multer({storage: multer.memoryStorage()});
+// Initialize Firebase Admin
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.applicationDefault(),
+    storageBucket: process.env.FB_STORAGE_BUCKET,
+  });
+}
+
 
 // Password validation function
 const validatePassword = (password) => {
@@ -264,7 +249,7 @@ app.get("/view-pings", async (req, res) => {
             <td>${ping.description}</td>
             <td>${ping.location.lat}</td>
             <td>${ping.location.lng}</td>
-            <td>${ping.photo ? `<img src="${ping.photo}" alt="Ping Photo" width="100">` : "No Photo"}</td>
+            <td>${ping.photo_url ? `<img src="${ping.photo_url}" alt="Ping Photo" width="100">` : "No Photo"}</td>
             <td>${ping.createdAt}</td>
             <td><b>${ping.user ? `${ping.user.name} (${ping.user.email})` : "Unknown"}</b></td>
           </tr>
@@ -300,7 +285,7 @@ app.get("/view-users", async (req, res) => {
             <td>${user.is_moderator ? "Yes" : "No"}</td>
             <td>${user.is_verified ? "Yes" : "No"}</td>
             <td>${user.createdAt}</td>
-            <td>${user.profile_picture ? `<img src="/api/user/${user._id}/profile-picture" alt="Profile" width="50">` : "No Photo"}</td>
+            <td>${user.profile_picture_url ? `<img src="${user.profile_picture_url}" alt="Profile" width="50">` : "No Photo"}</td>
             
           </tr>
         `;
@@ -376,6 +361,106 @@ app.get("/view-neighborhoods", async (req, res) => {
   }
 });
 
+// --- Registration ---
+app.post("/api/register", express.json(), async (req, res) => {
+  try {
+    const {firstName, lastName, number, email, password, is_moderator, inviteCode, neighborhoodId, profile_picture_base64} = req.body;
+    if (!firstName || !lastName || !email || !password) {
+      return res.status(400).json({message: "Missing required fields."});
+    }
+    if (!validatePassword(password)) {
+      return res.status(400).json({message: "Password must be at least 8 characters long and contain at least one special character"});
+    }
+    const existingUser = await User.findOne({email});
+    if (existingUser) {
+      return res.status(400).json({message: "User already exists"});
+    }
+
+    let profile_picture_url = "";
+
+    // Upload profile picture to Firebase Storage if provided
+    if (profile_picture_base64) {
+      try {
+        const bucket = admin.storage().bucket();
+        const fileName = `profile_pictures/${Date.now()}_profile.jpg`;
+        const file = bucket.file(fileName);
+
+        // Convert base64 to buffer
+        const base64Data = profile_picture_base64.replace(/^data:image\/[a-z]+;base64,/, "");
+        const buffer = Buffer.from(base64Data, "base64");
+
+        await file.save(buffer, {
+          metadata: {
+            contentType: "image/jpeg",
+          },
+        });
+
+        // Make the file publicly accessible
+        await file.makePublic();
+
+        // Get the public URL
+        profile_picture_url = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+      } catch (uploadError) {
+        console.error("Error uploading profile picture:", uploadError);
+        return res.status(500).json({message: "Error uploading profile picture"});
+      }
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    const verification_code = Math.floor(100000 + Math.random() * 900000).toString();
+    const verification_expiry = new Date(Date.now() + 10 * 60 * 1000);
+    let neighborhoodIdToSet = neighborhoodId;
+    if (inviteCode) {
+      const neighborhood = await Neighborhood.findOne({inviteCode});
+      if (neighborhood) {
+        neighborhoodIdToSet = neighborhood._id;
+      }
+    }
+    const userData = {
+      firstName,
+      lastName,
+      number,
+      email,
+      password: hashedPassword,
+      is_moderator: Boolean(is_moderator),
+      verification_code,
+      verification_expiry,
+      is_verified: false,
+      neighborhoodId: neighborhoodIdToSet,
+      profile_picture_url: profile_picture_url,
+    };
+    const user = new User(userData);
+    await user.save();
+    // Send verification email
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Email Verification - CheckIn",
+      html: `
+        <h1>Welcome to CheckIn!</h1>
+        <p>Thank you for registering. Please use the following code to verify your email address:</p>
+        <h2 style="color: #4CAF50; font-size: 24px; padding: 10px; background: #f5f5f5; text-align: center;">${verification_code}</h2>
+        <p>This code will expire in 10 minutes.</p>
+        <p>If you didn't request this verification, please ignore this email.</p>
+      `,
+    };
+    getTransporter().sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending verification email:", error);
+        return res.status(500).json({message: "Error sending verification email"});
+      }
+      res.status(201).json({
+        message: "User registered successfully. Please check your email for verification.",
+        email: email,
+      });
+    });
+  } catch (err) {
+    console.error("Error registering user:", err);
+    res.status(500).json({message: "Error registering user"});
+  }
+});
+
 // --- Pings ---
 app.get("/api/pings", async (req, res) => {
   const {neighborhoodId} = req.query;
@@ -383,12 +468,15 @@ app.get("/api/pings", async (req, res) => {
   if (neighborhoodId && mongoose.Types.ObjectId.isValid(neighborhoodId)) {
     filter.neighborhoodId = neighborhoodId;
   }
-  const pings = await Ping.find(filter).sort({createdAt: -1}).populate("user", "name").lean();
+  const pings = await Ping.find(filter)
+      .sort({createdAt: -1})
+      .populate("user", "firstName lastName name")
+      .lean();
   res.json(pings);
 });
 
-app.post("/api/pings", upload.single("photo"), async (req, res) => {
-  const {description, lat, lng, type, userId, status, timeResolved, escalatedTo, notes, followUps} = req.body;
+app.post("/api/pings", express.json(), async (req, res) => {
+  const {description, lat, lng, type, userId, photo_base64} = req.body;
   if (!userId || userId === "null" || userId === "undefined") {
     return res.status(400).json({message: "User ID is required to create a ping."});
   }
@@ -406,19 +494,35 @@ app.post("/api/pings", upload.single("photo"), async (req, res) => {
     type,
     user: userId,
     neighborhoodId: user.neighborhoodId,
-    status,
-    timeResolved,
-    escalatedTo,
-    notes,
-    followUps
   };
 
-  // Handle file upload if present
-  if (req.file) {
-    pingData.photo = {
-      data: req.file.buffer,
-      contentType: req.file.mimetype,
-    };
+  // Upload photo to Firebase Storage if provided
+  if (photo_base64) {
+    try {
+      const bucket = admin.storage().bucket();
+      const fileName = `ping_photos/${Date.now()}_ping.jpg`;
+      const file = bucket.file(fileName);
+
+      // Convert base64 to buffer
+      const base64Data = photo_base64.replace(/^data:image\/[a-z]+;base64,/, "");
+      const buffer = Buffer.from(base64Data, "base64");
+
+      await file.save(buffer, {
+        metadata: {
+          contentType: "image/jpeg",
+        },
+      });
+
+      // Make the file publicly accessible
+      await file.makePublic();
+
+      // Get the public URL
+      const photo_url = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+      pingData.photo_url = photo_url;
+    } catch (uploadError) {
+      console.error("Error uploading ping photo:", uploadError);
+      return res.status(500).json({message: "Error uploading photo"});
+    }
   }
 
   const ping = new Ping(pingData);
@@ -428,115 +532,34 @@ app.post("/api/pings", upload.single("photo"), async (req, res) => {
 });
 
 // --- Users ---
-app.post("/api/register", upload.single("profile_picture"), async (req, res) => {
-  try {
-    const {name, number, email, password, is_moderator, inviteCode, neighborhoodId} = req.body;
-
-    // Validate password
-    if (!validatePassword(password)) {
-      return res.status(400).json({
-        message: "Password must be at least 8 characters long and contain at least one special character",
-      });
-    }
-
-    // Check if user already exists
-    const existingUser = await User.findOne({email});
-    if (existingUser) {
-      return res.status(400).json({message: "User already exists"});
-    }
-
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Generate verification code
-    const verification_code = Math.floor(100000 + Math.random() * 900000).toString();
-    const verification_expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
-    // Determine neighborhoodId to set
-    let neighborhoodIdToSet = neighborhoodId;
-    if (inviteCode) {
-      const neighborhood = await Neighborhood.findOne({inviteCode});
-      if (neighborhood) {
-        neighborhoodIdToSet = neighborhood._id;
-      }
-    }
-
-    const userData = {
-      name,
-      number,
-      email,
-      password: hashedPassword,
-      is_moderator: is_moderator === "true",
-      verification_code: verification_code,
-      verification_expiry: verification_expiry,
-      is_verified: false,
-      neighborhoodId: neighborhoodIdToSet,
-    };
-
-    // Handle profile picture if uploaded
-    if (req.file) {
-      userData.profile_picture = {
-        data: req.file.buffer,
-        contentType: req.file.mimetype,
-      };
-    }
-
-    const user = new User(userData);
-    await user.save();
-
-    // Send verification email
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Email Verification - CheckIn",
-      html: `
-        <h1>Welcome to CheckIn!</h1>
-        <p>Thank you for registering. Please use the following code to verify your email address:</p>
-        <h2 style="color: #4CAF50; font-size: 24px; padding: 10px; background: #f5f5f5; text-align: center;">${verification_code}</h2>
-        <p>This code will expire in 10 minutes.</p>
-        <p>If you didn't request this verification, please ignore this email.</p>
-      `,
-    };
-
-    getTransporter().sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error("Error sending verification email:", error);
-        return res.status(500).json({message: "Error sending verification email"});
-      }
-      res.status(201).json({
-        message: "User registered successfully. Please check your email for verification.",
-        email: email,
-      });
-    });
-  } catch (err) {
-    console.error("Error registering user:", err);
-    res.status(500).json({message: "Error registering user"});
-  }
-});
-
 app.post("/api/verify-email", async (req, res) => {
   try {
     const {email, verification_code} = req.body;
-
     const user = await User.findOne({
       email,
       verification_code,
       verification_expiry: {$gt: new Date()},
     });
-
     if (!user) {
       return res.status(400).json({
         message: "Invalid or expired verification code. Please request a new code.",
       });
     }
-
     user.is_verified = true;
     user.verification_code = null;
     user.verification_expiry = null;
     await user.save();
-
-    res.status(200).json({message: "Email verified successfully"});
+    // Check if user is a moderator and needs to create a neighborhood
+    let redirectUrl = "/pages/auth/login.html";
+    if (user.is_moderator && !user.neighborhoodId) {
+      redirectUrl = "/pages/neighborhood/create-neighborhood.html";
+    }
+    res.status(200).json({
+      message: "Email verified successfully",
+      redirectUrl: redirectUrl,
+      isModerator: user.is_moderator,
+      hasNeighborhood: !!user.neighborhoodId,
+    });
   } catch (err) {
     console.error("Error verifying email:", err);
     res.status(500).json({message: "Error verifying email"});
@@ -550,20 +573,23 @@ app.post("/api/login", async (req, res) => {
     if (!user) {
       return res.status(400).json({message: "Invalid email or password"});
     }
-    if (!user.is_verified) {
-      return res.status(403).json({message: "Please verify your email before logging in."});
-    }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({message: "Invalid email or password"});
+    }
+    if (!user.is_verified) {
+      return res.status(403).json({message: "Please verify your email before logging in."});
     }
     res.json({
       message: "Login successful",
       user: {
         _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
         name: user.name,
         email: user.email,
         is_moderator: user.is_moderator,
+        neighborhoodId: user.neighborhoodId,
       },
     });
   } catch (err) {
@@ -671,6 +697,8 @@ app.get("/api/user/settings", async (req, res) => {
       return res.status(404).json({message: "User not found"});
     }
     res.json({
+      firstName: user.firstName,
+      lastName: user.lastName,
       name: user.name,
       email: user.email,
       number: user.number,
@@ -682,9 +710,9 @@ app.get("/api/user/settings", async (req, res) => {
   }
 });
 
-app.put("/api/user/settings", upload.single("profile_picture"), async (req, res) => {
+app.put("/api/user/settings", express.json(), async (req, res) => {
   try {
-    const userId = req.body.userId;
+    const {userId, number, email, profile_picture_base64, oldPassword, newPassword, confirmNewPassword} = req.body;
     if (!userId || userId === "undefined") {
       return res.status(400).json({message: "User ID is required for updating settings."});
     }
@@ -692,38 +720,97 @@ app.put("/api/user/settings", upload.single("profile_picture"), async (req, res)
     if (!user) {
       return res.status(404).json({message: "User not found"});
     }
-
-    if (req.body.name) user.name = req.body.name;
-    if (req.body.number) user.number = req.body.number;
-
-    if (req.file) {
-      user.profile_picture = {
-        data: req.file.buffer,
-        contentType: req.file.mimetype,
-      };
+    let emailChanged = false;
+    if (number) user.number = number;
+    if (email && email !== user.email) {
+      user.email = email;
+      user.is_verified = false;
+      // Generate new verification code and expiry
+      user.verification_code = Math.floor(100000 + Math.random() * 900000).toString();
+      user.verification_expiry = new Date(Date.now() + 10 * 60 * 1000);
+      emailChanged = true;
     }
-
-    if (req.body.password) {
-      if (!validatePassword(req.body.password)) {
-        return res.status(400).json({
-          message: "Password must be at least 8 characters long and contain at least one special character",
+    // Upload new profile picture if provided
+    if (profile_picture_base64) {
+      try {
+        const bucket = admin.storage().bucket();
+        const fileName = `profile_pictures/${Date.now()}_profile.jpg`;
+        const file = bucket.file(fileName);
+        const base64Data = profile_picture_base64.replace(/^data:image\/[a-z]+;base64,/, "");
+        const buffer = Buffer.from(base64Data, "base64");
+        await file.save(buffer, {
+          metadata: {
+            contentType: "image/jpeg",
+          },
         });
+        await file.makePublic();
+        user.profile_picture_url = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+      } catch (uploadError) {
+        console.error("Error uploading profile picture:", uploadError);
+        return res.status(500).json({message: "Error uploading profile picture"});
       }
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(req.body.password, salt);
     }
-
+    // Password change logic
+    if (oldPassword || newPassword || confirmNewPassword) {
+      if (!oldPassword || !newPassword || !confirmNewPassword) {
+        return res.status(400).json({message: "To change your password, you must provide old password, new password, and confirm new password."});
+      }
+      // Check old password
+      const isMatch = await bcrypt.compare(oldPassword, user.password);
+      if (!isMatch) {
+        return res.status(400).json({message: "Old password is incorrect."});
+      }
+      // Check new password requirements
+      if (!validatePassword(newPassword)) {
+        return res.status(400).json({message: "New password must be at least 8 characters long and contain at least one special character."});
+      }
+      // Check new/confirm match
+      if (newPassword !== confirmNewPassword) {
+        return res.status(400).json({message: "New password and confirm password do not match."});
+      }
+      // Check new password is not same as old
+      const isSame = await bcrypt.compare(newPassword, user.password);
+      if (isSame) {
+        return res.status(400).json({message: "New password must be different from the old password."});
+      }
+      // All good, update password
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(newPassword, salt);
+    }
     await user.save();
-
+    // Send verification email if email was changed
+    if (emailChanged) {
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: user.email,
+        subject: "Email Verification - CheckIn",
+        html: `
+          <h1>Email Change Verification - CheckIn</h1>
+          <p>Your email was changed. Please use the following code to verify your new email address:</p>
+          <h2 style="color: #4CAF50; font-size: 24px; padding: 10px; background: #f5f5f5; text-align: center;">${user.verification_code}</h2>
+          <p>This code will expire in 10 minutes.</p>
+          <p>If you didn't request this change, please contact support.</p>
+        `,
+      };
+      try {
+        await getTransporter().sendMail(mailOptions);
+      } catch (error) {
+        console.error("Error sending verification email after email change:", error);
+        // Don't fail the request, but log the error
+      }
+    }
     res.json({
       message: "Settings updated successfully",
       user: {
         _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
         name: user.name,
         email: user.email,
         number: user.number,
         is_moderator: user.is_moderator,
       },
+      emailChanged,
     });
   } catch (err) {
     console.error("Error updating user settings:", err);
@@ -864,11 +951,11 @@ app.get("/api/chat/messages", async (req, res) => {
 app.get("/api/user/:id/profile-picture", async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
-    if (!user || !user.profile_picture || !user.profile_picture.data) {
+    if (!user || !user.profile_picture_url) {
       return res.status(404).send("No profile picture");
     }
-    res.set("Content-Type", user.profile_picture.contentType);
-    res.send(user.profile_picture.data);
+    // Redirect to the actual Firebase Storage URL
+    res.redirect(user.profile_picture_url);
   } catch (err) {
     res.status(500).send("Error fetching profile picture");
   }
@@ -878,35 +965,23 @@ app.get("/api/user/:id/profile-picture", async (req, res) => {
 app.get("/api/ping/:id/photo", async (req, res) => {
   try {
     const ping = await Ping.findById(req.params.id);
-    if (!ping || !ping.photo || !ping.photo.data) {
+    if (!ping || !ping.photo_url) {
       return res.status(404).send("No photo");
     }
-    res.set("Content-Type", ping.photo.contentType);
-    res.send(ping.photo.data);
+    // Redirect to the actual Firebase Storage URL
+    res.redirect(ping.photo_url);
   } catch (err) {
     res.status(500).send("Error fetching ping photo");
   }
 });
 
-// --- Chat File Upload API ---
-app.post('/api/chat/upload', upload.single('chatFile'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded.' });
-  }
-  // Ensure uploads directory exists
-  const uploadsDir = path.join(__dirname, '../uploads');
-  if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-  }
-  // Save file to disk
-  const filePath = path.join(uploadsDir, req.file.originalname);
-  fs.writeFileSync(filePath, req.file.buffer);
-  // Return the path where the file is accessible (relative to public server root)
-  res.json({ filePath: '/uploads/' + req.file.originalname });
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error("Global Error Handler:", err.stack || err.message); // Log the full error stack
+  // Fallback for any other unhandled errors
+  res.status(500).json({message: "An unexpected server error occurred."});
 });
 
-// Export the Express app as a Firebase HTTPS function with environment variables
-exports.api = onRequest({
-  memory: "256MiB",
-  timeoutSeconds: 60,
-}, app);
+// Export the Express app as the main function
+const functions = require("firebase-functions");
+exports.api = functions.https.onRequest(app);
