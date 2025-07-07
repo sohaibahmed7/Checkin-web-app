@@ -313,9 +313,16 @@
             <div class="tab-pane" id="reports">
                 <div class="reports-dashboard">
                     <div class="reports-header">
-                        <button class="quick-stats-btn">
-                            <i class="fas fa-chart-line"></i> View Quick Stats
-                        </button>
+                        <div class="reports-header-left">
+                            <button class="quick-stats-btn">
+                                <i class="fas fa-chart-line"></i> View Quick Stats
+                            </button>
+                        </div>
+                        <div class="reports-header-right">
+                            <button class="refresh-reports-btn" onclick="refreshReports()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
                     </div>
 
                     <div class="reports-overview">
@@ -447,7 +454,8 @@
                             <option value="all">All Statuses</option>
                             <option value="pending">Pending</option>
                             <option value="investigating">Investigating</option>
-                            <option value="resolved">Resolved</option>
+                            <option value="active">Active</option>
+                            <option value="solved">Solved</option>
                         </select>
                     </div>
                     <div class="filter-group">
@@ -459,92 +467,145 @@
                     </div>
                 </div>
 
-                <div class="reports-table-container">
-                    <table class="reports-table">
-                        <thead>
-                            <tr>
-                                <th class="sortable" data-sort="reporter">Reporter <i class="fas fa-sort"></i></th>
-                                <th class="sortable" data-sort="type">Type <i class="fas fa-sort"></i></th>
-                                <th class="sortable" data-sort="date">Date <i class="fas fa-sort"></i></th>
-                                <th class="sortable" data-sort="status">Status <i class="fas fa-sort"></i></th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Sample Reports -->
-                            <tr class="report-row">
-                                <td>Sarah Johnson</td>
-                                <td><span class="badge suspicious">Suspicious</span></td>
-                                <td>2024-03-15 14:30</td>
-                                <td><span class="status-badge investigating">Investigating</span></td>
-                                <td>
-                                    <button class="expand-btn"><i class="fas fa-chevron-down"></i></button>
-                                </td>
-                            </tr>
-                            <tr class="report-details">
-                                <td colspan="5">
-                                    <div class="report-card">
-                                        <div class="report-info">
-                                            <h4>Suspicious Vehicle Activity</h4>
-                                            <p>Black sedan circling the neighborhood for the past hour. License plate partially visible: ABC-12**</p>
-                                            <div class="report-meta">
-                                                <div class="report-photos">
-                                                    <h5>Photos</h5>
-                                                    <div class="photo-grid">
-                                                        <img src="assets/avatar.svg" alt="Suspicious vehicle" onerror="this.onerror=null;this.src='assets/avatar.svg';">
-                                                        <img src="assets/avatar.svg" alt="License plate" onerror="this.onerror=null;this.src='assets/avatar.svg';">
-                                                    </div>
-                                                </div>
-                                                <div class="report-location">
-                                                    <h5>Location</h5>
-                                                    <button class="view-location" data-coordinates="-81.25,43.01">
-                                                        <i class="fas fa-map-marker-alt"></i> View on Map
-                                                    </button>
-                                                </div>
+                <div class="responsive-table-wrapper">
+                    <div class="reports-table-container">
+                        <table class="reports-table" id="reports-table">
+                            <thead>
+                                <tr>
+                                    <th id="reportAvatar">Avatar<div class="resize-handle"></div></th>
+                                    <th class="sortable" data-sort="reporter">Reporter <i class="fas fa-sort"></i><div class="resize-handle"></div></th>
+                                    <th class="sortable" data-sort="type">Type <i class="fas fa-sort"></i><div class="resize-handle"></div></th>
+                                    <th class="sortable" data-sort="description">Description <i class="fas fa-sort"></i><div class="resize-handle"></div></th>
+                                    <th class="sortable" data-sort="date">Date <i class="fas fa-sort"></i><div class="resize-handle"></div></th>
+                                    <th class="sortable status-col" data-sort="status">Status <i class="fas fa-sort"></i><div class="resize-handle"></div></th>
+                                    <th class="sortable time-resolved-col" data-sort="timeResolved">Time Resolved <i class="fas fa-sort"></i><div class="resize-handle"></div></th>
+                                    <th class="sortable" data-sort="evidence">Evidence <i class="fas fa-sort"></i><div class="resize-handle"></div></th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reports-tbody">
+                                <!-- Reports will be loaded dynamically -->
+                                <tr class="loading-row">
+                                    <td colspan="10" class="text-center">
+                                        <div class="loading-spinner">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                            Loading reports...
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Report Details Modal -->
+                <div id="reportDetailsModal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Report Details</h3>
+                            <span class="close">&times;</span>
+                        </div>
+                        <div class="modal-body">
+                            <div id="reportDetailsContent"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Note Modal -->
+                <div id="addNoteModal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Add Note</h3>
+                            <span class="close">&times;</span>
+                        </div>
+                        <div class="modal-body">
+                            <form id="addNoteForm">
+                                <div class="form-group">
+                                    <label for="noteContent">Note Content:</label>
+                                    <textarea id="noteContent" name="content" rows="4" required></textarea>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="button" class="btn-secondary" onclick="closeModal('addNoteModal')">Cancel</button>
+                                    <button type="submit" class="btn-primary">Add Note</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Follow-up Modal -->
+                <div id="addFollowUpModal" class="modal followup-modal-wide followup-modal-polished">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="modal-title"><i class="fas fa-plus-circle"></i> Add Follow-up</h3>
+                            <span class="close" onclick="closeModal('addFollowUpModal')">&times;</span>
+                        </div>
+                        <div class="modal-body">
+                            <form id="addFollowUpForm">
+                                <div class="form-card">
+                                    <label class="form-label" style="display:flex;align-items:center;gap:0.5em;">
+                                        <span><i class="fas fa-tasks"></i> Type:</span>
+                                        <span class="type-info-tooltip" title="Suggestion: propose a status or update. Evidence: upload proof or details."><i class="fas fa-info-circle"></i></span>
+                                    </label>
+                                    <div class="followup-type-toggle-horizontal">
+                                        <label class="radio-label"><input type="radio" name="followupType" value="suggestion" checked> Suggestion</label>
+                                        <label class="radio-label"><input type="radio" name="followupType" value="evidence"> Evidence</label>
+                                    </div>
+                                </div>
+                                <div class="form-card" id="suggestionFields">
+                                    <div class="section-header"><i class="fas fa-lightbulb"></i> Suggestion Type</div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="followUpAction">Type:</label>
+                                        <select id="followUpAction" name="action" required>
+                                            <option value="Mark as Solved">Mark as Solved</option>
+                                            <option value="Mark as Unsolved">Mark as Unsolved</option>
+                                            <option value="Needs Attention">Needs Attention</option>
+                                            <option value="General Update/Note">General Update/Note</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" id="suggestionCommentGroup">
+                                        <label class="form-label" for="followUpDescription"><i class="fas fa-comment-dots"></i> Comment (optional):</label>
+                                        <textarea id="followUpDescription" name="description" rows="3"></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-card" id="evidenceFields" style="display:none;">
+                                    <div class="section-header"><i class="fas fa-paperclip"></i> Evidence Upload</div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="evidenceNote"><i class="fas fa-comment-dots"></i> Comment (optional):</label>
+                                        <textarea id="evidenceNote" name="evidenceNote" rows="3" placeholder="Describe what you saw..."></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="evidenceImage"><i class="fas fa-upload"></i> Upload Image:</label>
+                                        <div class="evidence-upload-area" id="evidenceUploadArea">
+                                            <input type="file" id="evidenceImage" name="evidenceImage" accept="image/*" style="display:none;">
+                                            <div class="upload-placeholder">
+                                                <i class="fas fa-cloud-upload-alt"></i>
+                                                <span>Drag & drop or <span class="upload-link">click to upload</span></span>
                                             </div>
+                                            <div class="file-preview" id="evidenceFilePreview" style="display:none;"></div>
                                         </div>
                                     </div>
-                                </td>
-                            </tr>
+                                </div>
+                                <div class="form-actions followup-actions-row">
+                                    <button type="button" class="btn-secondary followup-cancel-btn" onclick="closeModal('addFollowUpModal')">Cancel</button>
+                                    <button type="submit" class="btn-primary followup-submit-btn">Add Follow-up</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
 
-                            <!-- More sample reports -->
-                            <tr class="report-row">
-                                <td>Michael Chen</td>
-                                <td><span class="badge break-enter">Break & Enter</span></td>
-                                <td>2024-03-14 09:15</td>
-                                <td><span class="status-badge resolved">Resolved</span></td>
-                                <td>
-                                    <button class="expand-btn"><i class="fas fa-chevron-down"></i></button>
-                                </td>
-                            </tr>
-                            <tr class="report-details">
-                                <td colspan="5">
-                                    <div class="report-card">
-                                        <div class="report-info">
-                                            <h4>Package Theft</h4>
-                                            <p>Package stolen from front porch. Security camera footage available.</p>
-                                            <div class="report-meta">
-                                                <div class="report-photos">
-                                                    <h5>Photos</h5>
-                                                    <div class="photo-grid">
-                                                        <img src="assets/avatar.svg" alt="Security footage" onerror="this.onerror=null;this.src='assets/avatar.svg';">
-                                                    </div>
-                                                </div>
-                                                <div class="report-location">
-                                                    <h5>Location</h5>
-                                                    <button class="view-location" data-coordinates="-81.24,43.02">
-                                                        <i class="fas fa-map-marker-alt"></i> View on Map
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <!-- Add more sample reports here -->
-                        </tbody>
-                    </table>
+                <!-- Report Trail Modal -->
+                <div id="reportTrailModal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Report Trail</h3>
+                            <span class="close">&times;</span>
+                        </div>
+                        <div class="modal-body">
+                            <div id="reportTrailContent"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
