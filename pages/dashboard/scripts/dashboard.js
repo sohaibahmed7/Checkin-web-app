@@ -1416,8 +1416,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Add user dropdown menu handlers
-    const userAvatar = document.getElementById('userAvatar');
-    const userDropdown = document.getElementById('userDropdown');
     const logoutBtn = document.getElementById('logoutBtn');
 
     // Handle logout
@@ -1557,6 +1555,88 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     })();
+
+    // Add Follow-up Modal: Toggle Suggestion/Evidence fields
+    function updateFollowUpModalFields() {
+        const suggestionFields = document.getElementById('suggestionFields');
+        const evidenceFields = document.getElementById('evidenceFields');
+        const typeRadios = document.querySelectorAll('input[name="followupType"]');
+        let selectedType = 'suggestion';
+        typeRadios.forEach(radio => {
+            if (radio.checked) selectedType = radio.value;
+        });
+        if (selectedType === 'evidence') {
+            suggestionFields.style.display = 'none';
+            evidenceFields.style.display = '';
+        } else {
+            suggestionFields.style.display = '';
+            evidenceFields.style.display = 'none';
+        }
+    }
+    // Attach event listeners to radio buttons
+    document.querySelectorAll('input[name="followupType"]').forEach(radio => {
+        radio.addEventListener('change', updateFollowUpModalFields);
+    });
+    // Also update fields when modal is opened
+    const addFollowUpModal = document.getElementById('addFollowUpModal');
+    if (addFollowUpModal) {
+        addFollowUpModal.addEventListener('transitionend', updateFollowUpModalFields);
+        // Or, if you have a function that opens the modal, call updateFollowUpModalFields() there
+    }
+    // Initial call in case modal is already open
+    updateFollowUpModalFields();
+
+    // Add Follow-up Modal: Drag-and-drop and click-to-upload for evidence image
+    const evidenceUploadArea = document.getElementById('evidenceUploadArea');
+    const evidenceImageInput = document.getElementById('evidenceImage');
+    const evidenceFilePreview = document.getElementById('evidenceFilePreview');
+    if (evidenceUploadArea && evidenceImageInput && evidenceFilePreview) {
+        // Click to upload
+        evidenceUploadArea.addEventListener('click', function(e) {
+            // Only trigger if not clicking on a file preview
+            if (!e.target.classList.contains('file-preview')) {
+                evidenceImageInput.click();
+            }
+        });
+        // Drag and drop
+        evidenceUploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            evidenceUploadArea.classList.add('dragover');
+        });
+        evidenceUploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            evidenceUploadArea.classList.remove('dragover');
+        });
+        evidenceUploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            evidenceUploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                evidenceImageInput.files = e.dataTransfer.files;
+                showEvidenceFilePreview();
+            }
+        });
+        // File input change
+        evidenceImageInput.addEventListener('change', showEvidenceFilePreview);
+        // Show preview
+        function showEvidenceFilePreview() {
+            const file = evidenceImageInput.files && evidenceImageInput.files[0];
+            if (!file) {
+                evidenceFilePreview.style.display = 'none';
+                evidenceFilePreview.innerHTML = '';
+                return;
+            }
+            evidenceFilePreview.style.display = 'block';
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    evidenceFilePreview.innerHTML = `<img src="${e.target.result}" alt="Preview"><span>${file.name}</span>`;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                evidenceFilePreview.innerHTML = `<span>${file.name}</span>`;
+            }
+        }
+    } 
 
     // Fix logout button in sidebar
     const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
@@ -2106,6 +2186,731 @@ function openPingPopupOnLiveMap(lng, lat) {
     if (marker && marker.getPopup()) {
         marker.togglePopup();
     }
+}
+
+// Enhanced Reports Functionality
+let currentReports = [];
+let currentReportId = null;
+
+// Load reports from backend
+async function loadReports() {
+    try {
+        const response = await fetch(config.getApiUrl(config.API_ENDPOINTS.REPORTS));
+        if (!response.ok) {
+            throw new Error('Failed to fetch reports');
+        }
+        const reports = await response.json();
+        currentReports = reports;
+        applyReportFilters();
+        // Update the loading state
+        const loadingElement = document.querySelector('.reports-loading');
+        if (loadingElement) {
+            loadingElement.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error loading reports:', error);
+        showError('Failed to load reports');
+        // Show error state
+        const tbody = document.getElementById('reports-tbody');
+        if (tbody) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center">
+                        <div class="no-reports">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>Failed to load reports. Please try again.</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+    }
+}
+
+// Render reports table
+function renderReportsTable(reports) {
+    const tbody = document.getElementById('reports-tbody');
+    if (!tbody) return;
+
+    if (reports.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9" class="text-center">
+                    <div class="no-reports">
+                        <i class="fas fa-inbox"></i>
+                        <p>No reports found</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = reports.map(report => {
+        const createdAt = new Date(report.createdAt);
+        const timeResolved = report.timeResolved ? new Date(report.timeResolved) : null;
+        const hasEvidence = report.photo_url;
+        const isRecent = (Date.now() - createdAt.getTime()) < (7 * 24 * 60 * 60 * 1000); // 7 days
+
+        // Avatar logic
+        let userAvatar = config.getUserAvatarUrl(report.user && report.user._id ? report.user._id : null);
+        let reportAvatar = `<img src="${userAvatar}" alt="${report.user ? (report.user.firstName + ' ' + report.user.lastName) : 'User'}" class="report-avatar">`;
+
+        // Evidence icon
+        let evidenceHtml = hasEvidence
+            ? `<span class="evidence-icon has-evidence" title="Evidence attached"><i class="fas fa-paperclip"></i></span>`
+            : `<span class="evidence-icon no-evidence" title="No evidence">—</span>`;
+
+        // Status badge logic
+        let status = report.status ? report.status.toLowerCase() : 'active';
+        let statusIcon = '';
+        let statusClass = '';
+        let statusTooltip = '';
+        switch (status) {
+            case 'active':
+                statusIcon = '<i class="fas fa-circle"></i>';
+                statusClass = 'status-badge-active';
+                statusTooltip = 'Active';
+                break;
+            case 'resolved':
+                statusIcon = '<i class="fas fa-check-circle"></i>';
+                statusClass = 'status-badge-resolved';
+                statusTooltip = 'Resolved';
+                break;
+            case 'investigating':
+                statusIcon = '<i class="fas fa-search"></i>';
+                statusClass = 'status-badge-investigating';
+                statusTooltip = 'Investigating';
+                break;
+            case 'pending':
+                statusIcon = '<i class="fas fa-clock"></i>';
+                statusClass = 'status-badge-pending';
+                statusTooltip = 'Pending';
+                break;
+            default:
+                statusIcon = '<i class="fas fa-circle"></i>';
+                statusClass = 'status-badge-active';
+                statusTooltip = 'Active';
+        }
+        let statusHtml = `<span class="status-badge ${statusClass}" title="${statusTooltip}">${statusIcon} <span>${statusTooltip}</span></span>`;
+
+        // Time to resolve calculation
+        let timeToResolve = '-';
+        if (timeResolved && (report.status === 'resolved' || report.status === 'solved')) {
+            const diffMs = timeResolved - createdAt;
+            const diffMins = Math.floor(diffMs / 60000);
+            const days = Math.floor(diffMins / 1440);
+            const hours = Math.floor((diffMins % 1440) / 60);
+            const mins = diffMins % 60;
+            let parts = [];
+            if (days > 0) parts.push(`${days}d`);
+            if (hours > 0) parts.push(`${hours}h`);
+            if (mins > 0 || parts.length === 0) parts.push(`${mins}m`);
+            timeToResolve = parts.join(' ');
+        }
+
+        // Evidence display logic
+        let evidenceSectionHtml = '';
+        if (report.evidence && report.evidence.length > 0) {
+            evidenceSectionHtml = `<div class="evidence-list"></div>`;
+        } else if (hasEvidence) {
+            evidenceSectionHtml = `<div class="evidence-gallery">
+                <div class="evidence-item">
+                    <img src="https://api-3ffpwchysq-uc.a.run.app/api/ping/${report._id}/photo" 
+                         alt="Report evidence" 
+                         onerror="this.onerror=null;this.src='assets/avatar.svg';">
+                </div>
+            </div>`;
+        } else {
+            evidenceSectionHtml = '<div class="no-evidence-message">No evidence attached</div>';
+        }
+
+        return `
+            <tr class="report-row" data-report-id="${report._id}" style="font-size:0.95em;">
+                <td class="report-avatar">
+                    ${reportAvatar}
+                </td>
+                <td>${report.user ? `${report.user.firstName} ${report.user.lastName}` : 'Unknown'}</td>
+                <td class="type-col"><span class="badge ${report.type}">${formatPingTypeDisplay(report.type)}</span></td>
+                <td class="description-cell" title="${report.description}">${report.description}</td>
+                <td>${formatTimestamp(createdAt)}</td>
+                <td class="status-col">${statusHtml}</td>
+                <td>${timeToResolve}</td>
+                <td>${evidenceHtml}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="action-btn follow-up ${!isRecent ? 'disabled' : ''}" 
+                                onclick="addFollowUp('${report._id}')" 
+                                ${!isRecent ? 'disabled' : ''}
+                                title="Follow-Up">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="action-btn view-trail" onclick="viewReportTrail('${report._id}')">
+                            <i class="fas fa-history"></i>
+                        </button>
+                        <button class="expand-btn" onclick="toggleReportDetails('${report._id}')">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            <tr class="report-details" id="details-${report._id}" style="display: none; font-size:0.95em;">
+                <td colspan="10">
+                    <div class="report-card">
+                        <div class="report-info">
+                            <h4>Description</h4>
+                            <p class="report-description-long"></p>
+                            <div class="report-meta">
+                                <div class="report-photos">
+                                    <h5>Evidence</h5>
+                                    ${evidenceSectionHtml}
+                                </div>
+                                <div class="report-location">
+                                    <h5>Location</h5>
+                                    <div id="report-map-${report._id}" class="report-mini-map" data-lat="${report.location.lat}" data-lng="${report.location.lng}"></div>
+                                    <button class="view-location" onclick="viewLocationOnMap(${report.location.lat}, ${report.location.lng})">
+                                        <i class="fas fa-map-marker-alt"></i> View on Map
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="report-notes-replies">
+                                <h5>Notes / Replies</h5>
+                                <div class="notes-list">
+                                    ${report.notes && report.notes.length > 0 ?
+                                        report.notes.map(note => `
+                                            <div class="note-item">
+                                                <div class="note-meta">
+                                                    <span class="note-author">${note.addedBy && note.addedBy.name ? note.addedBy.name : 'Unknown'}</span>
+                                                    <span class="note-time">${note.addedAt ? formatTimestamp(new Date(note.addedAt)) : ''}</span>
+                                                </div>
+                                                <div class="note-content">${note.content}</div>
+                                            </div>
+                                        `).join('') :
+                                        '<div class="no-notes-message">No notes or replies yet.</div>'
+                                    }
+                                </div>
+                                <form class="add-note-inline-form" onsubmit="event.preventDefault(); addNote('${report._id}');">
+                                    <input type="text" name="content" placeholder="Add a note or reply..." required style="width:70%;padding:0.5em;margin-right:0.5em;">
+                                    <button type="submit" class="add-note-btn"><i class="fas fa-paper-plane"></i> Post</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    // Re-initialize resizable columns after table content is updated
+    initializeResizableColumns();
+}
+
+// Toggle report details
+function toggleReportDetails(reportId) {
+    const detailsRow = document.getElementById(`details-${reportId}`);
+    const expandBtn = document.querySelector(`[data-report-id="${reportId}"] .expand-btn i`);
+    
+    if (detailsRow.style.display === 'none') {
+        detailsRow.style.display = 'table-row';
+        expandBtn.className = 'fas fa-chevron-up';
+        window.renderReportMiniMaps();
+    } else {
+        detailsRow.style.display = 'none';
+        expandBtn.className = 'fas fa-chevron-down';
+        // Clean up map instance
+        const miniMapDiv = detailsRow.querySelector('.report-mini-map');
+        if (miniMapDiv && miniMapDiv._miniMap) {
+            miniMapDiv._miniMap.remove();
+            miniMapDiv._miniMap = null;
+        }
+    }
+}
+
+// Add note to report
+async function addNote(reportId) {
+    currentReportId = reportId;
+    const modal = document.getElementById('addNoteModal');
+    modal.classList.add('active');
+}
+
+// Add follow-up to report
+async function addFollowUp(reportId) {
+    currentReportId = reportId;
+    const modal = document.getElementById('addFollowUpModal');
+    modal.classList.add('active');
+}
+
+// View report trail
+async function viewReportTrail(reportId) {
+    try {
+        const response = await fetch(`${config.getApiUrl(config.API_ENDPOINTS.REPORT_TRAIL, reportId)}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch report trail');
+        }
+
+        const report = await response.json();
+        const modal = document.getElementById('reportTrailModal');
+        const content = document.getElementById('reportTrailContent');
+
+        let trailHtml = `
+            <div class="trail-item">
+                <div class="trail-header">
+                    <span class="trail-author">${report.user ? report.user.name : 'Unknown'}</span>
+                    <span class="trail-time">${formatTimestamp(new Date(report.createdAt))}</span>
+                </div>
+                <div class="trail-content">
+                    <strong>Report Created:</strong> ${report.description}
+                </div>
+            </div>
+        `;
+
+        // Add notes
+        if (report.notes && report.notes.length > 0) {
+            report.notes.forEach(note => {
+                trailHtml += `
+                    <div class="trail-item note">
+                        <div class="trail-header">
+                            <span class="trail-author">${note.addedBy ? note.addedBy.name : 'Unknown'}</span>
+                            <span class="trail-time">${formatTimestamp(new Date(note.addedAt))}</span>
+                        </div>
+                        <div class="trail-content">${note.content}</div>
+                    </div>
+                `;
+            });
+        }
+
+        // Add follow-ups
+        if (report.followUps && report.followUps.length > 0) {
+            report.followUps.forEach(followUp => {
+                trailHtml += `
+                    <div class="trail-item follow-up">
+                        <div class="trail-header">
+                            <span class="trail-author">${followUp.addedBy ? followUp.addedBy.name : 'Unknown'}</span>
+                            <span class="trail-time">${formatTimestamp(new Date(followUp.addedAt))}</span>
+                        </div>
+                        <div class="trail-content">
+                            <div class="trail-action">${followUp.action}</div>
+                            ${followUp.description ? `<div>${followUp.description}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        content.innerHTML = trailHtml;
+        modal.classList.add('active');
+    } catch (error) {
+        console.error('Error loading report trail:', error);
+        showError('Failed to load report trail');
+    }
+}
+
+// Modal functions
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.classList.remove('active');
+    
+    // Clear forms
+    if (modalId === 'addNoteModal') {
+        document.getElementById('addNoteForm').reset();
+    } else if (modalId === 'addFollowUpModal') {
+        document.getElementById('addFollowUpForm').reset();
+    }
+}
+
+// Global modal close handlers
+document.addEventListener('DOMContentLoaded', function() {
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            if (event.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+    });
+
+    // Close modal when clicking close button
+    const closeButtons = document.querySelectorAll('.close');
+    closeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const modal = this.closest('.modal');
+            modal.classList.remove('active');
+        });
+    });
+
+    // Handle note form submission
+    const addNoteForm = document.getElementById('addNoteForm');
+    if (addNoteForm) {
+        addNoteForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) {
+                showError('User not authenticated');
+                return;
+            }
+
+            const formData = new FormData(this);
+            const noteData = {
+                content: formData.get('content'),
+                addedBy: user._id
+            };
+
+            try {
+                const response = await fetch(`${config.getApiUrl(config.API_ENDPOINTS.REPORT_NOTE, currentReportId)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(noteData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to add note');
+                }
+
+                closeModal('addNoteModal');
+                loadReports(); // Refresh the reports
+                showSuccess('Note added successfully');
+            } catch (error) {
+                console.error('Error adding note:', error);
+                showError('Failed to add note');
+            }
+        });
+    }
+
+    // Handle follow-up form submission
+    const addFollowUpForm = document.getElementById('addFollowUpForm');
+    if (addFollowUpForm) {
+        addFollowUpForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) {
+                showError('User not authenticated');
+                return;
+            }
+
+            const formData = new FormData(this);
+            const followUpData = {
+                action: formData.get('action'),
+                description: formData.get('description'),
+                addedBy: user._id
+            };
+
+            try {
+                const response = await fetch(`${config.getApiUrl(config.API_ENDPOINTS.REPORT_FOLLOW_UP, currentReportId)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(followUpData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to add follow-up');
+                }
+
+                closeModal('addFollowUpModal');
+                loadReports(); // Refresh the reports
+                showSuccess('Follow-up added successfully');
+            } catch (error) {
+                console.error('Error adding follow-up:', error);
+                showError('Failed to add follow-up');
+            }
+        });
+    }
+
+    // Handle filter changes
+    const filters = document.querySelectorAll('.reports-filters select, .reports-filters input');
+    filters.forEach(filter => {
+        filter.addEventListener('change', applyReportFilters);
+    });
+
+    // Load reports when reports tab is opened
+    const reportsTab = document.querySelector('a[data-tab="reports"]');
+    if (reportsTab) {
+        reportsTab.addEventListener('click', () => {
+            // Load reports when tab is clicked
+            loadReports();
+        });
+    }
+
+    // Auto-load reports if reports tab is active on page load
+    const activeTab = document.querySelector('.tab-pane.active');
+    if (activeTab && activeTab.id === 'reports') {
+        loadReports();
+    }
+
+    // Initialize resizable columns
+    initializeResizableColumns();
+
+    // Add Follow-up Modal: Toggle Suggestion/Evidence fields
+    function updateFollowUpModalFields() {
+        const suggestionFields = document.getElementById('suggestionFields');
+        const evidenceFields = document.getElementById('evidenceFields');
+        const typeRadios = document.querySelectorAll('input[name="followupType"]');
+        let selectedType = 'suggestion';
+        typeRadios.forEach(radio => {
+            if (radio.checked) selectedType = radio.value;
+        });
+        if (selectedType === 'evidence') {
+            suggestionFields.style.display = 'none';
+            evidenceFields.style.display = '';
+        } else {
+            suggestionFields.style.display = '';
+            evidenceFields.style.display = 'none';
+        }
+    }
+    // Attach event listeners to radio buttons
+    document.querySelectorAll('input[name="followupType"]').forEach(radio => {
+        radio.addEventListener('change', updateFollowUpModalFields);
+    });
+    // Also update fields when modal is opened
+    const addFollowUpModal = document.getElementById('addFollowUpModal');
+    if (addFollowUpModal) {
+        addFollowUpModal.addEventListener('transitionend', updateFollowUpModalFields);
+        // Or, if you have a function that opens the modal, call updateFollowUpModalFields() there
+    }
+    // Initial call in case modal is already open
+    updateFollowUpModalFields();
+});
+
+// Utility functions
+function showError(message) {
+    // You can implement a toast notification system here
+    alert('Error: ' + message);
+}
+
+function showSuccess(message) {
+    // You can implement a toast notification system here
+    alert('Success: ' + message);
+}
+
+// Function to view location on map
+function viewLocationOnMap(lat, lng) {
+    // Switch to live map tab
+    const liveMapTab = document.querySelector('a[data-tab="live-map"]');
+    if (liveMapTab) {
+        liveMapTab.click();
+        
+        // Fly to location after a short delay to ensure map is loaded
+        setTimeout(() => {
+            if (liveMap) {
+                liveMap.flyTo({ 
+                    center: [lng, lat], 
+                    zoom: 18, 
+                    essential: true 
+                });
+                
+                // Show a temporary marker
+                if (tempPingMarker) {
+                    tempPingMarker.remove();
+                }
+                
+                const el = document.createElement('div');
+                el.className = 'marker selected-location';
+                el.style.width = '20px';
+                el.style.height = '20px';
+                el.style.borderRadius = '50%';
+                el.style.backgroundColor = '#ff6b6b';
+                el.style.border = '3px solid white';
+                el.style.boxShadow = '0 0 10px rgba(0,0,0,0.3)';
+                
+                tempPingMarker = new mapboxgl.Marker(el)
+                    .setLngLat([lng, lat])
+                    .addTo(liveMap);
+                
+                // Remove temporary marker after 5 seconds
+                setTimeout(() => {
+                    if (tempPingMarker) {
+                        tempPingMarker.remove();
+                        tempPingMarker = null;
+                    }
+                }, 5000);
+            }
+        }, 500);
+    }
+}
+
+// Function to refresh reports
+async function refreshReports() {
+    const refreshBtn = document.querySelector('.refresh-reports-btn');
+    if (refreshBtn) {
+        refreshBtn.disabled = true;
+        refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+    }
+    
+    try {
+        await loadReports();
+        showSuccess('Reports refreshed successfully');
+    } catch (error) {
+        console.error('Error refreshing reports:', error);
+        showError('Failed to refresh reports');
+    } finally {
+        if (refreshBtn) {
+            refreshBtn.disabled = false;
+            refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+        }
+    }
+}
+
+// Resizable columns functionality
+function initializeResizableColumns() {
+    const table = document.getElementById('reports-table');
+    if (!table) return;
+
+    let isResizing = false;
+    let currentHandle = null;
+    let startX = 0;
+    let startWidth = 0;
+    let currentColumn = null;
+
+    // Add event listeners to all resize handles
+    function addResizeListeners() {
+        const handles = table.querySelectorAll('.resize-handle');
+        handles.forEach(handle => {
+            if (handle.dataset.listenerAdded) return;
+            
+            handle.addEventListener('mousedown', startResize);
+            handle.dataset.listenerAdded = 'true';
+        });
+    }
+
+    function startResize(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        isResizing = true;
+        currentHandle = e.target;
+        startX = e.clientX;
+        currentColumn = currentHandle.parentElement;
+        startWidth = currentColumn.offsetWidth;
+        
+        // Add visual feedback
+        currentHandle.classList.add('resizing');
+        table.classList.add('resizing');
+        
+        // Add global event listeners
+        document.addEventListener('mousemove', resize);
+        document.addEventListener('mouseup', stopResize);
+        
+        // Prevent text selection
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'col-resize';
+    }
+
+    function resize(e) {
+        if (!isResizing) return;
+        
+        const deltaX = e.clientX - startX;
+        const newWidth = Math.max(50, startWidth + deltaX); // Minimum width of 50px
+        
+        // Set the width of the header cell
+        currentColumn.style.width = newWidth + 'px';
+        currentColumn.style.minWidth = newWidth + 'px';
+        
+        // Get the column index
+        const columnIndex = Array.from(currentColumn.parentElement.children).indexOf(currentColumn);
+        
+        // Set the width of all cells in this column
+        const rows = table.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            const cell = row.children[columnIndex];
+            if (cell) {
+                cell.style.width = newWidth + 'px';
+                cell.style.minWidth = newWidth + 'px';
+            }
+        });
+    }
+
+    function stopResize() {
+        if (!isResizing) return;
+        
+        isResizing = false;
+        
+        // Remove visual feedback
+        if (currentHandle) {
+            currentHandle.classList.remove('resizing');
+        }
+        table.classList.remove('resizing');
+        
+        // Remove global event listeners
+        document.removeEventListener('mousemove', resize);
+        document.removeEventListener('mouseup', stopResize);
+        
+        // Restore normal cursor and selection
+        document.body.style.userSelect = '';
+        document.body.style.cursor = '';
+        
+        currentHandle = null;
+        currentColumn = null;
+    }
+
+    // Initialize resize listeners
+    addResizeListeners();
+    
+    // Re-initialize when table content changes (for dynamic loading)
+    const observer = new MutationObserver(() => {
+        addResizeListeners();
+    });
+    
+    observer.observe(table, { childList: true, subtree: true });
+}
+
+// After renderReportsTable, add this function:
+window.renderReportMiniMaps = function() {
+    document.querySelectorAll('.report-mini-map').forEach(div => {
+        if (div.dataset.mapInitialized) return;
+        const lat = parseFloat(div.getAttribute('data-lat'));
+        const lng = parseFloat(div.getAttribute('data-lng'));
+        if (!window.mapboxgl || isNaN(lat) || isNaN(lng)) return;
+        div.dataset.mapInitialized = 'true';
+        const map = new mapboxgl.Map({
+            container: div,
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [lng, lat],
+            zoom: 16,
+            interactive: false,
+            attributionControl: false
+        });
+        new mapboxgl.Marker({color: '#3B82F6'})
+            .setLngLat([lng, lat])
+            .addTo(map);
+        // Store map instance for cleanup
+        div._miniMap = map;
+    });
+}
+
+function applyReportFilters() {
+    const type = document.querySelector('.type-filter')?.value || 'all';
+    const status = document.querySelector('.status-filter')?.value || 'all';
+    const dateFrom = document.querySelector('.date-from')?.value;
+    const dateTo = document.querySelector('.date-to')?.value;
+
+    let filtered = currentReports;
+
+    // Type filter
+    if (type !== 'all') {
+        filtered = filtered.filter(r => r.type === type);
+    }
+    // Status filter
+    if (status !== 'all') {
+        filtered = filtered.filter(r => (r.status || '').toLowerCase() === status.toLowerCase());
+    }
+    // Date range filter
+    if (dateFrom) {
+        const fromDate = new Date(dateFrom);
+        filtered = filtered.filter(r => new Date(r.createdAt) >= fromDate);
+    }
+    if (dateTo) {
+        const toDate = new Date(dateTo);
+        // Add 1 day to include the end date
+        toDate.setDate(toDate.getDate() + 1);
+        filtered = filtered.filter(r => new Date(r.createdAt) < toDate);
+    }
+    renderReportsTable(filtered);
 }
 
 // Helper function to get user profile picture URL
