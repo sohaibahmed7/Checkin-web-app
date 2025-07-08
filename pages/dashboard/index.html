@@ -39,6 +39,21 @@
                 <p>Welcome back to your dashboard</p>
             </div>
             <div class="user-menu">
+                <div class="notification-bell" title="Notifications" id="notificationBell">
+                  <i class="fas fa-bell"></i>
+                </div>
+                <div class="notifications-dropdown" id="notificationsDropdown" style="display: none;">
+                  <div class="notifications-header">Notifications</div>
+                  <div class="notification-item highlighted">
+                    <i class="fas fa-exclamation-triangle notif-icon" style="color:#2563eb;"></i>
+                    <div class="notif-content">
+                      <div class="notif-title">Suspicious Activity</div>
+                      <div class="notif-desc">A suspicious vehicle was reported near your area.</div>
+                      <div class="notif-time">2h ago</div>
+                    </div>
+                  </div>
+                  <a href="" class="view-all-notifications">View all notifications</a>
+                </div>
                 <div class="user-avatar" id="userAvatar">
                     <img id="greetingBarAvatar" src="assets/avatar.svg" onerror="this.onerror=null; this.src='assets/avatar.svg';">
                 </div>
