@@ -481,7 +481,7 @@ body.dashboard {
     cursor: pointer;
     transition: transform 0.3s ease;
     font-weight: 500;
-    z-index: 1000;
+    z-index: 3;
     box-shadow: var(--button-shadow);
 }
 
