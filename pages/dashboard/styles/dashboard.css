@@ -163,7 +163,7 @@ body.dashboard {
     box-shadow: 0 1px 4px 0 rgba(37,99,235,0.06);
 }
 .notification-bell i {
-    color: #2563eb;
+    color: #6b21a8;
     font-size: 1.25rem;
 }
 .notification-bell:hover, .notification-bell:focus {
@@ -420,7 +420,8 @@ body.dashboard {
 }
 
 .view-on-map:hover {
-    color: var(--secondary-color);
+    color: #6b21a8;
+    background: #f3e8ff;
 }
 
 /* Map Container Styles */
@@ -2349,15 +2350,15 @@ input:checked + .slider:before {
 }
 
 .category-toggles button:hover {
-    background-color: #6b21a8;
-    color: #fff;
+    background-color: #f3e8ff;
+    color: #6b21a8;
     border-color: #6b21a8;
 }
 
-.category-toggles button.active {
-    background-color: #6b21a8;
-    color: #fff;
-    border-color: #6b21a8;
+.category-toggles button.active, .category-toggles button:active {
+    background-color: #6b21a8 !important;
+    color: #fff !important;
+    border-color: #6b21a8 !important;
 }
 
 /* Chat Styles */
@@ -2616,14 +2617,15 @@ input:checked + .slider:before {
 }
 
 .map-section .category-toggles button:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
+    background: #f3e8ff;
+    color: #6b21a8;
+    border-color: #6b21a8;
 }
 
 .map-section .category-toggles button.active {
-    background: var(--primary-color);
-    color: var(--white);
-    border-color: var(--primary-color);
+    background: #6b21a8;
+    color: #fff;
+    border-color: #6b21a8;
 }
 
 /* Settings Tab Improvements */
@@ -2830,8 +2832,8 @@ input:checked + .slider:before {
 
 .activity-actions button:hover,
 .activity-actions a:hover {
-    color: var(--primary-color);
-    background: var(--hover-bg);
+    color: #6b21a8;
+    background: #f3e8ff;
 }
 
 .activity-like:hover {
@@ -3006,8 +3008,8 @@ input:checked + .slider:before {
 
 .feed-action:hover,
 .view-on-map:hover {
-    color: var(--primary-color);
-    background: var(--hover-bg);
+    color: #6b21a8;
+    background: #f3e8ff;
 }
 
 .feed-category {
@@ -4582,7 +4584,7 @@ input:checked + .slider:before {
   font-size: 1.3rem;
   margin-top: 0.08rem;
   flex-shrink: 0;
-  color: #2563eb;
+  color: #6b21a8;
 }
 .notif-content {
   flex: 1;
@@ -4901,14 +4903,14 @@ input:checked + .slider:before {
     align-items: center;
     justify-content: center;
     font-size: 1.05rem;
-    color: #2563eb;
+    color: #6b21a8;
     cursor: pointer;
     box-shadow: 0 1px 4px 0 rgba(37,99,235,0.07);
     transition: background 0.18s, color 0.18s;
 }
 .feed-item .feed-action-icon:hover, .feed-item .feed-action-icon:focus {
     background: #e0e7ff;
-    color: #1d4ed8;
+    color: #6b21a8;
 }
 .feed-item {
     position: relative;
@@ -4995,8 +4997,8 @@ input:checked + .slider:before {
 }
 .view-on-map-btn:hover, .view-on-map-btn:focus {
   background: #f7f7f7;
-  color: #2563eb;
-  border: 1px solid #dbeafe;
+  color: #6b21a8;
+  border: 1px solid #e9d5ff;
 }
 
 .report-avatar-cell {
