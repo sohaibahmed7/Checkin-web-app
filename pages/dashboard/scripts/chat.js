@@ -1,4 +1,4 @@
-const socket = io(config.SOCKET_URL); // Connect to your Node.js server
+// const socket = io(config.SOCKET_URL); // Connect to your Node.js server
 const messagesContainer = document.getElementById('messages');
 const messageInput = document.getElementById('message-input');
 const sendButton = document.getElementById('send-button');
@@ -74,7 +74,7 @@ function sendMessage(filePath = null) {
             room: currentRoom,
             filePath: filePath
         };
-        socket.emit('chat message', msgObj);
+        // socket.emit('chat message', msgObj);
         messageInput.value = '';
 
         // Optimistically display the message immediately
@@ -105,27 +105,27 @@ messageInput.addEventListener('keypress', (e) => {
 });
 
 // Handle receiving messages
-socket.on('chat message', (msg) => {
-    // Ignore the echo if it's the same as the last sent message from this user
-    if (
-        msg.username === currentUser.name &&
-        lastSentMessage &&
-        msg.message === lastSentMessage.message &&
-        msg.room === lastSentMessage.room &&
-        msg.filePath === lastSentMessage.filePath
-    ) {
-        // Reset lastSentMessage so only one duplicate is skipped
-        lastSentMessage = null;
-        return;
-    }
-    // Otherwise, display the message
-        displayMessage(msg);
-        scrollToBottom();
+// socket.on('chat message', (msg) => {
+//     // Ignore the echo if it's the same as the last sent message from this user
+//     if (
+//         msg.username === currentUser.name &&
+//         lastSentMessage &&
+//         msg.message === lastSentMessage.message &&
+//         msg.room === lastSentMessage.room &&
+//         msg.filePath === lastSentMessage.filePath
+//     ) {
+//         // Reset lastSentMessage so only one duplicate is skipped
+//         lastSentMessage = null;
+//         return;
+//     }
+//     // Otherwise, display the message
+//         displayMessage(msg);
+//         scrollToBottom();
 
-    // Update the chat preview in the sidebar regardless of current room
-    const previewContent = msg.filePath ? `[File] ${msg.message}`.trim() : msg.message;
-    updateChatPreview(msg.room, `${msg.username}: ${previewContent}`);
-});
+//     // Update the chat preview in the sidebar regardless of current room
+//     const previewContent = msg.filePath ? `[File] ${msg.message}`.trim() : msg.message;
+//     updateChatPreview(msg.room, `${msg.username}: ${previewContent}`);
+// });
 
 // Display a message in the chat
 function displayMessage(msg) {
@@ -294,17 +294,17 @@ document.addEventListener('click', (e) => {
 });
 
 // Handle connection events
-socket.on('connect', () => {
-    console.log('Socket connected successfully');
-});
+// socket.on('connect', () => {
+//     console.log('Socket connected successfully');
+// });
 
-socket.on('disconnect', () => {
-    console.log('Socket disconnected');
-});
+// socket.on('disconnect', () => {
+//     console.log('Socket disconnected');
+// });
 
-socket.on('connect_error', (error) => {
-    console.error('Socket connection error:', error);
-});
+// socket.on('connect_error', (error) => {
+//     console.error('Socket connection error:', error);
+// });
 
 // Function to update the chat preview in the sidebar
 function updateChatPreview(chatId, latestMessage) {
@@ -362,7 +362,7 @@ document.querySelectorAll('.chat-item').forEach(item => {
 function switchRoom(newRoom) {
     if (currentRoom !== newRoom) {
         currentRoom = newRoom;
-        socket.emit('joinRoom', currentRoom);
+        // socket.emit('joinRoom', currentRoom);
         messagesContainer.innerHTML = '';
         fetchChatHistory(currentRoom);
             // Update chat header
