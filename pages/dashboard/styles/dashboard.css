@@ -1,6 +1,6 @@
 :root {
-    --primary-color: #a259e6;
-    --secondary-color: #c084fc;
+    --primary-color: #6b21a8;
+    --secondary-color: #6b21a8;
     --text-color: #333;
     --text-dark: #333;
     --text-muted: #666;
@@ -229,7 +229,7 @@ body.dashboard {
 }
 
 .alert-item.msg {
-    border-left: 4px solid #a259e6;
+    border-left: 4px solid #6b21a8;
 }
 
 .alert-item.suspicious {
@@ -984,7 +984,7 @@ body.dashboard {
 
 .new-chat-btn {
     margin-left: 0;
-    background: #4a6bff;
+    background: #6b21a8;
     color: #fff;
     border: none;
     border-radius: 50%;
@@ -994,14 +994,14 @@ body.dashboard {
     align-items: center;
     justify-content: center;
     font-size: 1.3rem;
-    box-shadow: 0 2px 8px rgba(74, 107, 255, 0.08);
+    box-shadow: 0 2px 8px rgba(107, 33, 168, 0.08);
     transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
     margin-top: -4px;
 }
 
 .new-chat-btn:hover {
-    background: #3550d1;
-    box-shadow: 0 4px 16px rgba(74, 107, 255, 0.15);
+    background: #4b176a;
+    box-shadow: 0 4px 16px rgba(107, 33, 168, 0.15);
     transform: scale(1.08);
 }
 
@@ -1861,14 +1861,15 @@ input:checked + .slider:before {
 }
 
 .category-toggles button:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
+    background-color: #6b21a8;
+    color: #fff;
+    border-color: #6b21a8;
 }
 
 .category-toggles button.active {
-    background: var(--primary-color);
-    color: var(--white);
-    border-color: var(--primary-color);
+    background-color: #6b21a8;
+    color: #fff;
+    border-color: #6b21a8;
 }
 
 /* Chat Styles */
@@ -3997,4 +3998,10 @@ input:checked + .slider:before {
 }
 .modal-action-btn.cancel-button:hover {
   background: #f5f5f5;
+}
+
+.category-toggles button.active, .category-toggles button:active {
+    background-color: #6b21a8 !important;
+    color: #fff !important;
+    border-color: #6b21a8 !important;
 }
