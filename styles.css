@@ -1,13 +1,13 @@
 :root {
-    --primary-color: #4a6bff;
-    --secondary-color: #6c8eff;
+    --primary-color: #6b21a8;
+    --secondary-color: #6b21a8;
     --text-color: #333;
     --light-gray: #f5f5f5;
     --white: #ffffff;
-    --gradient-start: #4a6bff;
-    --gradient-end: #6c8eff;
+    --gradient-start: #6b21a8;
+    --gradient-end: #6b21a8;
     --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    --button-shadow: 0 4px 12px rgba(74, 107, 255, 0.3);
+    --button-shadow: 0 4px 12px rgba(162, 89, 230, 0.3);
 }
 
 * {
@@ -20,7 +20,7 @@
 body {
     line-height: 1.6;
     color: var(--text-color);
-    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+    background: #fff;
 }
 
 .container {
@@ -49,7 +49,7 @@ body {
 }
 
 .logo h1 {
-    color: var(--primary-color);
+    color: #6b21a8;
     font-size: 1.8rem;
     font-weight: 700;
     transition: color 0.3s ease;
@@ -73,7 +73,7 @@ body {
 }
 
 .nav-links a:hover {
-    color: var(--primary-color);
+    color: #6b21a8;
 }
 
 .nav-cta {
@@ -85,9 +85,8 @@ body {
 }
 
 .nav-cta:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(74, 107, 255, 0.3);
-    background: var(--secondary-color);
+    background: #6b21a8;
+    color: #fff !important;
 }
 
 .nav-buttons {
@@ -108,9 +107,8 @@ body {
 }
 
 .login-button:hover {
-    background-color: var(--secondary-color);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(74, 107, 255, 0.4);
+    background-color: #6b21a8;
+    color: #fff;
 }
 
 .download-button {
@@ -125,8 +123,7 @@ body {
 }
 
 .download-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(74, 107, 255, 0.4);
+    color: #6b21a8;
 }
 
 /* Mobile Menu Toggle */
@@ -257,7 +254,7 @@ body {
 .mobile-button-primary:hover {
     background-color: var(--secondary-color);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(74, 107, 255, 0.4);
+    box-shadow: 0 6px 16px rgba(162, 89, 230, 0.4);
 }
 
 .mobile-button-secondary {
@@ -271,7 +268,7 @@ body {
     background-color: var(--primary-color);
     color: var(--white);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(74, 107, 255, 0.4);
+    box-shadow: 0 6px 16px rgba(162, 89, 230, 0.4);
 }
 
 /* Hero Section */
@@ -281,7 +278,7 @@ body {
     justify-content: space-between;
     padding: 8rem 5% 5rem;
     min-height: 100vh;
-    background: #6B7FFF;
+    background: #6b21a8;
     color: var(--white);
 }
 
@@ -319,7 +316,7 @@ body {
 
 .cta-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(74, 107, 255, 0.4);
+    box-shadow: 0 6px 16px rgba(162, 89, 230, 0.4);
 }
 
 .hero-image {
@@ -365,7 +362,7 @@ body {
     text-align: center;
     font-size: 2.5rem;
     margin-bottom: 1rem;
-    color: var(--primary-color);
+    color: #6b21a8;
 }
 
 .value-subtitle {
@@ -404,7 +401,7 @@ body {
 
 .value-card h3 {
     margin-bottom: 1rem;
-    color: var(--primary-color);
+    color: #6b21a8;
 }
 
 /* Quick Links Section */
@@ -417,7 +414,7 @@ body {
     text-align: center;
     margin-bottom: 3rem;
     font-size: 2.5rem;
-    color: var(--primary-color);
+    color: #6b21a8;
 }
 
 .link-grid {
@@ -457,7 +454,7 @@ body {
     text-align: center;
     margin-bottom: 3rem;
     font-size: 2.5rem;
-    color: var(--primary-color);
+    color: #6b21a8;
 }
 
 .feature-grid {
@@ -509,7 +506,7 @@ body {
 }
 
 .feature-card h3 {
-    color: var(--primary-color);
+    color: #6b21a8;
     font-size: 1.5rem;
     margin-bottom: 1rem;
 }
@@ -529,7 +526,7 @@ body {
 .how-it-works-page h2 {
     text-align: center;
     font-size: 2.5rem;
-    color: var(--primary-color);
+    color: #6b21a8;
     margin-bottom: 3rem;
 }
 
@@ -572,7 +569,7 @@ body {
 }
 
 .step-card h3 {
-    color: var(--primary-color);
+    color: #6b21a8;
     font-size: 1.5rem;
     margin-bottom: 1rem;
 }
@@ -593,7 +590,7 @@ body {
 }
 
 .moderator-info h3 {
-    color: var(--primary-color);
+    color: #6b21a8;
     font-size: 2rem;
     margin-bottom: 1.5rem;
 }
@@ -702,7 +699,7 @@ body {
 .how-it-works h2 {
     text-align: center;
     font-size: 2.5rem;
-    color: var(--primary-color);
+    color: #6b21a8;
     margin-bottom: 3rem;
 }
 
@@ -741,7 +738,7 @@ body {
 }
 
 .step-card h3 {
-    color: var(--primary-color);
+    color: #6b21a8;
     font-size: 1.5rem;
     margin-bottom: 1rem;
 }
@@ -761,7 +758,7 @@ body {
 .app-showcase h2 {
     text-align: center;
     font-size: 2.5rem;
-    color: var(--primary-color);
+    color: #6b21a8;
     margin-bottom: 3rem;
 }
 
@@ -808,7 +805,7 @@ body {
 .phone-mockup p {
     text-align: center;
     margin-top: 1rem;
-    color: var(--primary-color);
+    color: #6b21a8;
     font-weight: 500;
 }
 
@@ -881,7 +878,7 @@ body {
 
 .auth-form h2 {
     text-align: center;
-    color: var(--primary-color);
+    color: #6b21a8;
     margin-bottom: 1rem;
 }
 
@@ -955,7 +952,7 @@ body {
 .auth-button:hover {
     background: var(--secondary-color);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(74, 107, 255, 0.4);
+    box-shadow: 0 6px 16px rgba(162, 89, 230, 0.4);
 }
 
 /* Common button styles */
@@ -971,23 +968,24 @@ body {
     cursor: pointer;
 }
 
-/* Primary button (blue background, white text) */
+/* Primary button (purple background, white text) */
 .button.button-primary {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 0.75rem 1.5rem;
+    background-color: #6b21a8;
+    color: var(--white);
+    padding: 0.8rem 1.5rem;
     border-radius: 50px;
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .button.button-primary:hover {
+    background-color: #6b21a8;
     transform: translateY(-2px);
     box-shadow: var(--button-shadow);
 }
 
-/* Secondary button (white background, blue text) */
+/* Secondary button (white background, purple text) */
 .button-secondary {
     background: var(--white);
     color: var(--primary-color);
@@ -996,5 +994,17 @@ body {
 
 .button-secondary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(74, 107, 255, 0.4);
+    box-shadow: 0 6px 16px rgba(162, 89, 230, 0.4);
+}
+
+h1, h2, h3, .value-proposition h2, .quick-links h2, .features-page h2, .how-it-works-page h2, .app-showcase h2, .phone-mockup p, .feature-card h3, .step-card h3, .moderator-info h3, .auth-form h2 {
+}
+
+body.scrolled {
+    background: #fff !important;
+}
+
+.navbar.scrolled {
+    background-color: #fff !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 } 

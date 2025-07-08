@@ -107,4 +107,16 @@ document.querySelectorAll('.nav-links a').forEach(link => {
     if (link.getAttribute('href') === currentPage) {
         link.classList.add('active');
     }
+});
+
+// Add scrolled class to body and navbar on scroll
+window.addEventListener('scroll', () => {
+    const navbar = document.querySelector('.navbar');
+    if (window.scrollY > 10) {
+        document.body.classList.add('scrolled');
+        if (navbar) navbar.classList.add('scrolled');
+    } else {
+        document.body.classList.remove('scrolled');
+        if (navbar) navbar.classList.remove('scrolled');
+    }
 }); 

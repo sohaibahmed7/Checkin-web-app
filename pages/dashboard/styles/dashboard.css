@@ -1,14 +1,14 @@
 :root {
-    --primary-color: #4a6bff;
-    --secondary-color: #6c8eff;
+    --primary-color: #6b21a8;
+    --secondary-color: #6b21a8;
     --text-color: #333;
     --text-dark: #333;
     --text-muted: #666;
     --light-gray: #f5f5f5;
     --white: #ffffff;
     --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    --button-shadow: 0 4px 12px rgba(74, 107, 255, 0.3);
-    --hover-bg: rgba(74, 107, 255, 0.05);
+    --button-shadow: 0 4px 12px rgba(162, 89, 230, 0.3);
+    --hover-bg: rgba(162, 89, 230, 0.08);
     --bg-color: #F9FAFB;
     --sidebar-bg: #ffffff;
     --text-light: #333;
@@ -163,7 +163,7 @@ body.dashboard {
     box-shadow: 0 1px 4px 0 rgba(37,99,235,0.06);
 }
 .notification-bell i {
-    color: #2563eb;
+    color: #6b21a8;
     font-size: 1.25rem;
 }
 .notification-bell:hover, .notification-bell:focus {
@@ -252,7 +252,7 @@ body.dashboard {
 }
 
 .alert-item.msg {
-    border-left: 4px solid #4A6BFF;
+    border-left: 4px solid #6b21a8;
 }
 
 .alert-item.suspicious {
@@ -420,7 +420,8 @@ body.dashboard {
 }
 
 .view-on-map:hover {
-    color: var(--secondary-color);
+    color: #6b21a8;
+    background: #f3e8ff;
 }
 
 /* Map Container Styles */
@@ -487,7 +488,7 @@ body.dashboard {
 
 .ping-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(74, 107, 255, 0.4);
+    box-shadow: 0 6px 16px rgba(162, 89, 230, 0.4);
 }
 
 /* Alerts History */
@@ -1008,7 +1009,7 @@ body.dashboard {
 
 .new-chat-btn {
     margin-left: 0;
-    background: #4a6bff;
+    background: #6b21a8;
     color: #fff;
     border: none;
     border-radius: 50%;
@@ -1018,14 +1019,14 @@ body.dashboard {
     align-items: center;
     justify-content: center;
     font-size: 1.3rem;
-    box-shadow: 0 2px 8px rgba(74, 107, 255, 0.08);
+    box-shadow: 0 2px 8px rgba(107, 33, 168, 0.08);
     transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
     margin-top: -4px;
 }
 
 .new-chat-btn:hover {
-    background: #3550d1;
-    box-shadow: 0 4px 16px rgba(74, 107, 255, 0.15);
+    background: #4b176a;
+    box-shadow: 0 4px 16px rgba(107, 33, 168, 0.15);
     transform: scale(1.08);
 }
 
@@ -2349,14 +2350,15 @@ input:checked + .slider:before {
 }
 
 .category-toggles button:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
+    background-color: #f3e8ff;
+    color: #6b21a8;
+    border-color: #6b21a8;
 }
 
-.category-toggles button.active {
-    background: var(--primary-color);
-    color: var(--white);
-    border-color: var(--primary-color);
+.category-toggles button.active, .category-toggles button:active {
+    background-color: #6b21a8 !important;
+    color: #fff !important;
+    border-color: #6b21a8 !important;
 }
 
 /* Chat Styles */
@@ -2615,14 +2617,15 @@ input:checked + .slider:before {
 }
 
 .map-section .category-toggles button:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
+    background: #f3e8ff;
+    color: #6b21a8;
+    border-color: #6b21a8;
 }
 
 .map-section .category-toggles button.active {
-    background: var(--primary-color);
-    color: var(--white);
-    border-color: var(--primary-color);
+    background: #6b21a8;
+    color: #fff;
+    border-color: #6b21a8;
 }
 
 /* Settings Tab Improvements */
@@ -2829,8 +2832,8 @@ input:checked + .slider:before {
 
 .activity-actions button:hover,
 .activity-actions a:hover {
-    color: var(--primary-color);
-    background: var(--hover-bg);
+    color: #6b21a8;
+    background: #f3e8ff;
 }
 
 .activity-like:hover {
@@ -3005,8 +3008,8 @@ input:checked + .slider:before {
 
 .feed-action:hover,
 .view-on-map:hover {
-    color: var(--primary-color);
-    background: var(--hover-bg);
+    color: #6b21a8;
+    background: #f3e8ff;
 }
 
 .feed-category {
@@ -3197,7 +3200,7 @@ input:checked + .slider:before {
 
 .quick-stats-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(74, 107, 255, 0.4);
+    box-shadow: 0 6px 16px rgba(162, 89, 230, 0.4);
 }
 
 /* Feed Status Colors */
@@ -4529,6 +4532,12 @@ input:checked + .slider:before {
   background: #f5f5f5;
 }
 
+.category-toggles button.active, .category-toggles button:active {
+    background-color: #6b21a8 !important;
+    color: #fff !important;
+    border-color: #6b21a8 !important;
+}
+
 .notifications-dropdown {
   position: absolute;
   top: 56px;
@@ -4538,12 +4547,12 @@ input:checked + .slider:before {
   min-width: 220px;
   background: #fff;
   border-radius: 20px;
-  box-shadow: 0 8px 28px 0 rgba(37,99,235,0.11), 0 2px 8px 0 rgba(0,0,0,0.03);
+  box-shadow: 0 8px 28px 0 rgba(107,33,168,0.11), 0 2px 8px 0 rgba(107,33,168,0.07);
   z-index: 100;
   padding: 0;
   overflow: hidden;
   font-family: 'Poppins', 'Inter', 'Segoe UI', Arial, sans-serif;
-  border-top: 4px solid #eaf2ff;
+  border-top: 4px solid #6b21a8;
 }
 .notifications-header {
   font-size: 1.08rem;
@@ -4568,14 +4577,14 @@ input:checked + .slider:before {
   margin-bottom: 0;
 }
 .notification-item:hover {
-  background: #eaf2ff;
+  background: #f3e8ff;
   cursor: pointer;
 }
 .notif-icon {
   font-size: 1.3rem;
   margin-top: 0.08rem;
   flex-shrink: 0;
-  color: #2563eb;
+  color: #6b21a8 !important;
 }
 .notif-content {
   flex: 1;
@@ -4594,7 +4603,7 @@ input:checked + .slider:before {
   line-height: 1.45;
 }
 .notif-time {
-  color: #8ca2c9;
+  color: #888;
   font-size: 0.91rem;
   margin-top: 0.13rem;
   font-weight: 500;
@@ -4603,7 +4612,7 @@ input:checked + .slider:before {
 .view-all-notifications {
   display: block;
   text-align: center;
-  color: #2563eb;
+  color: #6b21a8;
   font-weight: 700;
   font-size: 1rem;
   padding: 0.9rem 0 0.9rem 0;
@@ -4616,7 +4625,7 @@ input:checked + .slider:before {
 }
 .view-all-notifications:hover, .view-all-notifications:focus {
   background: #fff;
-  color: #2563eb;
+  color: #4b0e7a;
 }
 @media (max-width: 500px) {
   .notifications-dropdown {
@@ -4894,14 +4903,14 @@ input:checked + .slider:before {
     align-items: center;
     justify-content: center;
     font-size: 1.05rem;
-    color: #2563eb;
+    color: #6b21a8;
     cursor: pointer;
     box-shadow: 0 1px 4px 0 rgba(37,99,235,0.07);
     transition: background 0.18s, color 0.18s;
 }
 .feed-item .feed-action-icon:hover, .feed-item .feed-action-icon:focus {
     background: #e0e7ff;
-    color: #1d4ed8;
+    color: #6b21a8;
 }
 .feed-item {
     position: relative;
@@ -4988,8 +4997,8 @@ input:checked + .slider:before {
 }
 .view-on-map-btn:hover, .view-on-map-btn:focus {
   background: #f7f7f7;
-  color: #2563eb;
-  border: 1px solid #dbeafe;
+  color: #6b21a8;
+  border: 1px solid #e9d5ff;
 }
 
 .report-avatar-cell {
