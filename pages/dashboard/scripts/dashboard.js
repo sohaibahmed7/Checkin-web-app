@@ -41,13 +41,13 @@ function createModernPingMarker(ping, targetMap) {
     // Only show photo in popup if not on the home map
     let photoHtml = '';
     if (ping.photo_url && !isHomeMap) {
-        photoHtml = `<div class=\"ping-photo-popup\"><img src=\"${ping.photo_url}\" alt=\"Ping Photo\" style=\"max-width: 120px; height: auto; border-radius: 8px; margin-top: 8px;\"></div>`;
+        photoHtml = `<div class="ping-photo"><img src="${ping.photo_url}" alt="Ping Photo" style="width: 100%; max-height: 100px; object-fit: cover; border-radius: 10px; margin-top: 8px; display: block;"></div>`;
     }
     
     const popup = new mapboxgl.Popup({
         offset: 25,
         closeButton: false,
-        closeOnClick: false // Prevent auto-close on any map click
+        closeOnClick: true,
     }).setHTML(`
         <div class=\"ping-tooltip\">\n            ${imageIndicator}\n            <span class=\"ping-category ${ping.type}\">${formatPingTypeDisplay(ping.type)}</span>\n            <p class=\"ping-message\">${ping.description}</p>\n            ${photoHtml}\n            <div class=\"ping-meta-line\">${metaLine}</div>\n        </div>\n    `);
 
@@ -144,7 +144,7 @@ function renderPings(pingsToRender, containerId = 'recent-updates-container') {
         // Handle photo display - only show image if not in the home tab preview
         let photoHtml = '';
         if (ping.photo_url) {
-            photoHtml = `<div class=\"ping-photo\"><img src=\"${ping.photo_url}\" alt=\"Ping Photo\" style=\"width: 50%; height: auto; object-fit: cover; border-radius: 8px; margin-top: 8px;\"></div>`;
+            photoHtml = `<div class="ping-photo"><img src="${ping.photo_url}" alt="Ping Photo" style="width: 80%; max-height: 200px; object-fit: cover; border-radius: 10px; margin-top: 8px; display: block;"></div>`;
         }
         
         const pingElement = document.createElement('div');
@@ -1931,7 +1931,7 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (ping.status === 'urgent') statusClass = 'urgent';
             let photoHtml = '';
             if (ping.photo_url) {
-                photoHtml = `<div class=\"ping-photo\"><img src=\"${ping.photo_url}\" alt=\"Ping Photo\" style=\"width: 50%; height: auto; object-fit: cover; border-radius: 8px; margin-top: 8px;\"></div>`;
+                photoHtml = `<div class="ping-photo"><img src="${ping.photo_url}" alt="Ping Photo" style="width: 80%; max-height: 200px; object-fit: cover; border-radius: 10px; margin-top: 8px; display: block;"></div>`;
             }
             // Emoji reactions data (stub in-memory for now)
             if (!ping.reactions) ping.reactions = {};
