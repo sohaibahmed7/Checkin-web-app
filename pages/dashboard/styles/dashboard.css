@@ -1890,24 +1890,24 @@ body.dashboard {
 /* Evidence Gallery */
 .evidence-gallery {
     display: flex;
-    gap: 1rem;
-    overflow-x: auto;
-    padding: 1rem 0;
+    justify-content: center;
+    align-items: center;
+    margin: 2rem 0 1rem 0;
 }
-
 .evidence-item {
-    flex-shrink: 0;
-    width: 120px;
-    height: 120px;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 2px solid var(--light-gray);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
-
 .evidence-item img {
+    max-width: 320px;
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    display: block;
+    margin: 0 auto;
+    cursor: zoom-in;
 }
 
 .no-evidence-message {
@@ -5495,4 +5495,8 @@ textarea:focus, select:focus, input[type="text"]:focus {
         padding-left: 0.08rem;
         padding-right: 0.08rem;
     }
+}
+
+#ping-details-container .ping-photo img {
+    cursor: zoom-in;
 }

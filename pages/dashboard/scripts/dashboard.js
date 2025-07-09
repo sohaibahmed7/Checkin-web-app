@@ -41,13 +41,13 @@ function createModernPingMarker(ping, targetMap) {
     // Only show photo in popup if not on the home map
     let photoHtml = '';
     if (ping.photo_url && !isHomeMap) {
-        photoHtml = `<div class=\"ping-photo-popup\"><img src=\"${ping.photo_url}\" alt=\"Ping Photo\" style=\"max-width: 200px; height: auto; border-radius: 8px; margin-top: 8px;\"></div>`;
+        photoHtml = `<div class="ping-photo"><img src="${ping.photo_url}" alt="Ping Photo" style="width: 100%; max-height: 100px; object-fit: cover; border-radius: 10px; margin-top: 8px; display: block;"></div>`;
     }
     
     const popup = new mapboxgl.Popup({
         offset: 25,
         closeButton: false,
-        closeOnClick: true
+        closeOnClick: true,
     }).setHTML(`
         <div class=\"ping-tooltip\">\n            ${imageIndicator}\n            <span class=\"ping-category ${ping.type}\">${formatPingTypeDisplay(ping.type)}</span>\n            <p class=\"ping-message\">${ping.description}</p>\n            ${photoHtml}\n            <div class=\"ping-meta-line\">${metaLine}</div>\n        </div>\n    `);
 
@@ -144,7 +144,7 @@ function renderPings(pingsToRender, containerId = 'recent-updates-container') {
         // Handle photo display - only show image if not in the home tab preview
         let photoHtml = '';
         if (ping.photo_url) {
-            photoHtml = `<div class=\"ping-photo\"><img src=\"${ping.photo_url}\" alt=\"Ping Photo\" style=\"width: 50%; height: auto; object-fit: cover; border-radius: 8px; margin-top: 8px;\"></div>`;
+            photoHtml = `<div class="ping-photo"><img src="${ping.photo_url}" alt="Ping Photo" style="width: 80%; max-height: 200px; object-fit: cover; border-radius: 10px; margin-top: 8px; display: block;"></div>`;
         }
         
         const pingElement = document.createElement('div');
@@ -1931,7 +1931,7 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (ping.status === 'urgent') statusClass = 'urgent';
             let photoHtml = '';
             if (ping.photo_url) {
-                photoHtml = `<div class=\"ping-photo\"><img src=\"${ping.photo_url}\" alt=\"Ping Photo\" style=\"width: 50%; height: auto; object-fit: cover; border-radius: 8px; margin-top: 8px;\"></div>`;
+                photoHtml = `<div class="ping-photo"><img src="${ping.photo_url}" alt="Ping Photo" style="width: 80%; max-height: 200px; object-fit: cover; border-radius: 10px; margin-top: 8px; display: block;"></div>`;
             }
             // Emoji reactions data (stub in-memory for now)
             if (!ping.reactions) ping.reactions = {};
@@ -2098,6 +2098,80 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (idx === 1) currentFeedFilter = 'solved';
             else if (idx === 2) currentFeedFilter = 'my-pings';
             renderRecentActivityFeed();
+        });
+    });
+
+    // Add image enlarge modal logic
+    function createImageModal(imgSrc) {
+        // Remove any existing modal
+        document.querySelectorAll('.enlarge-image-modal').forEach(m => m.remove());
+        const modal = document.createElement('div');
+        modal.className = 'enlarge-image-modal';
+        modal.style.position = 'fixed';
+        modal.style.top = '0';
+        modal.style.left = '0';
+        modal.style.width = '100vw';
+        modal.style.height = '100vh';
+        modal.style.background = 'rgba(0,0,0,0.7)';
+        modal.style.display = 'flex';
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+        modal.style.zIndex = '9999';
+        modal.innerHTML = `<img src="${imgSrc}" style="max-width:96vw;max-height:96vh;border-radius:18px;box-shadow:0 8px 32px rgba(0,0,0,0.25);background:#fff;display:block;">`;
+        modal.addEventListener('click', () => modal.remove());
+        modal.querySelector('img').addEventListener('click', e => {
+            e.stopPropagation();
+            modal.remove();
+        });
+        document.body.appendChild(modal);
+    }
+
+    // Add event delegation for click-to-enlarge on all relevant ping images
+    document.body.addEventListener('click', function(e) {
+        if (
+            e.target.matches('.ping-photo img') ||
+            e.target.matches('.feed-item .ping-photo img') ||
+            e.target.matches('.ping-media img')
+        ) {
+            e.stopPropagation();
+            createImageModal(e.target.src);
+        }
+    });
+
+    // Add manual close logic: close popup only if clicking outside the popup content
+    if (targetMap && targetMap.getContainer) {
+        const mapContainer = targetMap.getContainer();
+        // Remove any previous handler to avoid duplicates
+        mapContainer.removeEventListener('mousedown', window._mapPopupCloseHandler, true);
+        window._mapPopupCloseHandler = function handleMapClick(e) {
+            const popupContent = document.querySelector('.mapboxgl-popup-content');
+            if (popup.isOpen() && popupContent && !popupContent.contains(e.target)) {
+                popup.remove();
+            }
+        };
+        mapContainer.addEventListener('mousedown', window._mapPopupCloseHandler, true);
+    }
+
+    // Add event delegation for click-to-enlarge on evidence images in report details (top-level, always active)
+    if (!window._evidenceImageModalHandlerSet) {
+        document.body.addEventListener('click', function(e) {
+            if (e.target.matches('.evidence-item img')) {
+                e.stopPropagation();
+                createImageModal(e.target.src);
+            }
+        });
+        window._evidenceImageModalHandlerSet = true;
+    }
+
+    // Re-initialize resizable columns after table content is updated
+    initializeResizableColumns();
+
+    // Add direct click handler to evidence images for debugging
+    document.querySelectorAll('.evidence-item img').forEach(img => {
+        img.style.cursor = 'zoom-in';
+        img.addEventListener('click', function(e) {
+            e.stopPropagation();
+            createImageModal(img.src);
         });
     });
 }); 
@@ -2327,9 +2401,7 @@ function renderReportsTable(reports) {
 
         // Evidence display logic
         let evidenceSectionHtml = '';
-        if (report.evidence && report.evidence.length > 0) {
-            evidenceSectionHtml = `<div class="evidence-list"></div>`;
-        } else if (hasEvidence) {
+        if (hasEvidence) {
             evidenceSectionHtml = `<div class="evidence-gallery">
                 <div class="evidence-item">
                     <img src="https://api-3ffpwchysq-uc.a.run.app/api/ping/${report._id}/photo" 
@@ -2337,6 +2409,8 @@ function renderReportsTable(reports) {
                          onerror="this.onerror=null;this.src='assets/avatar.svg';">
                 </div>
             </div>`;
+        } else if (report.evidence && report.evidence.length > 0) {
+            evidenceSectionHtml = `<div class="evidence-list"></div>`;
         } else {
             evidenceSectionHtml = '<div class="no-evidence-message">No evidence attached</div>';
         }
