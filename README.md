@@ -1,74 +1,83 @@
-# Check-In Dashboard
+# Check-In Web App
 
-A modern, responsive dashboard for the Check-In community safety app. Built with vanilla JavaScript and Mapbox integration.
+A modern, responsive community safety dashboard and reporting app. Built with vanilla JavaScript, Mapbox, and a Firebase Functions + MongoDB backend.
 
 ## Features
 
 - Real-time community alerts and notifications
 - Interactive neighborhood map with incident tracking
 - Community chat and commenting system
-- Detailed incident reporting
+- Detailed incident reporting with photo uploads
+- User authentication, email verification, and password reset
 - User settings and preferences
 - Mobile-responsive design
 
-## Setup
+## Project Structure
 
-1. Clone the repository:
+```
+├── backend/
+│   ├── functions/           # Firebase Functions backend (API, DB, email, storage)
+│   ├── firebase.json        # Firebase config
+│   ├── .firebaserc          # Firebase project alias
+├── index.html               # Main entry point (frontend)
+├── styles.css               # Global styles
+├── config.js                # Frontend config (API URLs, tokens)
+├── script.js                # Main JS for landing page
+├── pages/
+│   ├── auth/                # Auth pages (login, register, etc.)
+│   ├── info/                # Info pages (contact, features, etc.)
+│   ├── neighborhood/        # Neighborhood management
+│   ├── moderator/           # Moderator dashboard
+│   ├── dashboard/           # Main dashboard (map, chat, etc.)
+│   └── assets/              # Static images/assets
+├── README.md
+├── LICENSE
+```
+
+## Setup & Deployment
+
+### 1. Clone the repository
 ```bash
 git clone https://github.com/yourusername/check-in-dashboard.git
 cd check-in-dashboard
 ```
 
-2. Open `index.html` in your browser or use a local server:
-```bash
-# Running site on local
-python -m http.server 8000
-*in another terminal*
-cd .\\backend\\
-node server.js
+### 2. Configure Firebase Functions Backend
+- Go to `backend/functions/`
+- Insert `.env` and fill in your secrets (MongoDB URI, email, etc.)
+- Install dependencies:
+  ```bash
+  cd backend/functions
+  npm install
+  ```
+- Deploy to Firebase:
+  ```bash
+  firebase deploy --only functions
+  ```
 
-# Using Node.js to view backend
-npx serve
-```
+### 3. Serve the Frontend
+- You can open `index.html` directly, or use a local server:
+  ```bash
+  python -m http.server 8000
+  # or
+  npx serve
+  ```
+- Update `config.js` with your deployed Firebase Functions API URL.
 
-3. Replace the Mapbox token in `dashboard/scripts/dashboard.js` with your own token:
-```javascript
-mapboxgl.accessToken = 'your-mapbox-token';
-```
-
-## Structure
-
-```
-├── backend/
-├── index.html
-├── styles.css
-├── pages/
-│   ├── auth/
-│   ├── info/
-│   ├── neighborhood/
-│   ├── moderator/
-│   ├── dashboard/
-│   └── assets/
-├── script.js
-├── README.md
-```
+### 4. Mapbox Token
+- Replace the Mapbox token in `pages/dashboard/scripts/dashboard.js` with your own:
+  ```javascript
+  mapboxgl.accessToken = 'your-mapbox-token';
+  ```
 
 ## Technologies Used
-
-- HTML5
-- CSS3
-- JavaScript (ES6+)
+- HTML5, CSS3, JavaScript (ES6+)
 - Mapbox GL JS
-- Font Awesome
-- Google Fonts (Poppins)
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+- Firebase Functions (Node.js, Express)
+- MongoDB (via Mongoose)
+- Nodemailer (email)
+- Firebase Storage (for images)
+- Font Awesome, Google Fonts (Poppins)
 
 ## License
 
