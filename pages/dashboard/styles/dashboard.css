@@ -1153,7 +1153,7 @@ body.dashboard {
     align-items: flex-start;
     position: relative;
     gap: 10px;
-    max-width: 100%;
+    /* max-width: 100%; */
 }
 
 .message-avatar {
@@ -1174,36 +1174,27 @@ body.dashboard {
     flex-direction: row-reverse;
 }
 
-.message.sent .message-avatar {
-    order: 2;
-}
-
-.message.sent .message-content {
-    order: 1;
-}
-
-.message-content {
-    background-color: var(--light-gray);
-    padding: 12px 18px;
-    border-radius: 20px;
-    max-width: 90%;
-    min-width: 120px;
-    word-wrap: break-word;
-    position: relative;
-    color: var(--text-dark);
-    display: flex;
-    flex-direction: column;
-}
 
 .message.sent .message-content {
     background-color: var(--primary-color);
     color: var(--white);
-    margin-left: auto;
     border-bottom-right-radius: 5px;
+    max-width: 90%;
+    min-width: 160px;
+    margin-left: 0;
+    margin-right: 0;
+    align-self: flex-end;
 }
 
 .message.received .message-content {
+    background-color: var(--light-gray);
+    color: var(--text-dark);
     border-bottom-left-radius: 5px;
+    max-width: 90%;
+    min-width: 160px;
+    margin-left: 0;
+    margin-right: 0;
+    align-self: flex-start;
 }
 
 .message-header {
@@ -5580,4 +5571,17 @@ textarea:focus, select:focus, input[type="text"]:focus {
 
 #ping-details-container .ping-photo img {
     cursor: zoom-in;
+}
+
+/* Reduce font size for chat area */
+.chat-main-panel, .messages-container, .message, .message-content, .chat-input-area, #message-input {
+    font-size: 0.95rem;
+}
+
+.message-header .username, .message-header .timestamp {
+    font-size: 0.85rem;
+}
+
+#message-input {
+    font-size: 0.95rem;
 }

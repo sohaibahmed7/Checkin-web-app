@@ -22,8 +22,6 @@ const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const {config} = require("dotenv");
 const admin = require("firebase-admin");
-const {createServer} = require("http");
-const {Server} = require("socket.io");
 
 config({path: __dirname + "/.env"});
 
@@ -1237,112 +1235,6 @@ app.post("/api/chat/messages", async (req, res) => {
   }
 });
 
-// Socket.IO Server Setup
-const server = createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: allowedOrigins,
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
-});
-
-// Socket.IO connection handling
-io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
-
-  // Join a chat room
-  socket.on("joinRoom", async (data) => {
-    try {
-      const {roomId, userId} = data;
-
-      // Validate user and room access
-      const [user, room] = await Promise.all([
-        User.findById(userId),
-        ChatRoom.findById(roomId),
-      ]);
-
-      if (!user || !room) {
-        socket.emit("error", {message: "Invalid user or room"});
-        return;
-      }
-
-      // Check if user belongs to the neighborhood
-      if (user.neighborhoodId.toString() !== room.neighborhoodId.toString()) {
-        socket.emit("error", {message: "Access denied: User not in this neighborhood"});
-        return;
-      }
-
-      socket.join(roomId);
-      socket.emit("roomJoined", {roomId});
-      console.log(`User ${userId} joined room ${roomId}`);
-    } catch (err) {
-      console.error("Error joining room:", err);
-      socket.emit("error", {message: "Error joining room"});
-    }
-  });
-
-  // Handle new messages
-  socket.on("sendMessage", async (data) => {
-    try {
-      const {roomId, senderId, message} = data;
-
-      // Validate the message (same logic as REST endpoint)
-      const [room, sender] = await Promise.all([
-        ChatRoom.findById(roomId),
-        User.findById(senderId),
-      ]);
-
-      if (!room || !sender) {
-        socket.emit("error", {message: "Invalid room or sender"});
-        return;
-      }
-
-      if (sender.neighborhoodId.toString() !== room.neighborhoodId.toString()) {
-        socket.emit("error", {message: "Access denied: User not in this neighborhood"});
-        return;
-      }
-
-      if (room.roomType === "moderator_alerts" && !sender.is_moderator) {
-        socket.emit("error", {message: "Only moderators can send messages to Moderator Alerts"});
-        return;
-      }
-
-      if (room.roomType === "security_alerts" && !sender.is_security_company) {
-        socket.emit("error", {message: "Only security company users can send messages to Security Alerts"});
-        return;
-      }
-
-      const chatMessage = new ChatMessage({
-        roomId,
-        senderId,
-        senderName: sender.name,
-        message,
-        messageType: room.roomType.includes("alerts") ? "alert" : "text",
-      });
-
-      await chatMessage.save();
-      await chatMessage.populate("senderId", "firstName lastName profile_picture_url");
-
-      // Broadcast to all users in the room
-      io.to(roomId).emit("newMessage", chatMessage);
-    } catch (err) {
-      console.error("Error sending message via socket:", err);
-      socket.emit("error", {message: "Error sending message"});
-    }
-  });
-
-  // Leave room
-  socket.on("leaveRoom", (roomId) => {
-    socket.leave(roomId);
-    console.log(`User left room ${roomId}`);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
-  });
-});
-
 // Global Error Handler
 app.use((err, req, res, next) => {
   console.error("Global Error Handler:", err.stack || err.message); // Log the full error stack
@@ -1353,4 +1245,3 @@ app.use((err, req, res, next) => {
 // Export both HTTP and Socket.IO servers
 const functions = require("firebase-functions");
 exports.api = functions.https.onRequest(app);
-exports.socket = functions.https.onRequest(server);

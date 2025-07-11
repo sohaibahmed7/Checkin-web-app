@@ -208,40 +208,31 @@ async function loadMessages(roomId) {
 }
 
 // Display a message in the chat
-function displayMessage(message) {
+async function displayMessage(message) {
     // Determine sender info
     let senderName = '';
     let senderAvatar = config.DEFAULT_AVATAR;
     let senderId = '';
 
     if (message.senderId && typeof message.senderId === 'object') {
-        // Populated senderId from backend or optimistic send
         senderName = message.senderId.firstName && message.senderId.lastName
             ? `${message.senderId.firstName} ${message.senderId.lastName}`
             : (message.senderId.name || message.senderName || 'Unknown');
-        senderAvatar = message.senderId.profile_picture_url || config.DEFAULT_AVATAR;
         senderId = message.senderId._id || message.senderId.id || '';
     } else if (typeof message.senderId === 'string') {
-        // Only userId, need to fetch profile
         senderId = message.senderId;
-        if (userProfileCache[senderId]) {
-            senderName = userProfileCache[senderId].name;
-            senderAvatar = userProfileCache[senderId].profile_picture_url || config.DEFAULT_AVATAR;
-        } else {
-            // Fetch from backend API (MongoDB) or Firestore users collection
-            fetchUserProfile(senderId).then(profile => {
-                userProfileCache[senderId] = profile;
-                // Re-render this message with profile info
-                displayMessage({ ...message, senderId: profile });
-            });
-            senderName = message.senderName || 'Unknown';
-        }
+        senderName = message.senderName || 'Unknown';
     } else {
         senderName = message.senderName || 'Unknown';
     }
 
     // Compare senderId robustly
     const isSentByMe = String(senderId) === String(currentUser._id);
+
+    // For received messages, use config.getUserAvatarUrl(senderId)
+    if (!isSentByMe && senderId) {
+        senderAvatar = config.getUserAvatarUrl(senderId);
+    }
 
     // Format timestamp
     let dateObj = message.createdAt;
@@ -262,12 +253,10 @@ function displayMessage(message) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${isSentByMe ? 'sent' : 'received'}`;
     messageDiv.innerHTML = `
-        <div class="message-avatar">
-            <img src="${senderAvatar}" alt="${senderName}" onerror="this.onerror=null;this.src='assets/avatar.svg';">
-        </div>
+        ${!isSentByMe ? `<div class="message-avatar"><img src="${senderAvatar}" alt="${senderName}" onerror="this.onerror=null;this.src='assets/avatar.svg';"></div>` : ''}
         <div class="message-content ${messageClass}">
             <div class="message-header">
-                <span class="username">${senderName}</span>
+                <span class="username">${isSentByMe ? 'Me' : senderName}</span>
                 <span class="timestamp">${timestamp}</span>
             </div>
             <div class="message-text">
@@ -306,22 +295,8 @@ async function sendMessage() {
         return;
     }
     try {
-        // Optimistically display
-        const optimisticMessage = {
-            senderId: {
-                _id: currentUser._id,
-                firstName: currentUser.firstName,
-                lastName: currentUser.lastName,
-                profile_picture_url: currentUser.profile_picture_url || config.DEFAULT_AVATAR
-            },
-            senderName: currentUser.name,
-            message: message,
-            messageType: currentRoom.roomType.includes('alerts') ? 'alert' : 'text',
-            createdAt: new Date().toISOString()
-        };
-        displayMessage(optimisticMessage);
+        // No optimistic display! Only clear input and write to Firestore
         messageInput.value = '';
-        // Firestore write
         const messagesCol = collection(db, 'neighborhoods', currentNeighborhood._id, 'rooms', currentRoom._id, 'messages');
         await addDoc(messagesCol, {
             senderId: currentUser._id,

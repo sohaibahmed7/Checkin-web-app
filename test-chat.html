@@ -42,7 +42,6 @@
         <ul>
             <li>Three predefined chat rooms per neighborhood</li>
             <li>Role-based permissions (moderator, security company)</li>
-            <li>Real-time messaging via Socket.IO</li>
             <li>Message persistence in MongoDB</li>
         </ul>
     </div>
@@ -51,7 +50,6 @@
         <h2>Backend API Tests</h2>
         <button class="btn-primary" onclick="testChatRooms()">Test Chat Rooms API</button>
         <button class="btn-primary" onclick="testMessagesAPI()">Test Messages API</button>
-        <button class="btn-primary" onclick="testSocketConnection()">Test Socket.IO Connection</button>
         <div id="api-results"></div>
     </div>
 
@@ -120,17 +118,6 @@
                 }
             } catch (error) {
                 logResult(`❌ Messages API error: ${error.message}`, 'error');
-            }
-        }
-
-        function testSocketConnection() {
-            try {
-                logResult('Testing Socket.IO connection...', 'info');
-                
-                // This would need Socket.IO client library
-                logResult('⚠️ Socket.IO test requires client library. Check browser console for connection.', 'info');
-            } catch (error) {
-                logResult(`❌ Socket.IO test error: ${error.message}`, 'error');
             }
         }
     </script>
