@@ -984,59 +984,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    function updateChatWindow(chatId) {
-        const chatWindow = document.getElementById('chat-window');
-        if (chatWindow) {
-            // Placeholder: In a real app, fetch chat messages for chatId and populate
-            chatWindow.innerHTML = `
-                <div class="chat-window-header">
-                    <div class="chat-title-avatar">
-                        <img src="assets/avatar.svg" alt="Chat User">
-                    </div>
-                    <div class="chat-title-info">
-                        <h3>Community Chat ${chatId}</h3>
-                        <span class="online-count">5 Online</span>
-                    </div>
-                    <button class="close-chat"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="messages-container">
-                    <!-- Sample messages -->
-                    <div class="message-group">
-                        <div class="message received">
-                            <div class="message-avatar">
-                                <img src="assets/avatar.svg" alt="User A">
-                            </div>
-                            <div class="message-content">
-                                <div class="message-author">User A <span class="message-time">10:00 AM</span></div>
-                                <p>Hello everyone!</p>
-                                <div class="message-reactions">
-                                    <div class="reaction-badge" data-emoji="👍" data-count="2">👍 <span>2</span></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="message sent">
-                            <div class="message-content">
-                                <div class="message-author">You <span class="message-time">10:05 AM</span></div>
-                                <p>Hi User A!</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="chat-input-container">
-                    <input type="text" placeholder="Type a message...">
-                    <button class="attach-button"><i class="fas fa-paperclip"></i></button>
-                    <button class="send-button"><i class="fas fa-paper-plane"></i></button>
-                </div>
-            `;
-
-            // Add listener to close button
-            chatWindow.querySelector('.close-chat').addEventListener('click', () => {
-                chatWindow.classList.remove('active');
-            });
-            chatWindow.classList.add('active');
-        }
-    }
-
     // Initial chat window load (example)
     // updateChatWindow('general');
 

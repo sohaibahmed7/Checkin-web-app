@@ -19,7 +19,7 @@ const chatSidebar = document.querySelector('.chat-list');
 
 // Import db from firebase.js.
 import { db, storage } from './firebase.js';
-import { collection, addDoc, query, orderBy, onSnapshot, getDocs, doc, getDoc } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+import { collection, addDoc, query, orderBy, onSnapshot, getDocs, doc, getDoc, limit } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js';
 
 // Initialize chat system
@@ -31,28 +31,26 @@ async function initializeChat() {
             console.error('No user data found');
             return;
         }
-        
         currentUser = JSON.parse(userData);
-        
+
         // Get user's neighborhood
         const neighborhoodResponse = await fetch(config.getApiUrl(`/api/user/neighborhood/${currentUser._id}`));
         if (!neighborhoodResponse.ok) {
             throw new Error('Failed to fetch neighborhood');
         }
-        
         currentNeighborhood = await neighborhoodResponse.json();
-        
-        // Load chat rooms for the neighborhood
+
+        // Load chat rooms and listen for unread messages
         await loadChatRooms();
-        
+        await listenForUnreadMessages();
+
         // Set up chat room UI
         setupChatRoomUI();
-        
+
         // Join the first room (General Discussion)
         if (chatRooms.length > 0) {
             await switchToRoom(chatRooms[0]);
         }
-        
     } catch (error) {
         console.error('Error initializing chat:', error);
         showError('Failed to initialize chat system');
@@ -279,17 +277,17 @@ async function displayMessage(message) {
 // Update message input based on user permissions
 function updateMessageInput() {
     if (!currentRoom) return;
-    
     const canSend = canUserSendToRoom(currentRoom);
-    
     if (canSend) {
         messageInput.disabled = false;
         messageInput.placeholder = 'Type a message...';
         sendButton.disabled = false;
+        if (attachButton) attachButton.disabled = false;
     } else {
         messageInput.disabled = true;
         messageInput.placeholder = 'Read only - You cannot send messages to this room';
         sendButton.disabled = true;
+        if (attachButton) attachButton.disabled = true;
     }
 }
 
@@ -423,6 +421,110 @@ if (attachButton && imageInput) {
         }
     });
 }
+
+// --- Notification Badge Logic ---
+const chatSidebarNav = document.querySelector(".sidebar-nav a[data-tab='chat']");
+let unreadCounts = {};
+
+function getLastReadTimestamps() {
+    return JSON.parse(localStorage.getItem('chatLastReadTimestamps') || '{}');
+}
+function setLastReadTimestamp(roomId, timestamp) {
+    const data = getLastReadTimestamps();
+    data[roomId] = timestamp;
+    localStorage.setItem('chatLastReadTimestamps', JSON.stringify(data));
+}
+
+function updateSidebarBadges() {
+    // Main sidebar badge
+    const totalUnread = Object.values(unreadCounts).reduce((a, b) => a + b, 0);
+    let badge = chatSidebarNav.querySelector('.sidebar-badge');
+    if (totalUnread > 0) {
+        if (!badge) {
+            badge = document.createElement('span');
+            badge.className = 'sidebar-badge';
+            chatSidebarNav.appendChild(badge);
+        }
+        badge.style.display = 'block';
+    } else if (badge) {
+        badge.style.display = 'none';
+    }
+    // Per-room badges
+    chatRooms.forEach(room => {
+        const chatItem = document.querySelector(`[data-room-id="${room._id}"]`);
+        if (!chatItem) return;
+        let roomBadge = chatItem.querySelector('.chat-room-badge');
+        const count = unreadCounts[room._id] || 0;
+        if (count > 0) {
+            if (!roomBadge) {
+                roomBadge = document.createElement('span');
+                roomBadge.className = 'chat-room-badge';
+                chatItem.querySelector('.chat-item-icon').appendChild(roomBadge);
+            }
+            roomBadge.style.display = 'block';
+        } else if (roomBadge) {
+            roomBadge.style.display = 'none';
+        }
+    });
+}
+
+// Patch loadMessages to update last read timestamp and clear badge
+const originalLoadMessages = loadMessages;
+loadMessages = async function(roomId) {
+    await originalLoadMessages.call(this, roomId);
+    // Mark as read
+    setLastReadTimestamp(roomId, Date.now());
+    unreadCounts[roomId] = 0;
+    updateSidebarBadges();
+};
+
+// Listen for new messages in all rooms for badge updates
+async function listenForUnreadMessages() {
+    if (!currentNeighborhood || !chatRooms.length) return;
+    const lastRead = getLastReadTimestamps();
+    unreadCounts = {};
+    chatRooms.forEach(room => {
+        const messagesCol = collection(db, 'neighborhoods', currentNeighborhood._id, 'rooms', room._id, 'messages');
+        const q = query(messagesCol, orderBy('createdAt', 'desc'), limit(1));
+        onSnapshot(q, (snapshot) => {
+            snapshot.forEach(docSnap => {
+                const msg = docSnap.data();
+                // Only count as unread if not sent by me
+                let senderId = msg.senderId;
+                if (typeof senderId === 'object') senderId = senderId._id || senderId.id;
+                if (String(senderId) === String(currentUser._id)) {
+                    unreadCounts[room._id] = 0;
+                    updateSidebarBadges();
+                    return;
+                }
+                let dateObj = msg.createdAt;
+                if (dateObj && typeof dateObj.toDate === 'function') {
+                    dateObj = dateObj.toDate();
+                } else if (typeof dateObj === 'string' || typeof dateObj === 'number') {
+                    dateObj = new Date(dateObj);
+                }
+                const lastReadTime = lastRead[room._id];
+                // If no lastRead timestamp, treat as unread
+                if (lastReadTime === undefined) {
+                    unreadCounts[room._id] = 1;
+                } else if (dateObj && dateObj.getTime() > lastReadTime) {
+                    unreadCounts[room._id] = 1;
+                } else {
+                    unreadCounts[room._id] = 0;
+                }
+                updateSidebarBadges();
+            });
+        });
+    });
+}
+
+// Call after chatRooms are loaded
+async function loadChatRoomsAndListen() {
+    await loadChatRooms();
+    await listenForUnreadMessages();
+}
+// Remove or comment out the following line to prevent double initialization and null errors:
+// initializeChat = loadChatRoomsAndListen;
 
 // Initialize chat when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
