@@ -1,396 +1,423 @@
-// const socket = io(config.SOCKET_URL); // Connect to your Node.js server
+// Chat System Implementation
+// Neighborhood-specific chat with three predefined rooms:
+// 1. General Discussion - All users can send/receive
+// 2. Moderator Alerts - Only moderators can send, all can receive
+// 3. Security Alerts - Only security company can send, all can receive
+
+// Global variables
+let currentUser = null;
+let currentNeighborhood = null;
+let currentRoom = null;
+let chatRooms = [];
+
+// DOM elements
 const messagesContainer = document.getElementById('messages');
 const messageInput = document.getElementById('message-input');
 const sendButton = document.getElementById('send-button');
-const attachButton = document.querySelector('.attach-button');
-const emojiButton = document.querySelector('.emoji-button');
-
-// Add a variable to keep track of the current active chat room
-let currentRoom = 'community-chat'; // Default to community chat
 const chatHeader = document.querySelector('.chat-main-panel .chat-header');
+const chatSidebar = document.querySelector('.chat-list');
 
-// Create a hidden file input element
-const fileInput = document.createElement('input');
-fileInput.type = 'file';
-fileInput.style.display = 'none';
-document.body.appendChild(fileInput);
+// Import db from firebase.js.
+import { db } from './firebase.js';
+import { collection, addDoc, query, orderBy, onSnapshot, getDocs, doc, getDoc } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
 
-// Get the current user's information from localStorage or your auth system
-// *** IMPORTANT: Replace this with your actual authentication logic. ***
-// For demonstration, we'll use a placeholder or data from localStorage if available.
-const currentUser = JSON.parse(localStorage.getItem('user')) || { name: 'Guest' };
-
-// Emoji Picker setup
-const emojiPickerHtml = `
-    <div class="emoji-picker">
-        <div class="emoji-picker-header">
-            <span>Quick Reactions</span>
-            <button class="close-emoji-picker">&times;</button>
-        </div>
-        <div class="emoji-grid">
-            <span>&#128077;</span><span>&#128079;</span><span>&#128150;</span><span>&#128512;</span>
-            <span>&#128514;</span><span>&#128525;</span><span>&#128545;</span><span>&#129315;</span>
-            <span>&#129321;</span><span>&#129303;</span><span>&#128064;</span><span>&#128169;</span>
-            <span>&#128680;</span><span>&#128736;</span><span>&#129505;</span><span>&#128170;</span>
-            <!-- Add more emojis as needed -->
-        </div>
-    </div>
-`;
-document.querySelector('.chat-main-panel').insertAdjacentHTML('beforeend', emojiPickerHtml);
-const emojiPicker = document.querySelector('.emoji-picker');
-const closeEmojiPickerButton = document.querySelector('.close-emoji-picker');
-
-// Fetch chat history when page loads (or when room changes)
-async function fetchChatHistory(room) {
+// Initialize chat system
+async function initializeChat() {
     try {
-        messagesContainer.innerHTML = '<div class="loading">Loading messages...</div>';
-        const response = await fetch(config.getApiUrl(`${config.API_ENDPOINTS.CHAT}/messages?room=${room}`));
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        // Get current user from localStorage
+        const userData = localStorage.getItem('user');
+        if (!userData) {
+            console.error('No user data found');
+            return;
         }
-        const messages = await response.json();
-        messagesContainer.innerHTML = ''; // Clear loading message
-        messages.forEach(msg => displayMessage(msg));
-        scrollToBottom();
+        
+        currentUser = JSON.parse(userData);
+        
+        // Get user's neighborhood
+        const neighborhoodResponse = await fetch(config.getApiUrl(`/api/user/neighborhood/${currentUser._id}`));
+        if (!neighborhoodResponse.ok) {
+            throw new Error('Failed to fetch neighborhood');
+        }
+        
+        currentNeighborhood = await neighborhoodResponse.json();
+        
+        // Load chat rooms for the neighborhood
+        await loadChatRooms();
+        
+        // Set up chat room UI
+        setupChatRoomUI();
+        
+        // Join the first room (General Discussion)
+        if (chatRooms.length > 0) {
+            await switchToRoom(chatRooms[0]);
+        }
+        
     } catch (error) {
-        console.error('Error fetching chat history:', error);
-        messagesContainer.innerHTML = '<div class="loading">Error loading messages. Please refresh the page.</div>';
+        console.error('Error initializing chat:', error);
+        showError('Failed to initialize chat system');
     }
 }
 
-// Initial fetch for the default room
-fetchChatHistory(currentRoom);
+// Load chat rooms for the current neighborhood from Firestore
+async function loadChatRooms() {
+    try {
+        // Firestore: /neighborhoods/{neighborhoodId}/rooms
+        const roomsCol = collection(db, 'neighborhoods', currentNeighborhood._id, 'rooms');
+        const q = query(roomsCol, orderBy('roomType'));
+        const snapshot = await getDocs(q);
+        chatRooms = snapshot.docs.map(doc => ({ _id: doc.id, ...doc.data() }));
+        // If rooms don't exist, create them (one-time setup)
+        if (chatRooms.length === 0) {
+            const defaultRooms = [
+                { roomType: 'general_discussion', name: 'General Discussion', description: 'Open communication for all users' },
+                { roomType: 'moderator_alerts', name: 'Moderator Alerts', description: 'One-way communication from moderators' },
+                { roomType: 'security_alerts', name: 'Security Alerts', description: 'One-way communication from security company' }
+            ];
+            for (const room of defaultRooms) {
+                await addDoc(roomsCol, room);
+            }
+            // Re-fetch
+            const snapshot2 = await getDocs(q);
+            chatRooms = snapshot2.docs.map(doc => ({ _id: doc.id, ...doc.data() }));
+        }
+        console.log('Loaded chat rooms:', chatRooms);
+    } catch (error) {
+        console.error('Error loading chat rooms:', error);
+        throw error;
+    }
+}
 
-// Add at the top or near sendMessage:
-let lastSentMessage = null;
+// Set up the chat room UI in the sidebar
+function setupChatRoomUI() {
+    if (!chatSidebar) {
+        console.error('Chat sidebar not found');
+        return;
+    }
+    
+    // Clear the entire sidebar content (including loading spinner)
+    chatSidebar.innerHTML = '';
+    
+    // Create chat room items
+    chatRooms.forEach(room => {
+        const chatItem = createChatRoomItem(room);
+        chatSidebar.appendChild(chatItem);
+    });
+}
 
-// Handle sending messages
-function sendMessage(filePath = null) {
-    const message = messageInput.value.trim();
-    if (message || filePath) {
-        const msgObj = {
-            username: currentUser.name,
-            message: message,
-            room: currentRoom,
-            filePath: filePath
-        };
-        // socket.emit('chat message', msgObj);
-        messageInput.value = '';
+// Create a chat room item for the sidebar
+function createChatRoomItem(room) {
+    const chatItem = document.createElement('div');
+    chatItem.className = 'chat-item';
+    chatItem.dataset.roomId = room._id;
+    chatItem.dataset.roomType = room.roomType;
+    
+    // Determine if user can send messages to this room
+    const canSend = canUserSendToRoom(room);
+    
+    chatItem.innerHTML = `
+        <div class="chat-item-avatar">
+            <img src="assets/avatar.svg" alt="${room.name}">
+        </div>
+        <div class="chat-item-content">
+            <div class="chat-item-header">
+                <span class="chat-item-name">${room.name}</span>
+                <span class="chat-item-time"></span>
+            </div>
+            <div class="chat-item-preview">${room.description}</div>
+            ${!canSend ? '<div class="chat-item-readonly">Read Only</div>' : ''}
+        </div>
+    `;
+    
+    // Add click event
+    chatItem.addEventListener('click', () => switchToRoom(room));
+    
+    return chatItem;
+}
 
-        // Optimistically display the message immediately
-        displayMessage({
-            ...msgObj,
-            createdAt: new Date().toISOString()
+// Check if current user can send messages to a specific room
+function canUserSendToRoom(room) {
+    switch (room.roomType) {
+        case 'general_discussion':
+            return true; // All users can send
+        case 'moderator_alerts':
+            return currentUser.is_moderator; // Only moderators can send
+        case 'security_alerts':
+            return currentUser.is_security_company; // Only security company can send
+        default:
+            return false;
+    }
+}
+
+// Switch to a different chat room
+async function switchToRoom(room) {
+    try {
+        // Update current room
+        currentRoom = room;
+        
+        // Update UI to show selected room
+        document.querySelectorAll('.chat-item').forEach(item => {
+            item.classList.remove('active');
         });
-        scrollToBottom();
-
-        // Store last sent message for deduplication
-        lastSentMessage = {
-            message: msgObj.message,
-            room: msgObj.room,
-            filePath: msgObj.filePath
-        };
-
-        // Update the chat preview in the sidebar
-        const previewContent = filePath ? `[File] ${message}`.trim() : message;
-        updateChatPreview(currentRoom, `${currentUser.name}: ${previewContent}`);
+        
+        const selectedItem = document.querySelector(`[data-room-id="${room._id}"]`);
+        if (selectedItem) {
+            selectedItem.classList.add('active');
+        }
+        
+        // Update chat header
+        if (chatHeader) {
+            chatHeader.textContent = room.name;
+        }
+        
+        // Clear messages container
+        messagesContainer.innerHTML = '<div class="loading">Loading messages...</div>';
+        
+        // Load messages for this room
+        await loadMessages(room._id);
+        
+        // Update message input based on permissions
+        updateMessageInput();
+        
+    } catch (error) {
+        console.error('Error switching to room:', error);
+        showError('Failed to switch to room');
     }
 }
 
-sendButton.addEventListener('click', () => sendMessage());
-messageInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        sendMessage();
+// Listen for messages in the current room
+let unsubscribeMessages = null;
+async function loadMessages(roomId) {
+    if (unsubscribeMessages) unsubscribeMessages();
+    messagesContainer.innerHTML = '<div class="loading">Loading messages...</div>';
+    try {
+        const messagesCol = collection(db, 'neighborhoods', currentNeighborhood._id, 'rooms', roomId, 'messages');
+        const q = query(messagesCol, orderBy('createdAt'));
+        unsubscribeMessages = onSnapshot(q, async (snapshot) => {
+            messagesContainer.innerHTML = '';
+            snapshot.forEach(docSnap => {
+                const msg = docSnap.data();
+                // Optionally fetch sender info from MongoDB if needed
+                displayMessage({ ...msg, _id: docSnap.id });
+            });
+            scrollToBottom();
+        });
+    } catch (error) {
+        console.error('Error loading messages:', error);
+        messagesContainer.innerHTML = '<div class="error">Failed to load messages</div>';
     }
-});
-
-// Handle receiving messages
-// socket.on('chat message', (msg) => {
-//     // Ignore the echo if it's the same as the last sent message from this user
-//     if (
-//         msg.username === currentUser.name &&
-//         lastSentMessage &&
-//         msg.message === lastSentMessage.message &&
-//         msg.room === lastSentMessage.room &&
-//         msg.filePath === lastSentMessage.filePath
-//     ) {
-//         // Reset lastSentMessage so only one duplicate is skipped
-//         lastSentMessage = null;
-//         return;
-//     }
-//     // Otherwise, display the message
-//         displayMessage(msg);
-//         scrollToBottom();
-
-//     // Update the chat preview in the sidebar regardless of current room
-//     const previewContent = msg.filePath ? `[File] ${msg.message}`.trim() : msg.message;
-//     updateChatPreview(msg.room, `${msg.username}: ${previewContent}`);
-// });
+}
 
 // Display a message in the chat
-function displayMessage(msg) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${msg.username === currentUser.name ? 'sent' : 'received'}`;
-    
-    // Format timestamp to show only hours and minutes with AM/PM
-    const timestamp = new Date(msg.timestamp || msg.createdAt).toLocaleTimeString('en-US', {
+function displayMessage(message) {
+    // Determine sender info
+    let senderName = '';
+    let senderAvatar = config.DEFAULT_AVATAR;
+    let senderId = '';
+
+    if (message.senderId && typeof message.senderId === 'object') {
+        // Populated senderId from backend or optimistic send
+        senderName = message.senderId.firstName && message.senderId.lastName
+            ? `${message.senderId.firstName} ${message.senderId.lastName}`
+            : (message.senderId.name || message.senderName || 'Unknown');
+        senderAvatar = message.senderId.profile_picture_url || config.DEFAULT_AVATAR;
+        senderId = message.senderId._id || message.senderId.id || '';
+    } else if (typeof message.senderId === 'string') {
+        // Only userId, need to fetch profile
+        senderId = message.senderId;
+        if (userProfileCache[senderId]) {
+            senderName = userProfileCache[senderId].name;
+            senderAvatar = userProfileCache[senderId].profile_picture_url || config.DEFAULT_AVATAR;
+        } else {
+            // Fetch from backend API (MongoDB) or Firestore users collection
+            fetchUserProfile(senderId).then(profile => {
+                userProfileCache[senderId] = profile;
+                // Re-render this message with profile info
+                displayMessage({ ...message, senderId: profile });
+            });
+            senderName = message.senderName || 'Unknown';
+        }
+    } else {
+        senderName = message.senderName || 'Unknown';
+    }
+
+    // Compare senderId robustly
+    const isSentByMe = String(senderId) === String(currentUser._id);
+
+    // Format timestamp
+    let dateObj = message.createdAt;
+    if (dateObj && typeof dateObj.toDate === 'function') {
+        dateObj = dateObj.toDate();
+    } else if (typeof dateObj === 'string' || typeof dateObj === 'number') {
+        dateObj = new Date(dateObj);
+    }
+    const timestamp = dateObj && !isNaN(dateObj) ? dateObj.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
         hour12: true
-    });
+    }) : '';
 
-    let messageActionsHtml = '';
-    if (msg.username === currentUser.name) {
-        messageActionsHtml = `
-            <div class="message-actions">
-                <button class="action-btn undo-send" title="Undo Send">
-                    <i class="fas fa-undo"></i>
-                </button>
-            </div>
-        `;
-    } else {
-        messageActionsHtml = `
-            <div class="message-actions">
-                <button class="action-btn reply" title="Reply">
-                    <i class="fas fa-reply"></i>
-                </button>
-                <button class="action-btn forward" title="Forward">
-                    <i class="fas fa-share"></i>
-                </button>
-            </div>
-        `;
-    }
-    
-    let fileContentHtml = '';
-    if (msg.filePath) {
-        const fileExtension = msg.filePath.split('.').pop().toLowerCase();
-        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExtension)) {
-            fileContentHtml = `<img src="${msg.filePath}" alt="Attached File" style="max-width: 100%; height: auto; display: block; margin-top: 10px; border-radius: 8px;">`;
-        } else {
-            fileContentHtml = `<a href="${msg.filePath}" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; padding: 8px 12px; background: rgba(0,0,0,0.1); border-radius: 5px; text-decoration: none; color: inherit;"><i class="fas fa-file-alt"></i> ${msg.filePath.split('/').pop()}</a>`;
-        }
-    }
-    
-    let avatarSrc = 'assets/avatar.svg';
+    // Determine message styling based on type
+    const messageClass = message.messageType === 'alert' ? 'alert-message' : '';
+
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${isSentByMe ? 'sent' : 'received'}`;
     messageDiv.innerHTML = `
         <div class="message-avatar">
-            <img src="${avatarSrc}" alt="${msg.username}" onerror="this.onerror=null;this.src='assets/avatar.svg';">
+            <img src="${senderAvatar}" alt="${senderName}" onerror="this.onerror=null;this.src='assets/avatar.svg';">
         </div>
-        <div class="message-content">
+        <div class="message-content ${messageClass}">
             <div class="message-header">
-                <span class="username">${msg.username}</span>
+                <span class="username">${senderName}</span>
                 <span class="timestamp">${timestamp}</span>
             </div>
             <div class="message-text">
-                ${msg.message}
-                ${fileContentHtml}
+                ${message.message}
             </div>
         </div>
-        ${messageActionsHtml}
     `;
-    
     messagesContainer.appendChild(messageDiv);
     scrollToBottom();
+}
 
-    // Attach event listeners for actions
-    const undoButton = messageDiv.querySelector('.undo-send');
-    if (undoButton) {
-        undoButton.addEventListener('click', () => {
-            alert(`Undo send: "${msg.message}"`);
-            // Implement actual undo logic (e.g., delete from DB, update UI)
-        });
+// Update message input based on user permissions
+function updateMessageInput() {
+    if (!currentRoom) return;
+    
+    const canSend = canUserSendToRoom(currentRoom);
+    
+    if (canSend) {
+        messageInput.disabled = false;
+        messageInput.placeholder = 'Type a message...';
+        sendButton.disabled = false;
+    } else {
+        messageInput.disabled = true;
+        messageInput.placeholder = 'Read only - You cannot send messages to this room';
+        sendButton.disabled = true;
     }
+}
 
-    const replyButton = messageDiv.querySelector('.reply');
-    if (replyButton) {
-        replyButton.addEventListener('click', () => {
-            messageInput.value = `@${msg.username} `; // Pre-fill input for reply
-            messageInput.focus();
-        });
+// Send a message to Firestore
+async function sendMessage() {
+    if (!currentRoom || !currentUser) return;
+    const message = messageInput.value.trim();
+    if (!message) return;
+    if (!canUserSendToRoom(currentRoom)) {
+        showError('You do not have permission to send messages to this room');
+        return;
     }
-
-    const forwardButton = messageDiv.querySelector('.forward');
-    if (forwardButton) {
-        forwardButton.addEventListener('click', () => {
-            alert(`Forward: "${msg.message}"`);
-            // Implement actual forward logic
+    try {
+        // Optimistically display
+        const optimisticMessage = {
+            senderId: {
+                _id: currentUser._id,
+                firstName: currentUser.firstName,
+                lastName: currentUser.lastName,
+                profile_picture_url: currentUser.profile_picture_url || config.DEFAULT_AVATAR
+            },
+            senderName: currentUser.name,
+            message: message,
+            messageType: currentRoom.roomType.includes('alerts') ? 'alert' : 'text',
+            createdAt: new Date().toISOString()
+        };
+        displayMessage(optimisticMessage);
+        messageInput.value = '';
+        // Firestore write
+        const messagesCol = collection(db, 'neighborhoods', currentNeighborhood._id, 'rooms', currentRoom._id, 'messages');
+        await addDoc(messagesCol, {
+            senderId: currentUser._id,
+            senderName: currentUser.name,
+            message: message,
+            messageType: currentRoom.roomType.includes('alerts') ? 'alert' : 'text',
+            createdAt: new Date()
         });
+    } catch (error) {
+        console.error('Error sending message:', error);
+        showError('Failed to send message');
+    }
+}
+
+// Update chat preview in sidebar
+function updateChatPreview(roomId, latestMessage) {
+    const chatItem = document.querySelector(`[data-room-id="${roomId}"]`);
+    if (chatItem) {
+        const previewElement = chatItem.querySelector('.chat-item-preview');
+        const timeElement = chatItem.querySelector('.chat-item-time');
+        
+        if (previewElement) {
+            previewElement.textContent = latestMessage;
+        }
+        
+        if (timeElement) {
+            timeElement.textContent = new Date().toLocaleTimeString([], { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
     }
 }
 
 // Scroll to bottom of messages
 function scrollToBottom() {
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
 }
 
-// Toggle emoji picker
-emojiButton.addEventListener('click', () => {
-    emojiPicker.classList.toggle('active');
-});
+// Show error message
+function showError(message) {
+    console.error(message);
+    // You can implement a toast notification system here
+    alert(message);
+}
 
-closeEmojiPickerButton.addEventListener('click', () => {
-    emojiPicker.classList.remove('active');
-});
-
-// Insert emoji into input
-emojiPicker.querySelectorAll('.emoji-grid span').forEach(emojiSpan => {
-    emojiSpan.addEventListener('click', (e) => {
-        messageInput.value += e.target.textContent;
-        messageInput.focus();
-        emojiPicker.classList.remove('active'); // Hide after selection
+// Event listeners
+if (messageInput) {
+    messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
     });
-});
-
-// Handle file attachment
-attachButton.addEventListener('click', () => {
-    console.log('Attach button clicked, triggering file input.');
-    fileInput.click(); // Trigger the hidden file input
-});
-
-fileInput.addEventListener('change', async (e) => {
-    console.log('File input change event triggered.');
-    const file = e.target.files[0];
-    if (file) {
-        console.log('File selected:', file);
-        const formData = new FormData();
-        formData.append('chatFile', file); // 'chatFile' must match the name in upload.single('chatFile')
-        console.log('FormData created:', formData);
-
-        try {
-            console.log('Attempting to upload file to /api/chat/upload...');
-            const response = await fetch(config.getApiUrl(`${config.API_ENDPOINTS.CHAT}/upload`), {
-                method: 'POST',
-                body: formData
-            });
-
-            console.log('File upload response status:', response.status);
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-            }
-
-            const data = await response.json();
-            console.log('File uploaded successfully. Server response data:', data);
-            console.log('File path received from server:', data.filePath);
-
-            // Send the chat message with the file path
-            sendMessage(data.filePath);
-
-        } catch (error) {
-            console.error('Error uploading file:', error);
-            alert('Failed to upload file. Please try again.');
-        }
-    } else {
-        console.log('No file selected.');
-    }
-    fileInput.value = ''; // Clear the input so the same file can be selected again
-});
-
-// Close emoji picker if clicked outside
-document.addEventListener('click', (e) => {
-    if (!emojiPicker.contains(e.target) && !emojiButton.contains(e.target) && emojiPicker.classList.contains('active')) {
-        emojiPicker.classList.remove('active');
-    }
-});
-
-// Handle connection events
-// socket.on('connect', () => {
-//     console.log('Socket connected successfully');
-// });
-
-// socket.on('disconnect', () => {
-//     console.log('Socket disconnected');
-// });
-
-// socket.on('connect_error', (error) => {
-//     console.error('Socket connection error:', error);
-// });
-
-// Function to update the chat preview in the sidebar
-function updateChatPreview(chatId, latestMessage) {
-    const chatItem = document.querySelector(`.chat-item[data-chat-id="${chatId}"]`);
-    if (chatItem) {
-        const previewElement = chatItem.querySelector('.chat-item-preview');
-        const timeElement = chatItem.querySelector('.chat-item-time');
-        if (previewElement) {
-            previewElement.textContent = latestMessage;
-        }
-        if (timeElement) {
-            timeElement.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        }
-    }
 }
 
-// Initial update for chat previews on page load and handle room switching
+if (sendButton) {
+    sendButton.addEventListener('click', sendMessage);
+}
+
+// Initialize chat when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    // Set initial chat header text
-    const initialChatItem = document.querySelector(`.chat-item[data-chat-id="${currentRoom}"] .chat-item-name`);
-    if (initialChatItem) {
-        chatHeader.textContent = initialChatItem.textContent;
-    }
-
-    // Fetch initial chat history for the default room
-    fetchChatHistory(currentRoom);
-
-    // Fetch and update preview for all chat items on load (optional, but good for consistency)
-    // In a real app, you'd typically fetch the last message for each chat from the server.
-    // For now, we'll just fetch the last message of the default room.
-    fetch(config.getApiUrl(`${config.API_ENDPOINTS.CHAT}/messages?room=community-chat&limit=1`))
-        .then(response => response.json())
-        .then(messages => {
-            if (messages.length > 0) {
-                const lastMsg = messages[messages.length - 1];
-                const previewContent = lastMsg.filePath ? `[File] ${lastMsg.message}`.trim() : lastMsg.message;
-                updateChatPreview('community-chat', `${lastMsg.username}: ${previewContent}`);
-            }
-        })
-        .catch(error => console.error('Error fetching initial community-chat preview:', error));
+    initializeChat();
 });
 
-// Handle chat item clicks for room switching
-document.querySelectorAll('.chat-item').forEach(item => {
-    item.addEventListener('click', function() {
-        const newRoom = this.dataset.chatId;
-        switchRoom(newRoom);
-            // Update UI to show active room
-            document.querySelectorAll('.chat-item').forEach(i => i.classList.remove('active'));
-            this.classList.add('active');
-    });
-});
+// User profile cache
+const userProfileCache = {};
 
-// Room switching logic
-function switchRoom(newRoom) {
-    if (currentRoom !== newRoom) {
-        currentRoom = newRoom;
-        // socket.emit('joinRoom', currentRoom);
-        messagesContainer.innerHTML = '';
-        fetchChatHistory(currentRoom);
-            // Update chat header
-            if (chatHeader) {
-            let headerText = '';
-            switch (currentRoom) {
-                case 'community-chat':
-                    headerText = 'Community Chat';
-                    break;
-                case 'neighborhood-1':
-                    headerText = 'Neighborhood 1';
-                    break;
-                case 'neighborhood-2':
-                    headerText = 'Neighborhood 2';
-                    break;
-                case 'watch':
-                    headerText = 'Neighborhood Watch';
-                    break;
-                case 'safety':
-                    headerText = 'Safety Committee';
-                    break;
-                case 'events':
-                    headerText = 'Community Events';
-                    break;
-                default:
-                    headerText = currentRoom;
+// Helper to fetch user profile from backend or Firestore
+async function fetchUserProfile(userId) {
+    // Try backend API first
+    try {
+        const res = await fetch(config.getApiUrl(`/api/user/${userId}`));
+        if (res.ok) {
+            const user = await res.json();
+            return {
+                _id: user._id,
+                name: user.name,
+                profile_picture_url: user.profile_picture_url || config.DEFAULT_AVATAR
+            };
         }
-            chatHeader.textContent = headerText;
+    } catch (e) {}
+    // Fallback: try Firestore users collection
+    try {
+        const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js');
+        const userDoc = await getDoc(doc(db, 'users', userId));
+        if (userDoc.exists()) {
+            const data = userDoc.data();
+            return {
+                _id: userId,
+                name: data.name || 'Unknown',
+                profile_picture_url: data.profile_picture_url || config.DEFAULT_AVATAR
+            };
         }
-    }
+    } catch (e) {}
+    return { _id: userId, name: 'Unknown', profile_picture_url: config.DEFAULT_AVATAR };
 }
