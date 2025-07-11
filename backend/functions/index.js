@@ -840,7 +840,7 @@ app.put("/api/user/settings", express.json(), async (req, res) => {
 });
 
 // --- Neighborhoods ---
-app.post("/api/create-neighborhood", async (req, res) => {
+app.post("/api/user/neighborhood/create-neighborhood", async (req, res) => {
   try {
     const {inviteCode, neighborhoodName, moderators, permissions, bounds} = req.body;
     const neighborhood = new Neighborhood({
