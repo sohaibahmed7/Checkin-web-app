@@ -1235,6 +1235,41 @@ app.post("/api/chat/messages", async (req, res) => {
   }
 });
 
+// --- Chat Attachment Upload ---
+app.post("/api/chat/upload", express.json({limit: "20mb"}), async (req, res) => {
+  try {
+    const {file_base64, userId, neighborhoodId, roomId, fileName} = req.body;
+    if (!file_base64 || !userId || !neighborhoodId || !roomId) {
+      return res.status(400).json({message: "Missing required fields."});
+    }
+    // Optionally validate user and room here
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({message: "User not found"});
+    }
+    // Upload file to Firebase Storage
+    const bucket = admin.storage().bucket();
+    const safeFileName = fileName ? fileName.replace(/[^a-zA-Z0-9._-]/g, "_") : `attachment_${Date.now()}.jpg`;
+    const storagePath = `chat_uploads/${neighborhoodId}/${roomId}/${Date.now()}_${safeFileName}`;
+    // Detect content type
+    let contentType = "image/jpeg";
+    if (file_base64.startsWith("data:")) {
+      const match = file_base64.match(/^data:([a-zA-Z0-9\-\/]+);base64,/);
+      if (match) contentType = match[1];
+    }
+    const base64Data = file_base64.replace(/^data:[a-zA-Z0-9\-\/]+;base64,/, "");
+    const buffer = Buffer.from(base64Data, "base64");
+    const file = bucket.file(storagePath);
+    await file.save(buffer, {metadata: {contentType}});
+    await file.makePublic();
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${storagePath}`;
+    res.status(201).json({url: publicUrl});
+  } catch (error) {
+    console.error("Error uploading chat attachment:", error);
+    res.status(500).json({message: "Error uploading attachment"});
+  }
+});
+
 // Global Error Handler
 app.use((err, req, res, next) => {
   console.error("Global Error Handler:", err.stack || err.message); // Log the full error stack

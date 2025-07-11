@@ -1,6 +1,7 @@
 // Firebase App (the core Firebase SDK) is always required and must be listed first
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
-import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+import { getFirestore, enableIndexedDbPersistence } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+import { getStorage } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAy1WGgUz9LHKe2pWucajmcTppTDBZEfCk",
@@ -14,5 +15,17 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
-export { db }; 
+enableIndexedDbPersistence(db).catch((err) => {
+  // Handle errors (multi-tab, private mode, etc.)
+  if (err.code === 'failed-precondition') {
+    console.warn('Persistence can only be enabled in one tab at a time.');
+  } else if (err.code === 'unimplemented') {
+    console.warn('Persistence is not available in this browser.');
+  } else {
+    console.error('Error enabling Firestore persistence:', err);
+  }
+});
+
+export { db, storage }; 

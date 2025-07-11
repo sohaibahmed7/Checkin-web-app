@@ -18,8 +18,9 @@ const chatHeader = document.querySelector('.chat-main-panel .chat-header');
 const chatSidebar = document.querySelector('.chat-list');
 
 // Import db from firebase.js.
-import { db } from './firebase.js';
+import { db, storage } from './firebase.js';
 import { collection, addDoc, query, orderBy, onSnapshot, getDocs, doc, getDoc } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js';
 
 // Initialize chat system
 async function initializeChat() {
@@ -113,10 +114,16 @@ function createChatRoomItem(room) {
     
     // Determine if user can send messages to this room
     const canSend = canUserSendToRoom(room);
-    
+
+    // Choose icon based on room type
+    let iconClass = "fas fa-comments";
+    if (room.roomType === "general_discussion") iconClass = "fas fa-comments";
+    else if (room.roomType === "moderator_alerts") iconClass = "fas fa-bullhorn";
+    else if (room.roomType === "security_alerts") iconClass = "fas fa-shield-alt";
+
     chatItem.innerHTML = `
-        <div class="chat-item-avatar">
-            <img src="assets/avatar.svg" alt="${room.name}">
+        <div class="chat-item-icon">
+            <i class="${iconClass}" style="font-size:2rem;" data-chat-icon></i>
         </div>
         <div class="chat-item-content">
             <div class="chat-item-header">
@@ -125,8 +132,8 @@ function createChatRoomItem(room) {
             </div>
             <div class="chat-item-preview">${room.description}</div>
             ${!canSend ? '<div class="chat-item-readonly">Read Only</div>' : ''}
-        </div>
-    `;
+    </div>
+`;
     
     // Add click event
     chatItem.addEventListener('click', () => switchToRoom(room));
@@ -260,6 +267,7 @@ async function displayMessage(message) {
                 <span class="timestamp">${timestamp}</span>
             </div>
             <div class="message-text">
+                ${message.imageUrl ? `<img src="${message.imageUrl}" alt="Image" class="chat-image-message" style="max-width: 320px; max-height: 320px; border-radius: 10px; margin-bottom: 0.5em; display: block;">` : ''}
                 ${message.message}
             </div>
         </div>
@@ -305,7 +313,7 @@ async function sendMessage() {
             messageType: currentRoom.roomType.includes('alerts') ? 'alert' : 'text',
             createdAt: new Date()
         });
-    } catch (error) {
+        } catch (error) {
         console.error('Error sending message:', error);
         showError('Failed to send message');
     }
@@ -357,6 +365,63 @@ if (messageInput) {
 
 if (sendButton) {
     sendButton.addEventListener('click', sendMessage);
+}
+
+// File/image upload logic
+const attachButton = document.querySelector('.attach-button');
+const imageInput = document.getElementById('chat-image-input');
+
+if (attachButton && imageInput) {
+    attachButton.addEventListener('click', () => {
+        imageInput.click();
+    });
+    imageInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (!currentRoom || !currentUser) return;
+        if (!canUserSendToRoom(currentRoom)) {
+            showError('You do not have permission to send images to this room');
+            return;
+        }
+        try {
+            // Convert file to base64
+            const file_base64 = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+            // Upload to backend
+            const response = await fetch(config.getApiUrl('/api/chat/upload'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    file_base64,
+                    userId: currentUser._id,
+                    neighborhoodId: currentNeighborhood._id,
+                    roomId: currentRoom._id,
+                    fileName: file.name
+                })
+            });
+            if (!response.ok) throw new Error('Failed to upload image');
+            const data = await response.json();
+            const imageUrl = data.url;
+            // Send image message to Firestore
+            const messagesCol = collection(db, 'neighborhoods', currentNeighborhood._id, 'rooms', currentRoom._id, 'messages');
+            await addDoc(messagesCol, {
+                senderId: currentUser._id,
+                senderName: currentUser.name,
+                imageUrl,
+                message: '',
+                messageType: 'image',
+                createdAt: new Date()
+            });
+            imageInput.value = '';
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            showError('Failed to upload image');
+        }
+    });
 }
 
 // Initialize chat when DOM is loaded
