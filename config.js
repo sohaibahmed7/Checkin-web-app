@@ -28,9 +28,6 @@ const config = {
     // Mapbox Configuration
     MAPBOX_ACCESS_TOKEN: 'pk.eyJ1IjoiYW5zaG1ha2thciIsImEiOiJjbTl2ams5OGcwbGwwMm1vbGpiaDduczg1In0.4yzUyxSxV9lHLtbRQfjdWA',
     
-    // Socket.IO Configuration
-    SOCKET_URL: 'http://localhost:3000',
-    
     
     // App Configuration
     APP_NAME: 'CheckIn',

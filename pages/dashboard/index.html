@@ -100,7 +100,7 @@
                                     </div>
                                     <div class="alert-content">
                                         <p class="alert-title">{Todays safety tip}</p>
-                                        <p class="alert-details">{idk something other than events i am typing a very long message to see what a long description is going to look like and if it will mess something up im just going to keep going i want to make sure that i am writing css that will wrap the text properly and not look stupid. do we want to add a line limit to avoid messages this long?}</p>
+                                        <p class="alert-details">{Safety tip desc here}</p>
                                     </div>
                                     <span class="alert-time">30 min ago</span>
                                 </div>
@@ -134,9 +134,9 @@
                                 <span class="stat-change neutral">0 <i class="fas fa-minus"></i></span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-label">Response Rate</span>
-                                <span class="stat-value">95%</span>
-                                <span class="stat-change positive">+5% <i class="fas fa-arrow-up"></i></span>
+                                <span class="stat-label">Solved Cases</span>
+                                <span class="stat-value">7</span>
+                                <span class="stat-change positive">+10% <i class="fas fa-arrow-up"></i></span>
                             </div>
                         </div>
                     </section>
@@ -237,62 +237,13 @@
                     <!-- Recent Chats Panel -->
                     <div class="chat-list-panel">
                         <div class="chat-list-header">
-                            <div class="search-container">
-                                <i class="fas fa-search"></i>
-                                <input type="text" placeholder="Search conversations...">
-                            </div>
-                            <button class="new-chat-btn" title="Start a new chat">
-                                <i class="fas fa-edit"></i>
-                            </button>
+                            <!-- Removed search-container and new-chat-btn -->
                         </div>
                         <div class="chat-list">
-                            <div class="chat-item active" data-chat-id="community-chat">
-                                <div class="chat-item-avatar">
-                                    <img src="assets/avatar.svg" onerror="this.onerror=null;this.src='assets/avatar.svg';">
-                                </div>
-                                <div class="chat-item-content">
-                                    <div class="chat-item-header">
-                                        <span class="chat-item-name">Community Chat</span>
-                                        <span class="chat-item-time">Now</span>
-                                    </div>
-                                    <p class="chat-item-preview">Welcome to the community chat!</p>
-                                </div>
-                            </div>
-                            <div class="chat-item" data-chat-id="watch">
-                                <div class="chat-item-avatar">
-                                    <img src="assets/avatar.svg" onerror="this.onerror=null;this.src='assets/avatar.svg';">
-                                </div>
-                                <div class="chat-item-content">
-                                    <div class="chat-item-header">
-                                        <span class="chat-item-name">Neighborhood Watch</span>
-                                        <span class="chat-item-time">2m ago</span>
-                                    </div>
-                                    <p class="chat-item-preview">John: Starting evening patrol. All clear on east side.</p>
-                                </div>
-                            </div>
-                            <div class="chat-item" data-chat-id="safety">
-                                <div class="chat-item-avatar">
-                                    <img src="assets/avatar.svg" alt="Safety Committee" onerror="this.onerror=null;this.src='assets/avatar.svg';">
-                                </div>
-                                <div class="chat-item-content">
-                                    <div class="chat-item-header">
-                                        <span class="chat-item-name">Safety Committee</span>
-                                        <span class="chat-item-time">15m ago</span>
-                                    </div>
-                                    <p class="chat-item-preview">Sarah: Updated emergency response plan attached for review</p>
-                                </div>
-                            </div>
-                            <div class="chat-item" data-chat-id="events">
-                                <div class="chat-item-avatar">
-                                    <img src="assets/avatar.svg" alt="Community Events" onerror="this.onerror=null;this.src='assets/avatar.svg';">
-                                </div>
-                                <div class="chat-item-content">
-                                    <div class="chat-item-header">
-                                        <span class="chat-item-name">Community Events</span>
-                                        <span class="chat-item-time">30m ago</span>
-                                    </div>
-                                    <p class="chat-item-preview">🎉 Weekend farmers market: 20+ vendors confirmed!</p>
-                                </div>
+                            <!-- Chat rooms will be dynamically populated by JavaScript -->
+                            <div class="chat-loading">
+                                <div class="loading-spinner"></div>
+                                <p>Loading chat rooms...</p>
                             </div>
                         </div>
                     </div>
@@ -312,10 +263,8 @@
                             <button class="attach-button" title="Attach file">
                                 <i class="fas fa-paperclip"></i>
                             </button>
+                            <input type="file" id="chat-image-input" accept="image/*" style="display:none;">
                             <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off">
-                            <button class="emoji-button" title="Add emoji">
-                                <i class="fas fa-smile"></i>
-                            </button>
                             <button id="send-button">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
@@ -739,8 +688,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-    <script src="scripts/chat.js"></script>
+    <script type="module" src="scripts/chat.js"></script>
 
     <!-- Place this just before </body> -->
     <div id="chatInfoModal" class="modal" style="display:none;">
