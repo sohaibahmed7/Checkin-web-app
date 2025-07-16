@@ -104,12 +104,10 @@ function updateMapMarkers(targetMap, pingsList = allPings, category = 'all') {
 }
 
 // Global function to render pings
-function renderPings(pingsToRender, containerId = 'recent-updates-container') {
+async function renderPings(pingsToRender, containerId = 'recent-updates-container') {
+    const isAdmin = localStorage.getItem('isAdmin') === 'true';
     const container = document.getElementById(containerId) || document.querySelector(`.${containerId}`);
-    if (!container) {
-        console.warn(`renderPings: Container '${containerId}' not found in DOM.`);
-        return;
-    }
+    if (!container) return;
 
     // Only show the 3 most recent pings in the updates section
     let pingsToDisplay = pingsToRender;
@@ -151,7 +149,7 @@ function renderPings(pingsToRender, containerId = 'recent-updates-container') {
         pingElement.className = 'feed-item';
         pingElement.innerHTML = `
             <div class="feed-avatar">
-                <img src="${userAvatar}" alt="Profile Picture" onerror="this.onerror=null;this.src='assets/avatar.svg';">
+                <img src="${userAvatar}" alt="Profile Picture" onerror="this.onerror=null;this.src='${config.DEFAULT_AVATAR}';">
             </div>
             <div class="feed-content">
                 <div class="feed-header feed-header-flex">
@@ -165,6 +163,7 @@ function renderPings(pingsToRender, containerId = 'recent-updates-container') {
                 ${photoHtml}
                 <div class="feed-actions">
                     <a href="#" class="view-on-map" data-lat="${ping.coordinates ? ping.coordinates[1] : ''}" data-lng="${ping.coordinates ? ping.coordinates[0] : ''}">View on Map</a>
+                    ${isAdmin ? `<button class="delete-ping-btn" data-ping-id="${ping.id}"><i class="fas fa-trash"></i></button>` : ''}
                 </div>
             </div>
         `;
@@ -194,6 +193,32 @@ function renderPings(pingsToRender, containerId = 'recent-updates-container') {
             link.dataset.listenerAdded = 'true';
         }
     });
+
+    // Add delete handler
+    if (isAdmin) {
+        container.querySelectorAll('.delete-ping-btn').forEach(btn => {
+            btn.addEventListener('click', async function(e) {
+                e.preventDefault();
+                if (!confirm('Are you sure you want to delete this ping? This action cannot be undone.')) return;
+                const pingId = this.getAttribute('data-ping-id');
+                try {
+                    const user = JSON.parse(localStorage.getItem('user'));
+                    const res = await fetch(config.getApiUrl(`/api/pings/${pingId}`), {
+                        method: 'DELETE',
+                        headers: { 'x-user-id': user._id }
+                    });
+                    if (res.ok) {
+                        alert('Ping deleted successfully.');
+                        fetchPings();
+                    } else {
+                        alert('Failed to delete ping.');
+                    }
+                } catch {
+                    alert('Error deleting ping.');
+                }
+            });
+        });
+    }
 }
 
 // Global function to fetch pings from the backend
@@ -881,16 +906,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function getColumnIndex(column) {
-        const headerCells = document.querySelectorAll('#reports-table thead th');
-        for (let i = 0; i < headerCells.length; i++) {
-            if (headerCells[i].textContent.trim() === column) {
-                return i;
-            }
-        }
-        return -1; // Column not found
-    }
-
     // Message actions
     const messageActions = document.querySelectorAll('.message-actions');
     messageActions.forEach(actions => {
@@ -1195,10 +1210,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const profilePreviewName = document.querySelector('.profile-preview-info h2');
         const profilePreviewEmail = document.querySelector('.profile-preview-info p');
 
-        if (profilePreviewAvatar) {
-            let avatarUrl = config.getUserAvatarUrl(user._id);
-            profilePreviewAvatar.src = avatarUrl;
-            profilePreviewAvatar.onerror = function() { this.onerror = null; this.src = avatarUrl; };
+        if (profilePreviewAvatar && user && user._id) {
+            profilePreviewAvatar.src = config.getApiUrl(`/api/user/${user._id}/profile-picture`);
+            profilePreviewAvatar.onerror = function() {
+                this.onerror = null;
+                this.src = config.DEFAULT_AVATAR;
+            };
         }
         if (profilePreviewName) {
             profilePreviewName.textContent = user.name;
@@ -1208,10 +1225,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Update form fields
-        const emailInput = document.getElementById('email');
-        const phoneInput = document.getElementById('phone');
-        if (emailInput) emailInput.value = user.email;
-        if (phoneInput) phoneInput.value = user.number || '';
+        document.getElementById('email').value = user.email;
+        document.getElementById('phone').value = user.phoneNumber;
         // Clear password fields
         document.getElementById('oldPassword').value = '';
         document.getElementById('newPassword').value = '';
@@ -1278,7 +1293,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const payload = {
             userId: user._id,
             email: emailInput.value,
-            number: phoneInput.value,
+            phoneNumber: phoneInput.value,
         };
         if (profilePictureBase64) payload.profile_picture_base64 = profilePictureBase64;
         const passwordFieldsFilled = oldPassword && newPassword && confirmNewPassword;
@@ -1809,7 +1824,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Helper for day comparison
     function isSameDay(d1, d2) {
-        return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+        return d1.getFullYear() === d2.getFullYear() 
+        && d1.getMonth() === d2.getMonth() 
+        && d1.getDate() === d2.getDate();
     }
 
     // Call this when reports tab is shown or data is loaded
@@ -1897,7 +1914,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const pingElement = document.createElement('div');
             pingElement.className = `feed-item ${statusClass} ${ping.type}`;
             pingElement.innerHTML = `
-                <div class=\"feed-avatar\">\n                    <img src=\"${userAvatar}\" alt=\"Profile Picture\" onerror=\"this.onerror=null;this.src='assets/avatar.svg';\">\n                    <span class=\"status ${statusClass}\"></span>\n                </div>\n                <div class=\"feed-content\">\n                    <div class=\"feed-header\">\n                        <span class=\"feed-user\">${userName}</span>\n                        <span class=\"feed-time\">${formatTimestamp(ping.timestamp)}</span>\n                    </div>\n                    <p class=\"feed-text\">${ping.description || ''}</p>\n                    ${photoHtml}\n                    ${reactionsBar}\n                    <div class=\"view-on-map-bubble\">\n                        <button class=\"view-on-map-btn\" title=\"View on Map\" data-lat=\"${ping.coordinates ? ping.coordinates[1] : ''}\" data-lng=\"${ping.coordinates ? ping.coordinates[0] : ''}\">View on Map</button>\n                    </div>\n                    <div class=\"feed-actions-icons\">\n                        <button class=\"feed-action-icon emoji-btn\" title=\"React\"><i class=\"far fa-smile\"></i></button>\n                        <button class=\"feed-action-icon reply-btn\" title=\"Reply\"><i class=\"fas fa-reply\"></i></button>\n                    </div>\n                </div>\n            `;
+                <div class=\"feed-avatar\">\n                    <img src=\"${userAvatar}\" alt=\"Profile Picture\" onerror=\"this.onerror=null;this.src='${config.DEFAULT_AVATAR}';\">\n                    <span class=\"status ${statusClass}\"></span>\n                </div>\n                <div class=\"feed-content\">\n                    <div class=\"feed-header\">\n                        <span class=\"feed-user\">${userName}</span>\n                        <span class=\"feed-time\">${formatTimestamp(ping.timestamp)}</span>\n                    </div>\n                    <p class=\"feed-text\">${ping.description || ''}</p>\n                    ${photoHtml}\n                    ${reactionsBar}\n                    <div class=\"view-on-map-bubble\">\n                        <button class=\"view-on-map-btn\" title=\"View on Map\" data-lat=\"${ping.coordinates ? ping.coordinates[1] : ''}\" data-lng=\"${ping.coordinates ? ping.coordinates[0] : ''}\">View on Map</button>\n                    </div>\n                    <div class=\"feed-actions-icons\">\n                        <button class=\"feed-action-icon emoji-btn\" title=\"React\"><i class=\"far fa-smile\"></i></button>\n                        <button class=\"feed-action-icon reply-btn\" title=\"Reply\"><i class=\"fas fa-reply\"></i></button>\n                    </div>\n                </div>\n            `;
             container.appendChild(pingElement);
         });
         // Add emoji picker logic
@@ -2085,20 +2102,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Add manual close logic: close popup only if clicking outside the popup content
-    if (targetMap && targetMap.getContainer) {
-        const mapContainer = targetMap.getContainer();
-        // Remove any previous handler to avoid duplicates
-        mapContainer.removeEventListener('mousedown', window._mapPopupCloseHandler, true);
-        window._mapPopupCloseHandler = function handleMapClick(e) {
-            const popupContent = document.querySelector('.mapboxgl-popup-content');
-            if (popup.isOpen() && popupContent && !popupContent.contains(e.target)) {
-                popup.remove();
-            }
-        };
-        mapContainer.addEventListener('mousedown', window._mapPopupCloseHandler, true);
-    }
-
     // Add event delegation for click-to-enlarge on evidence images in report details (top-level, always active)
     if (!window._evidenceImageModalHandlerSet) {
         document.body.addEventListener('click', function(e) {
@@ -2121,13 +2124,34 @@ document.addEventListener('DOMContentLoaded', () => {
             createImageModal(img.src);
         });
     });
-}); 
 
-// Helper function to compare only year, month, and day
-function isSameDay(date1, date2) {
-    return date1.getFullYear() === date2.getFullYear() &&
-           date1.getMonth() === date2.getMonth() &&
-           date1.getDate() === date2.getDate();
+    // On dashboard load, check if user is admin of their neighborhood
+    async function checkIfUserIsAdminOnDashboard() {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || !user._id) return false;
+        try {
+            // Fetch the user's neighborhood by user ID
+            const res = await fetch(config.getApiUrl(`${config.API_ENDPOINTS.NEIGHBORHOOD}/${user._id}`), {
+                headers: { 'x-user-id': user._id }
+            });
+            if (!res.ok) return false;
+            const neighborhood = await res.json();
+            // Admin: user is admin if they created the neighborhood
+            const isAdmin = neighborhood.createdBy && String(neighborhood.createdBy) === String(user._id);
+            localStorage.setItem('isAdmin', isAdmin ? 'true' : 'false');
+            return isAdmin;
+        } catch {
+            return false;
+        }
+    }
+    // Call this function on dashboard load (e.g., in DOMContentLoaded)
+    checkIfUserIsAdminOnDashboard();
+});
+
+function isSameDay(d1, d2) {
+    return d1.getFullYear() === d2.getFullYear() 
+    && d1.getMonth() === d2.getMonth() 
+    && d1.getDate() === d2.getDate();
 }
 
 function getPingTypeIcon(type) {
@@ -2291,7 +2315,7 @@ function renderReportsTable(reports) {
 
         // Avatar logic
         let userAvatar = config.getUserAvatarUrl(report.user && report.user._id ? report.user._id : null);
-        let reportAvatar = `<img src="${userAvatar}" alt="${report.user ? (report.user.firstName + ' ' + report.user.lastName) : 'User'}" class="report-avatar">`;
+        let reportAvatar = `<img src="${userAvatar}" alt="${report.user ? (report.user.firstName + ' ' + report.user.lastName) : 'User'}" class="report-avatar" onerror="this.onerror=null;this.src='${config.DEFAULT_AVATAR}';">`;
 
         // Evidence icon
         let evidenceHtml = hasEvidence
@@ -2353,7 +2377,7 @@ function renderReportsTable(reports) {
                 <div class="evidence-item">
                     <img src="https://api-3ffpwchysq-uc.a.run.app/api/ping/${report._id}/photo" 
                          alt="Report evidence" 
-                         onerror="this.onerror=null;this.src='assets/avatar.svg';">
+                         onerror="this.onerror=null;this.src='${config.DEFAULT_AVATAR}';">
                 </div>
             </div>`;
         } else if (report.evidence && report.evidence.length > 0) {

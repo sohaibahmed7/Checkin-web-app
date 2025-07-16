@@ -22,6 +22,7 @@ const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const {config} = require("dotenv");
 const admin = require("firebase-admin");
+const path = require("path");
 
 config({path: __dirname + "/.env"});
 
@@ -160,7 +161,7 @@ const Ping = mongoose.model("Ping", pingSchema);
 const userSchema = new mongoose.Schema({
   firstName: {type: String, required: true},
   lastName: {type: String, required: true},
-  number: {type: String, default: "1111111111"},
+  phoneNumber: {type: Number, default: null},
   email: {type: String, required: true, unique: true},
   password: {type: String, required: true},
   is_moderator: {type: Boolean, default: false},
@@ -194,8 +195,7 @@ const ContactMessage = mongoose.model("ContactMessage", contactMessageSchema);
 const neighborhoodSchema = new mongoose.Schema({
   inviteCode: {type: String, required: true, unique: true},
   name: {type: String, required: true},
-  moderators: [{type: String}],
-  permissions: [{type: String}],
+  moderators: [{type: mongoose.Schema.Types.ObjectId, ref: "User"}],
   bounds: {
     type: {
       type: String,
@@ -207,8 +207,8 @@ const neighborhoodSchema = new mongoose.Schema({
       required: true,
     },
   },
+  createdBy: {type: mongoose.Schema.Types.ObjectId, ref: "User", required: true},
   createdAt: {type: Date, default: Date.now},
-  createdBy: {type: mongoose.Schema.Types.ObjectId, ref: "User"},
 });
 
 const Neighborhood = mongoose.model("Neighborhood", neighborhoodSchema);
@@ -328,7 +328,7 @@ app.get("/view-users", async (req, res) => {
           <tr>
             <td>${user.name}</td>
             <td>${user.email}</td>
-            <td>${user.number}</td>
+            <td>${user.phoneNumber}</td>
             <td>${user.is_moderator ? "Yes" : "No"}</td>
             <td>${user.is_verified ? "Yes" : "No"}</td>
             <td>${user.createdAt}</td>
@@ -350,19 +350,18 @@ app.get("/view-users", async (req, res) => {
 // View Neighborhoods Route
 app.get("/view-neighborhoods", async (req, res) => {
   try {
-    const neighborhoods = await Neighborhood.find().sort({createdAt: -1}).lean();
+    const neighborhoods = await Neighborhood.find().sort({createdAt: -1}).populate("moderators", "firstName lastName email").lean();
     let html = "<h1>Neighborhoods</h1>";
     if (neighborhoods.length === 0) {
       html += "<p>No neighborhoods found.</p>";
     } else {
       html += "<table border=\"1\">";
-      html += "<tr><th>Name</th><th>Invite Code</th><th>Moderators</th><th>Permissions</th><th>Bounds (first 2 points)</th><th>Created At</th></tr>";
+      html += "<tr><th>Name</th><th>Invite Code</th><th>Moderators</th><th>Bounds (first 2 points)</th><th>Created At</th></tr>";
       neighborhoods.forEach((n) => {
         html += `<tr>
                   <td>${n.name}</td>
                   <td>${n.inviteCode}</td>
-                  <td>${n.moderators && n.moderators.length ? n.moderators.join("<br>") : "None"}</td>
-                  <td>${n.permissions && n.permissions.length ? n.permissions.join("<br>") : "None"}</td>
+                  <td>${n.moderators && n.moderators.length ? n.moderators.map((m) => m.firstName + " " + m.lastName + " (" + m.email + ")").join("<br>") : "None"}</td>
                   <td>${n.bounds && n.bounds.coordinates && n.bounds.coordinates[0] ?
                       n.bounds.coordinates[0].slice(0, 2).map((pt) => `[${pt[0].toFixed(4)}, ${pt[1].toFixed(4)}]`).join("<br>") : "N/A"}</td>
                   <td>${n.createdAt.toLocaleString()}</td>
@@ -380,7 +379,7 @@ app.get("/view-neighborhoods", async (req, res) => {
 // --- Registration ---
 app.post("/api/register", express.json(), async (req, res) => {
   try {
-    const {firstName, lastName, number, email, password, is_moderator, inviteCode, neighborhoodId, profile_picture_base64} = req.body;
+    const {firstName, lastName, phoneNumber, email, password, is_moderator, inviteCode, neighborhoodId, profile_picture_base64} = req.body;
     if (!firstName || !lastName || !email || !password) {
       return res.status(400).json({message: "Missing required fields."});
     }
@@ -436,7 +435,7 @@ app.post("/api/register", express.json(), async (req, res) => {
     const userData = {
       firstName,
       lastName,
-      number,
+      phoneNumber,
       email,
       password: hashedPassword,
       is_moderator: Boolean(is_moderator),
@@ -552,6 +551,33 @@ app.post("/api/pings", express.json(), async (req, res) => {
   res.status(201).json(ping);
 });
 
+// DELETE endpoint for deleting a ping by ID (admin only)
+app.delete("/api/pings/:id", async (req, res) => {
+  try {
+    const userId = req.headers["x-user-id"];
+    if (!userId) {
+      return res.status(401).json({message: "Unauthorized: User ID required."});
+    }
+    const ping = await Ping.findById(req.params.id);
+    if (!ping) {
+      return res.status(404).json({message: "Ping not found."});
+    }
+    // Find the neighborhood and check admin
+    const neighborhood = await Neighborhood.findById(ping.neighborhoodId);
+    if (!neighborhood) {
+      return res.status(404).json({message: "Neighborhood not found."});
+    }
+    if (String(neighborhood.createdBy) !== String(userId)) {
+      return res.status(403).json({message: "Forbidden: Only the admin can delete pings."});
+    }
+    await ping.deleteOne();
+    res.json({message: "Ping deleted successfully."});
+  } catch (err) {
+    console.error("Error deleting ping:", err);
+    res.status(500).json({message: "Error deleting ping."});
+  }
+});
+
 // --- Users ---
 app.post("/api/verify-email", async (req, res) => {
   try {
@@ -609,6 +635,7 @@ app.post("/api/login", async (req, res) => {
         lastName: user.lastName,
         name: user.name,
         email: user.email,
+        phoneNumber: user.phoneNumber,
         is_moderator: user.is_moderator,
         neighborhoodId: user.neighborhoodId,
       },
@@ -722,7 +749,7 @@ app.get("/api/user/settings", async (req, res) => {
       lastName: user.lastName,
       name: user.name,
       email: user.email,
-      number: user.number,
+      phoneNumber: user.phoneNumber,
       is_moderator: user.is_moderator,
     });
   } catch (err) {
@@ -733,7 +760,7 @@ app.get("/api/user/settings", async (req, res) => {
 
 app.put("/api/user/settings", express.json(), async (req, res) => {
   try {
-    const {userId, number, email, profile_picture_base64, oldPassword, newPassword, confirmNewPassword} = req.body;
+    const {userId, phoneNumber, email, profile_picture_base64, oldPassword, newPassword, confirmNewPassword} = req.body;
     if (!userId || userId === "undefined") {
       return res.status(400).json({message: "User ID is required for updating settings."});
     }
@@ -742,7 +769,7 @@ app.put("/api/user/settings", express.json(), async (req, res) => {
       return res.status(404).json({message: "User not found"});
     }
     let emailChanged = false;
-    if (number) user.number = number;
+    if (phoneNumber) user.phoneNumber = phoneNumber;
     if (email && email !== user.email) {
       user.email = email;
       user.is_verified = false;
@@ -828,7 +855,7 @@ app.put("/api/user/settings", express.json(), async (req, res) => {
         lastName: user.lastName,
         name: user.name,
         email: user.email,
-        number: user.number,
+        phoneNumber: user.phoneNumber,
         is_moderator: user.is_moderator,
       },
       emailChanged,
@@ -840,22 +867,40 @@ app.put("/api/user/settings", express.json(), async (req, res) => {
 });
 
 // --- Neighborhoods ---
-app.post("/api/user/neighborhood/create-neighborhood", async (req, res) => {
+app.post("/api/neighborhood/create", express.json(), async (req, res) => {
   try {
-    const {inviteCode, neighborhoodName, moderators, permissions, bounds} = req.body;
+    const {name, boundary, inviteCode} = req.body;
+    if (!name || !boundary || !inviteCode) {
+      return res.status(400).json({message: "Missing required fields."});
+    }
+    const userId =
+      (req.session && req.session.user && req.session.user._id) ||
+      (req.user && req.user._id) ||
+      req.headers["x-user-id"];
+    if (!userId) {
+      return res.status(401).json({message: "Unauthorized: User not found in session."});
+    }
+    const user = await User.findById(userId);
+    if (!user || !user.is_moderator || user.neighborhoodId) {
+      return res.status(403).json({message: "Forbidden: Only new moderators can create a neighborhood."});
+    }
+    // Create neighborhood with the creating moderator as the first moderator
     const neighborhood = new Neighborhood({
       inviteCode,
-      name: neighborhoodName,
-      moderators,
-      permissions,
+      name,
+      moderators: [user._id],
       bounds: {
         type: "Polygon",
-        coordinates: [bounds],
+        coordinates: [boundary],
       },
-      createdBy: null,
+      createdBy: user._id,
+      createdAt: new Date(),
     });
     await neighborhood.save();
-    res.status(201).json({message: "Neighborhood created successfully"});
+    // Update user
+    user.neighborhoodId = neighborhood._id;
+    await user.save();
+    res.status(201).json({message: "Neighborhood created successfully", neighborhood});
   } catch (error) {
     console.error("Error creating neighborhood:", error);
     res.status(500).json({message: "Failed to create neighborhood"});
@@ -877,17 +922,33 @@ app.post("/api/validate-invite-code", async (req, res) => {
   }
 });
 
-app.get("/api/neighborhood/:inviteCode", async (req, res) => {
-  try {
-    const neighborhood = await Neighborhood.findOne({inviteCode: req.params.inviteCode});
-    if (neighborhood) {
-      res.status(200).json(neighborhood);
-    } else {
-      res.status(404).json({message: "Neighborhood not found"});
+// --- Generate Unique Neighborhood Invite Code ---
+app.get("/api/neighborhood/generate-invite-code", async (req, res) => {
+  function generateCode() {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    for (let i = 0; i < 5; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-  } catch (error) {
-    console.error("Error fetching neighborhood:", error);
-    res.status(500).json({message: "Error fetching neighborhood"});
+    return code;
+  }
+  async function getUniqueCode() {
+    let code;
+    let exists = true;
+    let attempts = 0;
+    while (exists && attempts < 20) {
+      code = generateCode();
+      exists = await Neighborhood.exists({inviteCode: code});
+      attempts++;
+    }
+    if (exists) throw new Error("Could not generate unique code");
+    return code;
+  }
+  try {
+    const inviteCode = await getUniqueCode();
+    res.json({inviteCode});
+  } catch (err) {
+    res.status(500).json({message: "Failed to generate invite code"});
   }
 });
 
@@ -956,17 +1017,20 @@ app.get("/api/user/neighborhood/:userId", async (req, res) => {
   }
 });
 
-// Endpoint to serve user profile pictures
-app.get("/api/user/:id/profile-picture", async (req, res) => {
+// Serve user profile picture or default avatar
+app.get("/api/user/:userId/profile-picture", async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-    if (!user || !user.profile_picture_url) {
-      return res.status(404).send("No profile picture");
+    const user = await User.findById(req.params.userId);
+    if (user && user.profile_picture_url) {
+      // Redirect to the actual Firebase Storage URL
+      return res.redirect(user.profile_picture_url);
+    } else {
+      // Serve the default avatar image
+      return res.sendFile(path.join(__dirname, "assets", "default-avatar.png"));
     }
-    // Redirect to the actual Firebase Storage URL
-    res.redirect(user.profile_picture_url);
   } catch (err) {
-    res.status(500).send("Error fetching profile picture");
+    // On error, serve the default avatar as a fallback
+    return res.sendFile(path.join(__dirname, "assets", "default-avatar.png"));
   }
 });
 

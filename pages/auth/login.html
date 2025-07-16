@@ -237,7 +237,11 @@
                     loginButton.disabled = true;
                     // Redirect to dashboard or home page
                     setTimeout(() => {
-                        window.location.href = '/pages/dashboard/index.html';
+                        if (data.user && data.user.is_moderator && !data.user.neighborhoodId) {
+                            window.location.href = '/pages/neighborhood/create-neighborhood.html';
+                        } else {
+                            window.location.href = '/pages/dashboard/index.html';
+                        }
                     }, 1000);
                 } else {
                     // If the error is for unverified email, redirect to verification page
