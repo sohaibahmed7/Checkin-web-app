@@ -11,26 +11,59 @@
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css" rel="stylesheet">
     <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.5.0/mapbox-gl-draw.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.5.0/mapbox-gl-draw.js"></script>
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" type="image/png" href="/favicon.svg">
     <script src="/config.js"></script>
     <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: #faf9fb;
+        }
         .container {
             max-width: 800px;
-            margin: 50px auto;
+            margin: 60px auto 50px auto;
             padding: 20px;
             background: white;
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-top: 50px;
         }
-        .invite-code {
-            font-size: 24px;
+        .invite-code-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .invite-code-box {
+            font-size: 28px;
             font-weight: bold;
             color: #6b21a8;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #6b21a8;
+            background: #f3e8ff;
             border-radius: 8px;
+            padding: 12px 32px;
+            letter-spacing: 2px;
+            border: 2px solid #6b21a8;
+            min-width: 140px;
             text-align: center;
+        }
+        .copy-button {
+            background: #6b21a8;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .copy-button:hover {
+            background: #934ccf;
         }
         .form-group {
             margin-bottom: 20px;
@@ -51,26 +84,6 @@
             margin-bottom: 20px;
             border-radius: 8px;
         }
-        .moderator-section {
-            margin-top: 20px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-        .permissions-list {
-            margin-top: 10px;
-        }
-        .permissions-list label {
-            display: block;
-            margin-bottom: 10px;
-            padding: 8px;
-            background: white;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .permissions-list label:hover {
-            background: #f0f0f0;
-        }
         .create-button {
             background: #6b21a8;
             color: white;
@@ -81,38 +94,35 @@
             font-weight: 500;
             width: 100%;
             margin-top: 20px;
+            font-size: 18px;
         }
         .create-button:hover {
             background: #934ccf;
         }
-        .moderator-list {
+        .address-search-group {
+            position: relative;
+        }
+        #addressSuggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid #eee;
+            z-index: 1000;
             list-style: none;
+            margin: 0;
             padding: 0;
+            max-height: 180px;
+            overflow-y: auto;
         }
-        .moderator-list li {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background: white;
-            margin-bottom: 5px;
-            border-radius: 4px;
-        }
-        .remove-moderator {
-            color: #dc3545;
+        #addressSuggestions li {
+            padding: 0.7rem 1rem;
             cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
         }
-        .check-all-button {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-bottom: 10px;
-        }
-        .check-all-button:hover {
-            background: #218838;
+        #addressSuggestions li:hover {
+            background: #f5f5f5;
         }
     </style>
 </head>
@@ -129,12 +139,13 @@
             <a href="../info/contact.html">Contact</a>
         </div>
     </nav>
+    <div style="height: 32px;"></div>
 
     <div class="container">
-        <h1>Create Your Neighborhood</h1>
-        <div class="invite-code">
-            Your Invite Code: <span id="inviteCode"></span>
-            <button onclick="copyInviteCode()" class="copy-button">
+        <h1 style="margin-bottom: 28px;">Create Your Neighborhood</h1>
+        <div class="invite-code-row">
+            <span class="invite-code-box" id="inviteCode">Loading...</span>
+            <button onclick="copyInviteCode()" class="copy-button" type="button">
                 <i class="fas fa-copy"></i> Copy
             </button>
         </div>
@@ -143,229 +154,19 @@
                 <label for="neighborhoodName">Neighborhood Name</label>
                 <input type="text" id="neighborhoodName" required placeholder="Enter your neighborhood name">
             </div>
+            <div class="form-group address-search-group">
+                <label for="addressSearch">Neighborhood Address</label>
+                <input type="text" id="addressSearch" required placeholder="Search for an address or location">
+                <ul id="addressSuggestions"></ul>
+            </div>
             <div class="form-group">
                 <label>Draw Neighborhood Boundaries</label>
                 <div id="map"></div>
-            </div>
-            <div class="moderator-section">
-                <h2>Moderators</h2>
-                <div class="form-group">
-                    <label for="moderatorPhone">Add Moderator Phone Number</label>
-                    <input type="tel" id="moderatorPhone" placeholder="Enter phone number">
-                    <button type="button" id="addModerator" class="add-button">Add Moderator</button>
-                </div>
-                <ul id="moderatorsList" class="moderator-list"></ul>
-                <h3>Moderator Permissions</h3>
-                <button type="button" id="checkAll" class="check-all-button">Check All</button>
-                <div class="permissions-list">
-                    <label><input type="checkbox" checked> Edit Chats</label>
-                    <label><input type="checkbox" checked> Remove Guests</label>
-                    <label><input type="checkbox" checked> See Full Data</label>
-                    <label><input type="checkbox" checked> Manage Moderators</label>
-                    <label><input type="checkbox" checked> View Analytics</label>
-                    <label><input type="checkbox" checked> Send Announcements</label>
-                </div>
             </div>
             <button type="submit" class="create-button">Create Neighborhood</button>
         </form>
     </div>
 
-    <script>
-        // Generate a random 5-digit invite code
-        const inviteCode = Math.floor(10000 + Math.random() * 90000).toString();
-        document.getElementById('inviteCode').textContent = inviteCode;
-
-        // Copy invite code to clipboard
-        function copyInviteCode() {
-            navigator.clipboard.writeText(inviteCode).then(() => {
-                alert('Invite code copied to clipboard!');
-            });
-        }
-
-        // Use the same Mapbox API key as the dashboard
-        mapboxgl.accessToken = 'pk.eyJ1IjoiYW5zaG1ha2thciIsImEiOiJjbTl2ams5OGcwbGwwMm1vbGpiaDduczg1In0.4yzUyxSxV9lHLtbRQfjdWA';
-        const map = new mapboxgl.Map({
-            container: 'map',
-            style: 'mapbox://styles/mapbox/streets-v12',
-            center: [-81.24, 43.02], // London, ON coordinates
-            zoom: 13
-        });
-        map.scrollZoom.disable();
-        map.touchZoomRotate.disable();
-        map.addControl(new mapboxgl.NavigationControl());
-
-        // Add Mapbox Draw for polygon (rectangle) drawing
-        const Draw = new MapboxDraw({
-            displayControlsDefault: false,
-            controls: {
-                polygon: true,
-                trash: true
-            },
-            styles: [
-                // ACTIVE (being drawn)
-                {
-                    id: 'gl-draw-polygon-fill',
-                    type: 'fill',
-                    filter: ['all', ['==', '$type', 'Polygon'], ['==', 'mode', 'draw_polygon']],
-                    paint: {
-                        'fill-color': '#ff8800', // Darker orange
-                        'fill-opacity': 0.5
-                    }
-                },
-                // INACTIVE (already drawn)
-                {
-                    id: 'gl-draw-polygon-fill-inactive',
-                    type: 'fill',
-                    filter: ['all', ['==', '$type', 'Polygon'], ['!=', 'mode', 'draw_polygon']],
-                    paint: {
-                        'fill-color': '#ff8800', // Darker orange
-                        'fill-opacity': 0.5
-                    }
-                },
-                // OUTLINE
-                {
-                    id: 'gl-draw-polygon-stroke-active',
-                    type: 'line',
-                    filter: ['all', ['==', '$type', 'Polygon'], ['==', 'active', 'true']],
-                    layout: {
-                        'line-cap': 'round',
-                        'line-join': 'round'
-                    },
-                    paint: {
-                        'line-color': '#ff6600', // Even darker orange
-                        'line-width': 3
-                    }
-                },
-                {
-                    id: 'gl-draw-polygon-stroke-inactive',
-                    type: 'line',
-                    filter: ['all', ['==', '$type', 'Polygon'], ['!=', 'active', 'true']],
-                    layout: {
-                        'line-cap': 'round',
-                        'line-join': 'round'
-                    },
-                    paint: {
-                        'line-color': '#ff6600',
-                        'line-width': 2
-                    }
-                },
-                // VERTICES
-                {
-                    id: 'gl-draw-polygon-midpoint',
-                    type: 'circle',
-                    filter: ['all', ['==', '$type', 'Point'], ['==', 'meta', 'midpoint']],
-                    paint: {
-                        'circle-radius': 5,
-                        'circle-color': '#ff6600'
-                    }
-                },
-                {
-                    id: 'gl-draw-polygon-and-line-vertex-halo-active',
-                    type: 'circle',
-                    filter: ['all', ['==', '$type', 'Point'], ['==', 'meta', 'vertex'], ['==', 'active', 'true']],
-                    paint: {
-                        'circle-radius': 8,
-                        'circle-color': '#fff'
-                    }
-                },
-                {
-                    id: 'gl-draw-polygon-and-line-vertex-active',
-                    type: 'circle',
-                    filter: ['all', ['==', '$type', 'Point'], ['==', 'meta', 'vertex'], ['==', 'active', 'true']],
-                    paint: {
-                        'circle-radius': 6,
-                        'circle-color': '#ff6600'
-                    }
-                }
-            ]
-        });
-        map.addControl(Draw, 'top-left');
-
-        // Show instructions for drawing a rectangle
-        const mapLabel = document.createElement('div');
-        mapLabel.style.margin = '10px 0';
-        mapLabel.style.fontWeight = 'bold';
-        mapLabel.style.color = '#6b21a8';
-        mapLabel.innerHTML = 'Use the polygon tool (top left) to draw a rectangle boundary on the map.<br><span style="color:#ff6600;font-weight:normal;">Double-click (or double-tap) to finish drawing.</span>';
-        document.getElementById('map').parentElement.insertBefore(mapLabel, document.getElementById('map'));
-
-        // Store the drawn polygon coordinates
-        let bounds = null;
-        map.on('draw.create', (e) => {
-            const feature = e.features[0];
-            if (feature && feature.geometry && feature.geometry.type === 'Polygon') {
-                bounds = feature.geometry.coordinates[0];
-            }
-        });
-        map.on('draw.update', (e) => {
-            const feature = e.features[0];
-            if (feature && feature.geometry && feature.geometry.type === 'Polygon') {
-                bounds = feature.geometry.coordinates[0];
-            }
-        });
-        map.on('draw.delete', () => {
-            bounds = null;
-        });
-
-        // Only allow this page to be seen once per moderator (after creation, redirect to dashboard)
-        document.getElementById('neighborhoodForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!bounds) {
-                alert('Please draw the neighborhood boundaries on the map');
-                return;
-            }
-            const neighborhoodName = document.getElementById('neighborhoodName').value;
-            const moderators = Array.from(document.querySelectorAll('#moderatorsList li')).map(li => li.textContent.replace('×', '').trim());
-            const permissions = Array.from(document.querySelectorAll('.permissions-list input:checked')).map(input => input.parentElement.textContent.trim());
-            try {
-                const response = await fetch(config.getApiUrl(`${config.API_ENDPOINTS.NEIGHBORHOOD}/create-neighborhood`), {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        inviteCode,
-                        neighborhoodName,
-                        moderators,
-                        permissions,
-                        bounds
-                    })
-                });
-                if (response.ok) {
-                    // Mark that the moderator has created a neighborhood (localStorage/session)
-                    localStorage.setItem('neighborhoodCreated', 'true');
-                    window.location.href = 'dashboard/index.html';
-                } else {
-                    alert('Failed to create neighborhood. Please try again.');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('An error occurred. Please try again.');
-            }
-        });
-
-        // Prevent access if already created
-        if (localStorage.getItem('neighborhoodCreated') === 'true') {
-            window.location.href = 'dashboard/index.html';
-        }
-
-        // Add moderator
-        document.getElementById('addModerator').addEventListener('click', () => {
-            const phone = document.getElementById('moderatorPhone').value;
-            if (phone) {
-                const li = document.createElement('li');
-                li.innerHTML = `${phone} <span class="remove-moderator" onclick="this.parentElement.remove()">×</span>`;
-                document.getElementById('moderatorsList').appendChild(li);
-                document.getElementById('moderatorPhone').value = '';
-            }
-        });
-
-        // Check all permissions
-        document.getElementById('checkAll').addEventListener('click', () => {
-            document.querySelectorAll('.permissions-list input').forEach(input => {
-                input.checked = true;
-            });
-        });
-    </script>
+    <script src="create-neighborhood.js"></script>
 </body>
 </html>

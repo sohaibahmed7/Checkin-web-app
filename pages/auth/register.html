@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="../../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" type="image/png" href="/favicon.svg">
     <style>
         .register-container {
             max-width: 500px;
@@ -209,19 +209,19 @@
                     <div class="error-message" id="lastNameError"></div>
                 </div>
             </div>
-            
+
             <div class="form-group">
                 <label for="email">Email Address</label>
                 <input type="email" id="email" name="email" required autocomplete="off">
                 <div class="error-message" id="emailError"></div>
             </div>
-            
+
             <div class="form-group">
-                <label for="number">Phone Number (Optional)</label>
-                <input type="tel" id="number" name="number" autocomplete="off">
-                <div class="error-message" id="numberError"></div>
+                <label for="phoneNumber">Phone Number (Optional)</label>
+                <input type="tel" id="phoneNumber" name="phoneNumber" autocomplete="off" pattern="\d{10}" maxlength="10" minlength="10">
+                <div class="error-message" id="phoneNumberError"></div>
             </div>
-            
+
             <div class="form-group password-toggle">
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required autocomplete="off">
@@ -379,7 +379,7 @@
             const firstName = document.getElementById('firstName').value.trim();
             const lastName = document.getElementById('lastName').value.trim();
             const email = document.getElementById('email').value.trim();
-            const number = document.getElementById('number').value.trim();
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             const isModerator = document.getElementById('moderator-checkbox').checked;
@@ -393,6 +393,11 @@
             }
             if (!lastName) {
                 showError(document.getElementById('lastNameError'), 'Please enter your last name');
+                return;
+            }
+            // Phone number validation: must be exactly 10 digits if provided
+            if (phoneNumber && !/^\d{10}$/.test(phoneNumber)) {
+                showError(document.getElementById('phoneNumberError'), 'Phone number must be exactly 10 digits');
                 return;
             }
             if (!email) {
@@ -446,7 +451,7 @@
                 const data = {
                     firstName,
                     lastName,
-                    number,
+                    phoneNumber: phoneNumber,
                     email,
                     password,
                     is_moderator: isModerator,
