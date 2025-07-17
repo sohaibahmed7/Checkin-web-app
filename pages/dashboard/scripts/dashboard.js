@@ -209,7 +209,7 @@ async function renderPings(pingsToRender, containerId = 'recent-updates-containe
                     });
                     if (res.ok) {
                         alert('Ping deleted successfully.');
-                        fetchPings();
+                        await fetchPings();
                     } else {
                         alert('Failed to delete ping.');
                     }
@@ -295,8 +295,9 @@ async function fetchPings() {
         // Update maps with filtered data instead of all pings
         updatePingsFeed(homeFiltered); // Display filtered pings initially
         updateMapMarkers(map, homeFiltered, homeCategory);       // Update home map with filtered data
+        updatePingsFeed(liveFiltered, 'ping-details-container');
         updateMapMarkers(liveMap, liveFiltered, liveCategory);   // Update live map with filtered data
-        
+
         // Reset current displayed pings and render for new data
         currentPingsDisplayed = 0;
         // Initialize the activity chart only after pings are loaded
@@ -1384,8 +1385,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            // Clear user data from localStorage
-            localStorage.removeItem('user');
+            // Clear all data from localStorage
+            localStorage.clear();
             // Redirect to home page
             window.location.href = '../index.html';
         });
@@ -1510,8 +1511,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 } catch (e) {
                     // Ignore errors for now
                 }
-                // Clear localStorage
-                localStorage.removeItem('user');
+                // Clear all data from localStorage
+                localStorage.clear();
                 // Redirect to login
                 window.location.href = '/pages/auth/login.html';
             });
@@ -1605,7 +1606,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sidebarLogoutBtn) {
         sidebarLogoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            localStorage.removeItem('user');
+            localStorage.clear();
             window.location.href = '/pages/auth/login.html';
         });
     }
@@ -2256,7 +2257,24 @@ let currentReportId = null;
 // Load reports from backend
 async function loadReports() {
     try {
-        const response = await fetch(config.getApiUrl(config.API_ENDPOINTS.REPORTS));
+        // Get the user's neighborhoodId (same logic as fetchPings)
+        const user = JSON.parse(localStorage.getItem('user'));
+        let neighborhoodId = null;
+        if (user && user._id) {
+            const nRes = await fetch(config.getApiUrl(`${config.API_ENDPOINTS.NEIGHBORHOOD}/${user._id}`));
+            if (nRes.ok) {
+                const neighborhood = await nRes.json();
+                if (neighborhood && neighborhood._id) {
+                    neighborhoodId = neighborhood._id;
+                }
+            }
+        }
+        // Fetch reports for this neighborhood only
+        const response = await fetch(
+            neighborhoodId
+                ? config.getApiUrl(`${config.API_ENDPOINTS.REPORTS}?neighborhoodId=${neighborhoodId}`)
+                : config.getApiUrl(config.API_ENDPOINTS.REPORTS)
+        );
         if (!response.ok) {
             throw new Error('Failed to fetch reports');
         }

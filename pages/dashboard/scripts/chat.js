@@ -44,17 +44,29 @@ async function initializeChat() {
         await loadChatRooms();
         await listenForUnreadMessages();
 
-        // Set up chat room UI
         setupChatRoomUI();
-
-        // Join the first room (General Discussion)
-        if (chatRooms.length > 0) {
-            await switchToRoom(chatRooms[0]);
-        }
+        showChatWelcomePanel();
     } catch (error) {
         console.error('Error initializing chat:', error);
         showError('Failed to initialize chat system');
     }
+}
+
+// Show a welcome/info panel in the chat main area
+function showChatWelcomePanel() {
+    if (!messagesContainer) return;
+    messagesContainer.innerHTML = `
+        <div class="chat-welcome-panel" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:1.5rem;">
+            <div style="font-size:2.5rem;margin-bottom:1rem;">👋🏼</div>
+            <h2 style="margin-bottom:0.5rem;">Welcome to Neighborhood Chat</h2>
+            <p style="color:#666;margin-bottom:1.5rem;">Select a chatroom from the sidebar to get started.</p>
+            <ul style="color:#888;text-align:left;max-width:350px;">
+                <li><b>General Discussion</b>: Chat with your neighbors</li>
+                <li><b>Moderator Alerts</b>: Messages from moderators</li>
+                <li><b>Security Alerts</b>: Security company updates & alerts</li>
+            </ul>
+        </div>
+    `;
 }
 
 // Load chat rooms for the current neighborhood from Firestore
@@ -68,7 +80,7 @@ async function loadChatRooms() {
         // If rooms don't exist, create them (one-time setup)
         if (chatRooms.length === 0) {
             const defaultRooms = [
-                { roomType: 'general_discussion', name: 'General Discussion', description: 'Open communication for all users' },
+                { roomType: 'general_discussion', name: 'General Discussion', description: 'Open communication for all neighbors' },
                 { roomType: 'moderator_alerts', name: 'Moderator Alerts', description: 'One-way communication from moderators' },
                 { roomType: 'security_alerts', name: 'Security Alerts', description: 'One-way communication from security company' }
             ];
@@ -92,10 +104,10 @@ function setupChatRoomUI() {
         console.error('Chat sidebar not found');
         return;
     }
-    
+
     // Clear the entire sidebar content (including loading spinner)
     chatSidebar.innerHTML = '';
-    
+
     // Create chat room items
     chatRooms.forEach(room => {
         const chatItem = createChatRoomItem(room);
