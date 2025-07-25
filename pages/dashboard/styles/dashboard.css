@@ -491,6 +491,20 @@ body.dashboard {
     box-shadow: 0 6px 16px rgba(162, 89, 230, 0.4);
 }
 
+.delete-ping-btn {
+    background: #e53e3e;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 0.5rem 0.75rem;
+}
+
+.delete-ping-btn:hover, .delete-ping-btn:focus {
+    background: #b91c1c;
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(229,62,62,0.13);
+}
+
 /* Alerts History */
 .chart-filters {
     display: flex;
