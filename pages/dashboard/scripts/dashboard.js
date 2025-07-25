@@ -2767,7 +2767,9 @@ function renderReportsTable(reports) {
                 </td>
                 <td>
                   <div class="report-flex-row">
-                    <span class="description-cell" title="${report.description}">${report.description}</span>
+                    <span class="description-cell" title="${report.description}">
+                      ${report.description.length > 15 ? report.description.slice(0, 15) + '…' : report.description}
+                    </span>
                   </div>
                 </td>
                 <td>${formatTimestamp(createdAt)}</td>
