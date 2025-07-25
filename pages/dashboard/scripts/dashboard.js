@@ -2755,7 +2755,7 @@ function renderReportsTable(reports) {
                 </td>
                 <td>
                   <div class="report-flex-row">
-                    <span class="reporter-name">${report.user ? `${report.user.firstName} ${report.user.lastName}` : 'Unknown'}</span>
+                    <span class="reporter-name">${report.user ? `${report.user.firstName}<br>${report.user.lastName}` : 'Unknown'}</span>
                   </div>
                 </td>
                 <td class="type-col">

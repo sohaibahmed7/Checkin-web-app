@@ -4958,7 +4958,7 @@ input:checked + .slider:before {
 }
 
 .activity-feed-section .feed-items {
-    max-height: 540px; /* 3 cards at ~180px each, adjust as needed */
+    max-height: 560px;
     overflow-y: auto;
     padding-right: 4px;
     scroll-behavior: smooth;
@@ -6235,4 +6235,17 @@ textarea:focus, select:focus, input[type="text"]:focus {
   display: flex;
   align-items: center;
   gap: 0.5em;
+}
+
+/* User full name: first name on one line, last name on next */
+.user-fullname {
+  display: inline-block;
+  line-height: 1.1;
+}
+.user-fullname .firstname {
+  display: block;
+}
+.user-fullname .lastname {
+  display: block;
+  margin-top: 0.1em;
 }

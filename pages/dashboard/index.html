@@ -271,152 +271,141 @@
 
             <!-- Reports Tab -->
             <div class="tab-pane" id="reports">
-                <div class="reports-dashboard">
-                    <div class="reports-header">
-                        <div class="reports-header-left">
-                            <button class="quick-stats-btn">
-                                <i class="fas fa-chart-line"></i> View Quick Stats
-                            </button>
-                        </div>
-                        <div class="reports-header-right">
-                            <button class="refresh-reports-btn" onclick="refreshReports()">
-                                <i class="fas fa-sync-alt"></i> Refresh
-                            </button>
-                        </div>
+              <div class="dashboard-grid">
+                <!-- Activity Overview and Feed (side by side) -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%; align-items: stretch;">
+                  <section class="card report-activity-overview" style="min-height: 560px;">
+                    <div class="overview-header" style="display: flex; justify-content: space-between; align-items: center;">
+                      <h3 style="margin: 0;"><i class="fas fa-chart-bar"></i> Activity Overview</h3>
+                      <button class="refresh-reports-btn" onclick="refreshReports()" style="margin-left: auto;"><i class="fas fa-sync-alt"></i> Refresh</button>
                     </div>
-
-                    <div class="reports-overview">
-                        <div class="activity-chart-section">
-                            <div class="chart-header">
-                                <h3><i class="fas fa-chart-bar"></i> Activity Overview</h3>
-                                <div style="display: flex; gap: 1rem; align-items: center;">
-                                    <div class="chart-filters">
-                                        <button class="active">Week</button>
-                                        <button>Month</button>
-                                        <button>Year</button>
-                                    </div>
-                                    <div class="chart-breakdown-filters">
-                                        <div class="filter-group">
-                                            <label for="chart-type-filter">Report Type</label>
-                                            <select id="chart-type-filter" class="chart-type-filter">
-                                                <option value="all">All</option>
-                                                <option value="fire">Fire</option>
-                                                <option value="suspicious">Suspicious</option>
-                                                <option value="break-enter">Break & Enter</option>
-                                                <option value="other">Other</option>
-                                            </select>
-                                        </div>
-                                        <div class="filter-group">
-                                            <label for="chart-status-filter">Status</label>
-                                            <select id="chart-status-filter" class="chart-status-filter">
-                                                <option value="all">All</option>
-                                                <option value="solved">Solved</option>
-                                                <option value="active">Active</option>
-                                                <option value="pending">Pending</option>
-                                                <option value="investigating">Investigating</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="reportsActivityChart"></canvas>
-                            </div>
-                            <div class="chart-stats">
-                                <div class="stat-item">
-                                    <span class="stat-label">Total Reports</span>
-                                    <span class="stat-value">124</span>
-                                    <span class="stat-change positive">+12% <i class="fas fa-arrow-up"></i></span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Active Cases</span>
-                                    <span class="stat-value">8</span>
-                                    <span class="stat-change neutral">0 <i class="fas fa-minus"></i></span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Resolution Rate</span>
-                                    <span class="stat-value">92%</span>
-                                    <span class="stat-change positive">+3% <i class="fas fa-arrow-up"></i></span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="activity-feed-section">
-                            <div class="feed-header">
-                                <h3><i class="fas fa-history"></i> Active</h3>
-                                <div class="feed-filters">
-                                    <button class="active"><i class="fas fa-clock"></i> Latest</button>
-                                    <button><i class="fas fa-fire"></i> Solved</button>
-                                    <button><i class="fas fa-check-circle"></i> My Pings</button>
-                                </div>
-                            </div>
-                            <div class="feed-items">
-                                <!-- Dynamic content will be rendered here by JS -->
-                            </div>
-                        </div>
+                    <div class="chart-filters" style="margin-bottom: 0.5rem;">
+                      <button class="active">Week</button>
+                      <button>Month</button>
+                      <button>Year</button>
                     </div>
+                    <div class="chart-breakdown-filters" style="display: flex; gap: 0.7rem; margin-bottom: 0.5rem; align-items: center;">
+                      <div class="filter-group" style="margin-bottom: 0;">
+                        <label for="chart-type-filter" style="font-size: 1rem; margin-bottom: 0.1rem;">Report Type</label>
+                        <select id="chart-type-filter" class="chart-type-filter" style="padding: 0.35rem 0.7rem; font-size: 1rem; min-width: 110px; max-width: 150px; height: 2.2rem;">
+                          <option value="all">All</option>
+                          <option value="fire">Fire</option>
+                          <option value="suspicious">Suspicious</option>
+                          <option value="break-enter">Break & Enter</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
+                      <div class="filter-group" style="margin-bottom: 0;">
+                        <label for="chart-status-filter" style="font-size: 1rem; margin-bottom: 0.1rem;">Status</label>
+                        <select id="chart-status-filter" class="chart-status-filter" style="padding: 0.35rem 0.7rem; font-size: 1rem; min-width: 110px; max-width: 150px; height: 2.2rem;">
+                          <option value="all">All</option>
+                          <option value="solved">Solved</option>
+                          <option value="active">Active</option>
+                          <option value="pending">Pending</option>
+                          <option value="investigating">Investigating</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="chart-container">
+                      <canvas id="reportsActivityChart"></canvas>
+                    </div>
+                    <div class="overview-stats">
+                      <div class="stat-item">
+                        <span class="stat-label">Total Reports</span>
+                        <span class="stat-value">124</span>
+                        <span class="stat-change positive">+12% <i class="fas fa-arrow-up"></i></span>
+                      </div>
+                      <div class="stat-item">
+                        <span class="stat-label">Active Cases</span>
+                        <span class="stat-value">8</span>
+                        <span class="stat-change neutral">0 <i class="fas fa-minus"></i></span>
+                      </div>
+                      <div class="stat-item">
+                        <span class="stat-label">Resolution Rate</span>
+                        <span class="stat-value">92%</span>
+                        <span class="stat-change positive">+3% <i class="fas fa-arrow-up"></i></span>
+                      </div>
+                    </div>
+                  </section>
+                  <section class="card activity-feed-section" style="min-height: 560px;">
+                    <div class="feed-header">
+                      <h3><i class="fas fa-history"></i> Active</h3>
+                      <div class="feed-filters">
+                        <button class="active"><i class="fas fa-clock"></i> Latest</button>
+                        <button><i class="fas fa-fire"></i> Solved</button>
+                        <button><i class="fas fa-check-circle"></i> My Pings</button>
+                      </div>
+                    </div>
+                    <div class="feed-items">
+                      <!-- Dynamic content will be rendered here by JS -->
+                    </div>
+                  </section>
                 </div>
 
-                <div class="reports-filters">
+                <!-- Filters and Table (full width) -->
+                <section class="card reports-table-card">
+                  <div class="reports-filters">
                     <div class="filter-group">
-                        <label>Type</label>
-                        <select class="type-filter">
-                            <option value="all">All Types</option>
-                            <option value="suspicious">Suspicious Activity</option>
-                            <option value="break-enter">Break & Enter</option>
-                            <option value="fire">Fire</option>
-                            <option value="other">Other</option>
-                        </select>
+                      <label>Type</label>
+                      <select class="type-filter">
+                        <option value="all">All Types</option>
+                        <option value="suspicious">Suspicious Activity</option>
+                        <option value="break-enter">Break & Enter</option>
+                        <option value="fire">Fire</option>
+                        <option value="other">Other</option>
+                      </select>
                     </div>
                     <div class="filter-group">
-                        <label>Status</label>
-                        <select class="status-filter">
-                            <option value="all">All Statuses</option>
-                            <option value="pending">Pending</option>
-                            <option value="investigating">Investigating</option>
-                            <option value="active">Active</option>
-                            <option value="solved">Solved</option>
-                        </select>
+                      <label>Status</label>
+                      <select class="status-filter">
+                        <option value="all">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="investigating">Investigating</option>
+                        <option value="active">Active</option>
+                        <option value="solved">Solved</option>
+                      </select>
                     </div>
                     <div class="filter-group">
-                        <label>Date Range</label>
-                        <div class="date-range">
-                            <input type="date" class="date-from" placeholder="From">
-                            <input type="date" class="date-to" placeholder="To">
-                        </div>
+                      <label>Date Range</label>
+                      <div class="date-range">
+                        <input type="date" class="date-from" placeholder="From">
+                        <input type="date" class="date-to" placeholder="To">
+                      </div>
                     </div>
-                </div>
-
-                <div class="responsive-table-wrapper">
+                  </div>
+                  <div class="responsive-table-wrapper">
                     <div class="reports-table-container">
-                        <table class="reports-table" id="reports-table">
-                            <thead>
-                                <tr>
-                                    <th id="reportAvatar">Avatar<div class="resize-handle"></div></th>
-                                    <th class="sortable" data-sort="reporter">Reporter <i class="fas fa-sort"></i><div class="resize-handle"></div></th>
-                                    <th class="sortable" data-sort="type">Type <i class="fas fa-sort"></i><div class="resize-handle"></div></th>
-                                    <th class="sortable" data-sort="description">Description <i class="fas fa-sort"></i><div class="resize-handle"></div></th>
-                                    <th class="sortable" data-sort="date">Date <i class="fas fa-sort"></i><div class="resize-handle"></div></th>
-                                    <th class="sortable status-col" data-sort="status">Status <i class="fas fa-sort"></i><div class="resize-handle"></div></th>
-                                    <th class="sortable time-resolved-col" data-sort="timeResolved">Time Resolved <i class="fas fa-sort"></i><div class="resize-handle"></div></th>
-                                    <th class="sortable" data-sort="evidence">Evidence <i class="fas fa-sort"></i><div class="resize-handle"></div></th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="reports-tbody">
-                                <!-- Reports will be loaded dynamically -->
-                                <tr class="loading-row">
-                                    <td colspan="10" class="text-center">
-                                        <div class="loading-spinner">
-                                            <i class="fas fa-spinner fa-spin"></i>
-                                            Loading reports...
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                      <table class="reports-table" id="reports-table">
+                        <thead>
+                          <tr>
+                            <th id="reportAvatar">Avatar<div class="resize-handle"></div></th>
+                            <th class="sortable" data-sort="reporter">Reporter <i class="fas fa-sort"></i><div class="resize-handle"></div></th>
+                            <th class="sortable" data-sort="type">Type <i class="fas fa-sort"></i><div class="resize-handle"></div></th>
+                            <th class="sortable" data-sort="description">Description <i class="fas fa-sort"></i><div class="resize-handle"></div></th>
+                            <th class="sortable" data-sort="date">Date <i class="fas fa-sort"></i><div class="resize-handle"></div></th>
+                            <th class="sortable status-col" data-sort="status">Status <i class="fas fa-sort"></i><div class="resize-handle"></div></th>
+                            <th class="sortable time-resolved-col" data-sort="timeResolved">Time Resolved <i class="fas fa-sort"></i><div class="resize-handle"></div></th>
+                            <th class="sortable" data-sort="evidence">Evidence <i class="fas fa-sort"></i><div class="resize-handle"></div></th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody id="reports-tbody">
+                          <!-- Reports will be loaded dynamically -->
+                          <tr class="loading-row">
+                            <td colspan="10" class="text-center">
+                              <div class="loading-spinner">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Loading reports...
+                              </div>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
-                </div>
+                  </div>
+                </section>
+              </div>
+              <!-- Modals remain outside the grid -->
 
                 <!-- Report Details Modal -->
                 <div id="reportDetailsModal" class="modal">
