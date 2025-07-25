@@ -18,12 +18,12 @@ window.addEventListener('pageshow', () => {
 // Global function to create a modern ping marker
 function createModernPingMarker(ping, targetMap) {
     const el = document.createElement('div');
-    console.log('Creating marker for type:', ping.type); // Debugging: Check the type being applied
     el.className = `marker ${ping.type}`;
+    el.innerHTML = getPingTypeIcon(ping.type);
     
     // Determine if this is the home map or live map
     const isHomeMap = targetMap && targetMap.getContainer && targetMap.getContainer().id === 'map';
-    
+
     // Create popup with timestamp, user, and image indicator
     let userName = 'Community User';
     if (ping.user) {
@@ -2499,11 +2499,15 @@ function isSameDay(d1, d2) {
 
 function getPingTypeIcon(type) {
     switch(type) {
-        case 'suspicious': return '<i class="fas fa-exclamation-triangle" style="color:#ffc107;"></i>';
-        case 'break-enter': return '<i class="fas fa-lock" style="color:#9c27b0;"></i>';
-        case 'fire': return '<i class="fas fa-fire" style="color:#e53e3e;"></i>';
-        case 'other': return '<i class="fas fa-map-marker-alt" style="color:#4caf50;"></i>';
-        default: return '<i class="fas fa-map-marker-alt" style="color:#4caf50;"></i>';
+        case 'suspicious':
+            return `<img src="./assets/Ping-Suspicious.svg" alt="Suspicious" class="ping-svg-icon">`;
+        case 'break-enter':
+            return `<img src="./assets/Ping-Break-enter.svg" alt="Break & Enter" class="ping-svg-icon">`;
+        case 'fire':
+            return `<img src="./assets/Ping-Fire.svg" alt="Fire" class="ping-svg-icon">`;
+        case 'other':
+        default:
+            return `<img src="./assets/Ping-Car-theft.svg" alt="Other" class="ping-svg-icon">`;
     }
 }
 

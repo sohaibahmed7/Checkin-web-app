@@ -3808,7 +3808,8 @@ input:checked + .slider:before {
     visibility: visible;
 }
 
-.marker {
+/* Restore pin design only for preview/placing a ping */
+.marker.preview, .marker.selected-location {
     width: 21px;
     height: 27px;
     position: relative;
@@ -3818,9 +3819,9 @@ input:checked + .slider:before {
     clip-path: path('M10.5 0C4.701 0 0 4.701 0 10.5c0 5.799 10.5 16.5 10.5 16.5s10.5-10.701 10.5-16.5C21 4.701 16.299 0 10.5 0z');
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     border: none;
+    background-color: #2563eb;
 }
-
-.marker::after {
+.marker.preview::after, .marker.selected-location::after {
     content: '';
     position: absolute;
     left: 50%;
@@ -3830,48 +3831,9 @@ input:checked + .slider:before {
     height: 10px;
     border-radius: 50% 50% 100% 100% / 0% 0% 100% 100%;
     z-index: 0;
+    background: #2563eb;
 }
-
-.marker i {
-    font-size: 12px;
-}
-
-.marker.suspicious {
-    border-color: #ffc107;
-    color: #ffc107;
-    background-color: #ffc107;
-}
-
-.marker.fire {
-    border-color: #e53e3e;
-    color: #e53e3e;
-    background-color: #e53e3e;
-}
-
-.marker.break-enter {
-    border-color: #9c27b0;
-    color: #9c27b0;
-    background-color: #9c27b0;
-}
-
-.marker.other {
-    border-color: #4caf50;
-    color: #4caf50;
-    background-color: #4caf50;
-}
-
-.marker.preview {
-    background-color: var(--primary-color);
-}
-
-.marker.selected-location {
-    background: #ff6b6b;
-    border: 3px solid white;
-    box-shadow: 0 0 10px rgba(0,0,0,0.3);
-    z-index: 1000;
-}
-
-.marker::before {
+.marker.preview::before, .marker.selected-location::before {
     content: '';
     position: absolute;
     top: 5px;
@@ -3882,7 +3844,6 @@ input:checked + .slider:before {
     background: #fff;
     border-radius: 50%;
     z-index: 1;
-    /* box-shadow: 0 1px 4px rgba(0,0,0,0.04); */
 }
 
 .live-map-layout {
@@ -4186,11 +4147,12 @@ input:checked + .slider:before {
 /* Map Marker Hover Effect */
 .mapboxgl-marker {
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transition: transform 0.3s ease;
 }
 
 .mapboxgl-marker:hover {
     transform: scale(1.1);
+    z-index: 1;
 }
 
 /* Responsive Design */
@@ -6248,4 +6210,30 @@ textarea:focus, select:focus, input[type="text"]:focus {
 .user-fullname .lastname {
   display: block;
   margin-top: 0.1em;
+}
+
+.ping-svg-icon {
+    width: 32px !important;
+    height: 32px !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+    background: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+/* New SVG icon styling */
+.ping-svg-icon {
+    width: 28px;
+    height: 28px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Optional: adjust feed icon alignment */
+.ping-type-icon {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
