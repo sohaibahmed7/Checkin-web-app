@@ -18,12 +18,12 @@ window.addEventListener('pageshow', () => {
 // Global function to create a modern ping marker
 function createModernPingMarker(ping, targetMap) {
     const el = document.createElement('div');
-    console.log('Creating marker for type:', ping.type); // Debugging: Check the type being applied
     el.className = `marker ${ping.type}`;
+    el.innerHTML = getPingTypeIcon(ping.type);
     
     // Determine if this is the home map or live map
     const isHomeMap = targetMap && targetMap.getContainer && targetMap.getContainer().id === 'map';
-    
+
     // Create popup with timestamp, user, and image indicator
     let userName = 'Community User';
     if (ping.user) {
@@ -1915,7 +1915,72 @@ document.addEventListener('DOMContentLoaded', () => {
             const pingElement = document.createElement('div');
             pingElement.className = `feed-item ${statusClass} ${ping.type}`;
             pingElement.innerHTML = `
-                <div class=\"feed-avatar\">\n                    <img src=\"${userAvatar}\" alt=\"Profile Picture\" onerror=\"this.onerror=null;this.src='${config.DEFAULT_AVATAR}';\">\n                    <span class=\"status ${statusClass}\"></span>\n                </div>\n                <div class=\"feed-content\">\n                    <div class=\"feed-header\">\n                        <span class=\"feed-user\">${userName}</span>\n                        <span class=\"feed-time\">${formatTimestamp(ping.timestamp)}</span>\n                    </div>\n                    <p class=\"feed-text\">${ping.description || ''}</p>\n                    ${photoHtml}\n                    ${reactionsBar}\n                    <div class=\"view-on-map-bubble\">\n                        <button class=\"view-on-map-btn\" title=\"View on Map\" data-lat=\"${ping.coordinates ? ping.coordinates[1] : ''}\" data-lng=\"${ping.coordinates ? ping.coordinates[0] : ''}\">View on Map</button>\n                    </div>\n                    <div class=\"feed-actions-icons\">\n                        <button class=\"feed-action-icon emoji-btn\" title=\"React\"><i class=\"far fa-smile\"></i></button>\n                        <button class=\"feed-action-icon reply-btn\" title=\"Reply\"><i class=\"fas fa-reply\"></i></button>\n                    </div>\n                </div>\n            `;
+                <div class=\"feed-avatar\">\n                    <img src=\"${userAvatar}\" alt=\"Profile Picture\" onerror=\"this.onerror=null;this.src='${config.DEFAULT_AVATAR}';\">\n                    <span class=\"status ${statusClass}\"></span>\n                </div>\n                <div class=\"feed-content\">
+                    <div class=\"feed-header\">
+                        <span class=\"feed-user\">${userName}</span>
+                        <span class=\"feed-time\">${formatTimestamp(ping.timestamp)}</span>
+                    </div>
+                    <p class=\"feed-text\">${ping.description || ''}</p>
+                    ${photoHtml}
+                    ${reactionsBar}
+                    <div class=\"view-on-map-bubble\">
+                        <button class=\"view-on-map-btn\" title=\"View on Map\" data-lat=\"${ping.coordinates ? ping.coordinates[1] : ''}\" data-lng=\"${ping.coordinates ? ping.coordinates[0] : ''}\">View on Map</button>
+                    </div>
+                    <div class=\"feed-actions-icons\">
+                        <button class=\"feed-action-icon emoji-btn\" title=\"React\"><i class=\"far fa-smile\"></i></button>
+                        <button class=\"feed-action-icon modern-reply-btn\" title=\"Reply\"><i class=\"fas fa-reply\"></i></button>
+                    </div>
+                    <div class=\"inline-replies-thread\" style=\"display:none;\"></div>
+                </div>\n            `;
+            // Add View X replies link if replies exist
+            const postId = 'ping-' + idx;
+            const replies = window.feedReplies[postId] || [];
+            if (replies.length > 0) {
+                let viewReplies = document.createElement('a');
+                viewReplies.className = 'view-replies-link';
+                viewReplies.textContent = `View ${replies.length} repl${replies.length === 1 ? 'y' : 'ies'}`;
+                viewReplies.style = 'display:block;margin:0.5em 0 0 0;font-size:0.97em;color:#6b21a8;cursor:pointer;text-align:left;';
+                viewReplies.onclick = function() {
+                    const thread = pingElement.querySelector('.inline-replies-thread');
+                    if (thread.style.display === 'block') {
+                        thread.style.display = 'none';
+                        viewReplies.textContent = `View ${replies.length} repl${replies.length === 1 ? 'y' : 'ies'}`;
+                    } else {
+                        thread.innerHTML = replies.map(r => `
+                            <div class='reply-item-card${r.type === 'suggestion' ? ' suggestion-reply' : ''}'>
+                                <img class='reply-item-avatar' src='${r.avatar}' alt='${r.name}' />
+                                <div class='reply-item-content'>
+                                    <div class='reply-item-header'>
+                                        <span class='reply-item-name'>${r.name}</span>
+                                        <span class='reply-item-time'>${r.timestamp ? formatTimestamp(new Date(r.timestamp)) : ''}</span>
+                                        ${r.type === 'suggestion' ? `<span class='suggestion-reply-badge'>Suggestion</span>` : ''}
+                                    </div>
+                                    ${r.type === 'suggestion' ?
+                                      `<div class='suggestion-reply-line'><strong>${r.name}</strong> suggested this as <span class='suggestion-reply-status'>${r.suggestionStatus || ''}</span></div>` :
+                                      ''}
+                                    <div class='reply-item-text'>${(r.text||'').replace(/\n/g,'<br>')}</div>
+                                    ${r.image ? `<img class='reply-item-image' src='${r.image}' style='max-width:120px;margin-top:0.5em;border-radius:8px;'>` : ''}
+                                </div>
+                            </div>
+                        `).join('');
+                        thread.style.display = 'block';
+                        viewReplies.textContent = 'Hide replies';
+                    }
+                };
+                pingElement.querySelector('.feed-content').appendChild(viewReplies);
+            }
+            // Modern reply button logic
+            const replyBtn = pingElement.querySelector('.modern-reply-btn');
+            if (replyBtn) {
+                replyBtn.onclick = () => {
+                    showReplyModal(postId, {
+                        avatar: userAvatar,
+                        name: userName,
+                        timestamp: ping.timestamp,
+                        text: ping.description || ''
+                    });
+                };
+            }
             container.appendChild(pingElement);
         });
         // Add emoji picker logic
@@ -2024,32 +2089,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 replySection.querySelector('.reply-input').focus();
             });
         });
-        // Add event listeners for Reply buttons
-        container.querySelectorAll('.feed-action-icon.reply-btn').forEach((btn, i) => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const ping = recent[i];
-                if (ping && ping._id) {
-                    window.location.href = `/pages/dashboard/reply.html?pingId=${encodeURIComponent(ping._id)}`;
-                } else {
-                    alert('Ping ID not found.');
-                }
-            });
-        });
-        // Add event listeners for View on Map buttons
-        container.querySelectorAll('.view-on-map-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const lat = parseFloat(this.getAttribute('data-lat'));
-                const lng = parseFloat(this.getAttribute('data-lng'));
-                if (!isNaN(lat) && !isNaN(lng)) {
-                    pendingFlyTo = { lng, lat, showPopup: true };
-                    document.querySelector('a[data-tab="live-map"]').click();
-                } else {
-                    alert('Location not available for this ping.');
-                }
-            });
-        });
     }
 
     // Add filter logic for feed-filters
@@ -2147,7 +2186,310 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // Call this function on dashboard load (e.g., in DOMContentLoaded)
     checkIfUserIsAdminOnDashboard();
+
+    // Patch renderRecentActivityFeed to add reply UI (ensure this runs after the original is defined)
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.renderRecentActivityFeed && !window._replyPatchApplied) {
+        const origRenderRecentActivityFeed = window.renderRecentActivityFeed;
+        window.renderRecentActivityFeed = function() {
+          origRenderRecentActivityFeed();
+          // Add reply UI
+          const container = document.querySelector('.activity-feed-section .feed-items');
+          if (!container) return;
+          container.querySelectorAll('.feed-item').forEach((item, idx) => {
+            // Ensure each feed-item has a unique data-ping-id
+            if (!item.dataset.pingId) {
+              // Try to get from the ping object if available
+              let postId = item.getAttribute('data-ping-id') || item.id || 'post-' + idx;
+              item.setAttribute('data-ping-id', postId);
+            }
+            const postId = item.dataset.pingId;
+            // Add reply button if not present
+            if (!item.querySelector('.modern-reply-btn')) {
+              const replyBtn = document.createElement('button');
+              replyBtn.className = 'feed-action-icon modern-reply-btn';
+              replyBtn.innerHTML = '<i class="fas fa-reply"></i>';
+              replyBtn.title = 'Reply';
+              replyBtn.onclick = () => {
+                const postContent = item.querySelector('.feed-text')?.textContent || '';
+                showReplyModal(postId, postContent);
+              };
+              item.querySelector('.feed-actions-icons')?.appendChild(replyBtn);
+            }
+            // Add View x replies link
+            let replies = window.feedReplies[postId] || [];
+            let viewReplies = item.querySelector('.view-replies-link');
+            if (replies.length > 0) {
+              if (!viewReplies) {
+                viewReplies = document.createElement('a');
+                viewReplies.className = 'view-replies-link';
+                viewReplies.style = 'display:block;margin:0.5em 0 0 0;font-size:0.97em;color:#6b21a8;cursor:pointer;text-align:left;';
+                item.querySelector('.feed-content').appendChild(viewReplies);
+              }
+              viewReplies.textContent = `View ${replies.length} repl${replies.length === 1 ? 'y' : 'ies'}`;
+              viewReplies.onclick = () => showRepliesModal(postId);
+            } else if (viewReplies) {
+              viewReplies.remove();
+            }
+          });
+        };
+        window._replyPatchApplied = true;
+      }
+    });
+
+    // Initialize reply modal features
+    initializeReplyModalFeatures();
 });
+
+// Enhanced Reply Modal Functionality
+function initializeReplyModalFeatures() {
+  const replyInput = document.getElementById('replyInput');
+  const emojiBtn = document.getElementById('replyEmojiBtn');
+  const emojiPicker = document.getElementById('replyEmojiPicker');
+  const imageInput = document.getElementById('replyImageInput');
+  const imagePreview = document.getElementById('replyImagePreview');
+  const imageContainer = document.getElementById('replyImagePreviewContainer');
+  const imageRemove = document.getElementById('replyImageRemove');
+  const submitBtn = document.getElementById('submitReplyBtn');
+  const mentionsDropdown = document.getElementById('replyMentionsDropdown');
+
+  // Emoji Picker Functionality
+  if (emojiBtn && emojiPicker) {
+    emojiBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      emojiPicker.classList.toggle('active');
+    });
+
+    // Close emoji picker when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!emojiPicker.contains(e.target) && !emojiBtn.contains(e.target)) {
+        emojiPicker.classList.remove('active');
+      }
+    });
+
+    // Emoji selection
+    emojiPicker.querySelectorAll('.reply-emoji-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const emoji = item.dataset.emoji;
+        const cursorPos = replyInput.selectionStart;
+        const textBefore = replyInput.value.substring(0, cursorPos);
+        const textAfter = replyInput.value.substring(cursorPos);
+        replyInput.value = textBefore + emoji + textAfter;
+        replyInput.focus();
+        replyInput.setSelectionRange(cursorPos + emoji.length, cursorPos + emoji.length);
+        emojiPicker.classList.remove('active');
+        updateSendButtonState();
+      });
+    });
+  }
+
+  // Image Upload and Preview
+  if (imageInput && imagePreview && imageContainer && imageRemove) {
+    imageInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          imagePreview.src = ev.target.result;
+          imageContainer.style.display = 'block';
+          updateSendButtonState();
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Remove image
+    imageRemove.addEventListener('click', () => {
+      imageContainer.style.display = 'none';
+      imagePreview.src = '';
+      imageInput.value = '';
+      updateSendButtonState();
+    });
+  }
+
+  // @Mentions Support
+  if (replyInput && mentionsDropdown) {
+    let mentionStart = -1;
+    let filteredUsers = [];
+
+    replyInput.addEventListener('input', (e) => {
+      const text = e.target.value;
+      const cursorPos = e.target.selectionStart;
+      
+      // Check for @ symbol
+      const lastAtSymbol = text.lastIndexOf('@', cursorPos - 1);
+      if (lastAtSymbol !== -1 && lastAtSymbol < cursorPos) {
+        const query = text.substring(lastAtSymbol + 1, cursorPos).toLowerCase();
+        if (query.length > 0) {
+          mentionStart = lastAtSymbol;
+          showMentionsDropdown(query);
+        } else {
+          hideMentionsDropdown();
+        }
+      } else {
+        hideMentionsDropdown();
+      }
+      updateSendButtonState();
+    });
+
+    // Handle keyboard navigation in mentions dropdown
+    replyInput.addEventListener('keydown', (e) => {
+      if (mentionsDropdown.classList.contains('active')) {
+        const selectedItem = mentionsDropdown.querySelector('.reply-mention-item.selected');
+        const items = mentionsDropdown.querySelectorAll('.reply-mention-item');
+        
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          if (selectedItem) {
+            selectedItem.classList.remove('selected');
+            const nextItem = selectedItem.nextElementSibling || items[0];
+            nextItem.classList.add('selected');
+          } else {
+            items[0].classList.add('selected');
+          }
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (selectedItem) {
+            selectedItem.classList.remove('selected');
+            const prevItem = selectedItem.previousElementSibling || items[items.length - 1];
+            prevItem.classList.add('selected');
+          } else {
+            items[items.length - 1].classList.add('selected');
+          }
+        } else if (e.key === 'Enter' && selectedItem) {
+          e.preventDefault();
+          insertMention(selectedItem.dataset.username, selectedItem.dataset.name);
+        } else if (e.key === 'Escape') {
+          hideMentionsDropdown();
+        }
+      }
+    });
+  }
+
+  // Send Button State Management
+  function updateSendButtonState() {
+    const hasText = replyInput.value.trim().length > 0;
+    const hasImage = imageContainer.style.display === 'block';
+    
+    if (hasText || hasImage) {
+      submitBtn.disabled = false;
+    } else {
+      submitBtn.disabled = true;
+    }
+  }
+
+  // Mentions Functions
+  function showMentionsDropdown(query) {
+    // Mock users for now - replace with actual user data
+    const users = [
+      { username: 'ansh', name: 'Ansh Makkar', avatar: 'assets/avatar.svg' },
+      { username: 'jane', name: 'Jane Doe', avatar: 'assets/avatar.svg' },
+      { username: 'john', name: 'John Smith', avatar: 'assets/avatar.svg' }
+    ];
+    
+    filteredUsers = users.filter(user => 
+      user.name.toLowerCase().includes(query) || 
+      user.username.toLowerCase().includes(query)
+    );
+
+    if (filteredUsers.length > 0) {
+      mentionsDropdown.innerHTML = filteredUsers.map(user => `
+        <div class="reply-mention-item" data-username="${user.username}" data-name="${user.name}">
+          <img class="reply-mention-avatar" src="${user.avatar}" alt="${user.name}" />
+          <span class="reply-mention-name">${user.name}</span>
+        </div>
+      `).join('');
+
+      // Position dropdown near cursor
+      const rect = replyInput.getBoundingClientRect();
+      mentionsDropdown.style.top = `${rect.bottom + 5}px`;
+      mentionsDropdown.style.left = `${rect.left}px`;
+      mentionsDropdown.classList.add('active');
+
+      // Add click handlers
+      mentionsDropdown.querySelectorAll('.reply-mention-item').forEach(item => {
+        item.addEventListener('click', () => {
+          insertMention(item.dataset.username, item.dataset.name);
+        });
+      });
+    } else {
+      hideMentionsDropdown();
+    }
+  }
+
+  function hideMentionsDropdown() {
+    mentionsDropdown.classList.remove('active');
+    mentionsDropdown.innerHTML = '';
+  }
+
+  function insertMention(username, name) {
+    const text = replyInput.value;
+    const beforeMention = text.substring(0, mentionStart);
+    const afterMention = text.substring(replyInput.selectionStart);
+    const mentionText = `@${username} `;
+    
+    replyInput.value = beforeMention + mentionText + afterMention;
+    replyInput.focus();
+    const newCursorPos = mentionStart + mentionText.length;
+    replyInput.setSelectionRange(newCursorPos, newCursorPos);
+    
+    hideMentionsDropdown();
+    updateSendButtonState();
+  }
+
+  // Enhanced Send Button with Loading State
+  if (submitBtn) {
+    submitBtn.addEventListener('click', async () => {
+      if (submitBtn.disabled) return;
+      
+      // Show loading state
+      submitBtn.classList.add('loading');
+      submitBtn.disabled = true;
+      
+      try {
+        // Simulate sending delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Existing send logic
+        const modal = document.getElementById('replyModal');
+        const postId = modal.dataset.postId;
+        const text = replyInput.value.trim();
+        const imgInput = document.getElementById('replyImageInput');
+        let image = '';
+        if (imgInput && imgInput.files[0]) {
+          image = imagePreview.src;
+        }
+        
+        if (!text && !image) return;
+        
+        // Fake user
+        const user = window.user || { firstName: 'You', avatar: 'assets/avatar.svg' };
+        if (!window.feedReplies[postId]) window.feedReplies[postId] = [];
+        window.feedReplies[postId].push({
+          name: user.firstName + (user.lastName ? ' ' + user.lastName : ''),
+          avatar: user.avatar || 'assets/avatar.svg',
+          text,
+          image,
+          timestamp: Date.now(),
+          reactions: {}
+        });
+        
+        closeReplyModal();
+        renderRecentActivityFeed();
+        
+      } catch (error) {
+        console.error('Error sending reply:', error);
+      } finally {
+        // Reset loading state
+        submitBtn.classList.remove('loading');
+        updateSendButtonState();
+      }
+    });
+  }
+
+  // Initial state
+  updateSendButtonState();
+}
 
 function isSameDay(d1, d2) {
     return d1.getFullYear() === d2.getFullYear() 
@@ -2157,11 +2499,15 @@ function isSameDay(d1, d2) {
 
 function getPingTypeIcon(type) {
     switch(type) {
-        case 'suspicious': return '<i class="fas fa-exclamation-triangle" style="color:#ffc107;"></i>';
-        case 'break-enter': return '<i class="fas fa-lock" style="color:#9c27b0;"></i>';
-        case 'fire': return '<i class="fas fa-fire" style="color:#e53e3e;"></i>';
-        case 'other': return '<i class="fas fa-map-marker-alt" style="color:#4caf50;"></i>';
-        default: return '<i class="fas fa-map-marker-alt" style="color:#4caf50;"></i>';
+        case 'suspicious':
+            return `<img src="./assets/Ping-Suspicious.svg" alt="Suspicious" class="ping-svg-icon">`;
+        case 'break-enter':
+            return `<img src="./assets/Ping-Break-enter.svg" alt="Break & Enter" class="ping-svg-icon">`;
+        case 'fire':
+            return `<img src="./assets/Ping-Fire.svg" alt="Fire" class="ping-svg-icon">`;
+        case 'other':
+        default:
+            return `<img src="./assets/Ping-Car-theft.svg" alt="Other" class="ping-svg-icon">`;
     }
 }
 
@@ -2406,26 +2752,41 @@ function renderReportsTable(reports) {
 
         return `
             <tr class="report-row" data-report-id="${report._id}" style="font-size:0.95em;">
-                <td class="report-avatar">
-                    ${reportAvatar}
-                </td>
-                <td>${report.user ? `${report.user.firstName} ${report.user.lastName}` : 'Unknown'}</td>
-                <td class="type-col"><span class="badge ${report.type}">${formatPingTypeDisplay(report.type)}</span></td>
-                <td class="description-cell" title="${report.description}">${report.description}</td>
-                <td>${formatTimestamp(createdAt)}</td>
-                <td class="status-col">${statusHtml}</td>
-                <td>${timeToResolve}</td>
-                <td>${evidenceHtml}</td>
                 <td>
+                  <div class="report-flex-row">
+                    <span class="report-avatar">${reportAvatar}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="report-flex-row">
+                    <span class="reporter-name">${report.user ? `${report.user.firstName}<br>${report.user.lastName}` : 'Unknown'}</span>
+                  </div>
+                </td>
+                <td class="type-col">
+                  <span class="badge">${formatPingTypeDisplay(report.type)}</span>
+                </td>
+                <td>
+                  <div class="report-flex-row">
+                    <span class="description-cell" title="${report.description}">
+                      ${report.description.length > 15 ? report.description.slice(0, 15) + '…' : report.description}
+                    </span>
+                  </div>
+                </td>
+                <td>${formatTimestamp(createdAt)}</td>
+                <td class="cell-flex-center">
+                  ${statusHtml}
+                </td>
+                <td>${timeToResolve}</td>
+                <td class="cell-flex-center">
+                  ${evidenceHtml}
+                </td>
+                <td class="cell-flex-center">
                     <div class="action-buttons">
                         <button class="action-btn follow-up ${!isRecent ? 'disabled' : ''}" 
                                 onclick="addFollowUp('${report._id}')" 
                                 ${!isRecent ? 'disabled' : ''}
                                 title="Follow-Up">
                             <i class="fas fa-plus"></i>
-                        </button>
-                        <button class="action-btn view-trail" onclick="viewReportTrail('${report._id}')">
-                            <i class="fas fa-history"></i>
                         </button>
                         <button class="expand-btn" onclick="toggleReportDetails('${report._id}')">
                             <i class="fas fa-chevron-down"></i>
@@ -2437,8 +2798,6 @@ function renderReportsTable(reports) {
                 <td colspan="10">
                     <div class="report-card">
                         <div class="report-info">
-                            <h4>Description</h4>
-                            <p class="report-description-long"></p>
                             <div class="report-meta">
                                 <div class="report-photos">
                                     <h5>Evidence</h5>
@@ -2452,26 +2811,74 @@ function renderReportsTable(reports) {
                                     </button>
                                 </div>
                             </div>
-                            <div class="report-notes-replies">
-                                <h5>Notes / Replies</h5>
-                                <div class="notes-list">
-                                    ${report.notes && report.notes.length > 0 ?
-                                        report.notes.map(note => `
-                                            <div class="note-item">
-                                                <div class="note-meta">
-                                                    <span class="note-author">${note.addedBy && note.addedBy.name ? note.addedBy.name : 'Unknown'}</span>
-                                                    <span class="note-time">${note.addedAt ? formatTimestamp(new Date(note.addedAt)) : ''}</span>
+                            <div class="report-suggestions">
+                                <h5>Suggestions</h5>
+                                <div class="suggestions-list">
+                                    ${(() => {
+                                        let suggestionsHtml = '';
+                                        
+                                        // Add suggestions from report data
+                                        if (report.suggestions && report.suggestions.length > 0) {
+                                            report.suggestions.forEach(suggestion => {
+                                                suggestionsHtml += `
+                                                    <div class="suggestion-item">
+                                                        <div class="suggestion-meta">
+                                                            <div class="suggestion-user">
+                                                                ${suggestion.addedBy && suggestion.addedBy.avatar ? 
+                                                                    `<img src="${suggestion.addedBy.avatar}" alt="${suggestion.addedBy.name}" class="suggestion-avatar">` : 
+                                                                    `<div class="suggestion-avatar-initials">${suggestion.addedBy && suggestion.addedBy.name ? suggestion.addedBy.name.charAt(0).toUpperCase() : 'U'}</div>`
+                                                                }
+                                                                <span class="suggestion-author">${suggestion.addedBy && suggestion.addedBy.name ? suggestion.addedBy.name : 'Unknown'}</span>
+                                                                <span class="suggestion-time">${suggestion.addedAt ? formatTimestamp(new Date(suggestion.addedAt)) : ''}</span>
                                                 </div>
-                                                <div class="note-content">${note.content}</div>
                                             </div>
-                                        `).join('') :
-                                        '<div class="no-notes-message">No notes or replies yet.</div>'
-                                    }
+                                                        <div class="suggestion-content">
+                                                            <span class="suggestion-text"><strong>${suggestion.addedBy && suggestion.addedBy.name ? suggestion.addedBy.name : 'Unknown'}</strong> suggested to change this post to</span>
+                                                            <span class="status-badge suggestion-status ${getSuggestionStatusClass(suggestion.suggestedStatus)}">
+                                                                ${getSuggestionStatusIcon(suggestion.suggestedStatus)}
+                                                                ${suggestion.suggestedStatus}
+                                                            </span>
+                                                        </div>
+                                                        ${suggestion.comment ? `<div class="suggestion-comment">${suggestion.comment}</div>` : ''}
+                                                    </div>
+                                                `;
+                                            });
+                                        }
+                                        
+                                        // Add suggestions from localStorage
+                                        const storedFollowUps = JSON.parse(localStorage.getItem('reportFollowUps') || '{}');
+                                        if (storedFollowUps[report._id] && storedFollowUps[report._id].length > 0) {
+                                            storedFollowUps[report._id].forEach(followUp => {
+                                                if (followUp.type === 'suggestion') {
+                                                    suggestionsHtml += `
+                                                        <div class="suggestion-item">
+                                                            <div class="suggestion-meta">
+                                                                <div class="suggestion-user">
+                                                                    ${followUp.addedBy && followUp.addedBy.avatar ? 
+                                                                        `<img src="${followUp.addedBy.avatar}" alt="${followUp.addedBy.name}" class="suggestion-avatar">` : 
+                                                                        `<div class="suggestion-avatar-initials">${followUp.addedBy && followUp.addedBy.name ? followUp.addedBy.name.charAt(0).toUpperCase() : 'U'}</div>`
+                                                                    }
+                                                                    <span class="suggestion-author">${followUp.addedBy && followUp.addedBy.name ? followUp.addedBy.name : 'Unknown'}</span>
+                                                                    <span class="suggestion-time">${followUp.addedAt ? formatTimestamp(new Date(followUp.addedAt)) : ''}</span>
                                 </div>
-                                <form class="add-note-inline-form" onsubmit="event.preventDefault(); addNote('${report._id}');">
-                                    <input type="text" name="content" placeholder="Add a note or reply..." required style="width:70%;padding:0.5em;margin-right:0.5em;">
-                                    <button type="submit" class="add-note-btn"><i class="fas fa-paper-plane"></i> Post</button>
-                                </form>
+                            </div>
+                                                            <div class="suggestion-content">
+                                                                <span class="suggestion-text"><strong>${followUp.addedBy && followUp.addedBy.name ? followUp.addedBy.name : 'Unknown'}</strong> suggested to change this post to</span>
+                                                                <span class="status-badge suggestion-status ${getSuggestionStatusClass(followUp.action)}">
+                                                                    ${getSuggestionStatusIcon(followUp.action)}
+                                                                    ${followUp.action}
+                                                                </span>
+                                                            </div>
+                                                            ${followUp.description ? `<div class="suggestion-comment">${followUp.description}</div>` : ''}
+                                                        </div>
+                                                    `;
+                                                }
+                                            });
+                                        }
+                                        
+                                        return suggestionsHtml || '<div class="no-suggestions-message">No suggestions yet.</div>';
+                                    })()}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2482,6 +2889,33 @@ function renderReportsTable(reports) {
 
     // Re-initialize resizable columns after table content is updated
     initializeResizableColumns();
+}
+
+// Helper functions for suggestion status styling
+function getSuggestionStatusClass(status) {
+    const statusLower = status.toLowerCase();
+    if (statusLower.includes('solved') || statusLower.includes('resolve')) {
+        return 'solved';
+    } else if (statusLower.includes('unsolved') || statusLower.includes('unresolve')) {
+        return 'unsolved';
+    } else if (statusLower.includes('guard') || statusLower.includes('security')) {
+        return 'guard';
+    } else {
+        return 'other';
+    }
+}
+
+function getSuggestionStatusIcon(status) {
+    const statusLower = status.toLowerCase();
+    if (statusLower.includes('solved') || statusLower.includes('resolve')) {
+        return '<i class="fas fa-check-circle"></i>';
+    } else if (statusLower.includes('unsolved') || statusLower.includes('unresolve')) {
+        return '<i class="fas fa-times-circle"></i>';
+    } else if (statusLower.includes('guard') || statusLower.includes('security')) {
+        return '<i class="fas fa-shield-alt"></i>';
+    } else {
+        return '<i class="fas fa-lightbulb"></i>';
+    }
 }
 
 // Toggle report details
@@ -2570,6 +3004,26 @@ async function viewReportTrail(reportId) {
                         <div class="trail-content">
                             <div class="trail-action">${followUp.action}</div>
                             ${followUp.description ? `<div>${followUp.description}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Add follow-ups from localStorage
+        const storedFollowUps = JSON.parse(localStorage.getItem('reportFollowUps') || '{}');
+        if (storedFollowUps[reportId] && storedFollowUps[reportId].length > 0) {
+            storedFollowUps[reportId].forEach(followUp => {
+                trailHtml += `
+                    <div class="trail-item follow-up">
+                        <div class="trail-header">
+                            <span class="trail-author">${followUp.addedBy ? followUp.addedBy.name : 'Unknown'}</span>
+                            <span class="trail-time">${formatTimestamp(new Date(followUp.addedAt))}</span>
+                        </div>
+                        <div class="trail-content">
+                            <div class="trail-action">${followUp.type === 'suggestion' ? followUp.action : 'Evidence Uploaded'}</div>
+                            ${followUp.description ? `<div>${followUp.description}</div>` : ''}
+                            ${followUp.evidenceFile ? `<div><strong>File:</strong> ${followUp.evidenceFile}</div>` : ''}
                         </div>
                     </div>
                 `;
@@ -2665,35 +3119,51 @@ document.addEventListener('DOMContentLoaded', function() {
         addFollowUpForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const user = JSON.parse(localStorage.getItem('user'));
-            if (!user) {
-                showError('User not authenticated');
-                return;
-            }
-
-            const formData = new FormData(this);
-            const followUpData = {
-                action: formData.get('action'),
-                description: formData.get('description'),
-                addedBy: user._id
+            // Get current user data with avatar
+            const currentUser = window.user || JSON.parse(localStorage.getItem('user')) || { _id: 'demo-user', name: 'Demo User' };
+            const user = {
+                _id: currentUser._id || currentUser.id || 'demo-user',
+                name: currentUser.name || currentUser.firstName || 'Demo User',
+                avatar: currentUser.avatar || currentUser.profilePicture || 'assets/avatar.svg'
             };
 
-            try {
-                const response = await fetch(`${config.getApiUrl(config.API_ENDPOINTS.REPORT_FOLLOW_UP, currentReportId)}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(followUpData)
-                });
+            const formData = new FormData(this);
+            const followUpType = formData.get('followupType');
+            
+            let followUpData = {
+                type: followUpType,
+                addedBy: user,
+                addedAt: new Date().toISOString()
+            };
 
-                if (!response.ok) {
-                    throw new Error('Failed to add follow-up');
+            if (followUpType === 'suggestion') {
+                followUpData.action = formData.get('action');
+                followUpData.description = formData.get('description');
+            } else if (followUpType === 'evidence') {
+                followUpData.description = formData.get('evidenceNote');
+                // Handle file upload if needed
+                const evidenceFile = formData.get('evidenceImage');
+                if (evidenceFile && evidenceFile.size > 0) {
+                    followUpData.evidenceFile = evidenceFile.name;
                 }
+            }
+
+            try {
+                // For now, store in localStorage since we don't have a backend
+                const existingFollowUps = JSON.parse(localStorage.getItem('reportFollowUps') || '{}');
+                if (!existingFollowUps[currentReportId]) {
+                    existingFollowUps[currentReportId] = [];
+                }
+                existingFollowUps[currentReportId].push(followUpData);
+                localStorage.setItem('reportFollowUps', JSON.stringify(existingFollowUps));
 
                 closeModal('addFollowUpModal');
                 loadReports(); // Refresh the reports
                 showSuccess('Follow-up added successfully');
+                
+                // Reset form
+                this.reset();
+                updateFollowUpModalFields();
             } catch (error) {
                 console.error('Error adding follow-up:', error);
                 showError('Failed to add follow-up');
@@ -2996,3 +3466,173 @@ function applyReportFilters() {
 config.getUserAvatarUrl = function(userId) {
     return userId ? config.getApiUrl(`/api/user/${userId}/profile-picture`) : config.DEFAULT_AVATAR;
 };
+
+// --- In-memory replies store ---
+window.feedReplies = {};
+
+// --- Modal helpers ---
+function showReplyModal(postId, postMeta) {
+  const modal = document.getElementById('replyModal');
+  // Top section: show original post info in social thread style
+  const postSection = modal.querySelector('.reply-modal-post');
+  postSection.innerHTML = `
+    <div class='reply-modal-post-header'>
+      <img class='reply-modal-post-avatar' src='${postMeta.avatar}' alt='${postMeta.name}' />
+      <div class='reply-modal-post-meta'>
+        <span class='reply-modal-post-name'>${postMeta.name}</span>
+        <span class='reply-modal-post-time'>${formatTimestamp(new Date(postMeta.timestamp))}</span>
+      </div>
+    </div>
+    <div class='reply-modal-post-text'>${(postMeta.text||'').replace(/\n/g,'<br>')}</div>
+  `;
+  modal.style.display = 'flex';
+  modal.dataset.postId = postId;
+  document.getElementById('replyInput').value = '';
+  // Reset image preview
+  const imgPreview = document.getElementById('replyImagePreview');
+  if (imgPreview) {
+    imgPreview.style.display = 'none';
+    imgPreview.src = '';
+  }
+  // Reset file input
+  const fileInput = document.getElementById('replyImageInput');
+  if (fileInput) fileInput.value = '';
+  setTimeout(() => document.getElementById('replyInput').focus(), 100);
+}
+// Add image upload logic in modal
+const replyImageInput = document.getElementById('replyImageInput');
+if (replyImageInput) {
+  replyImageInput.onchange = function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      const imgPreview = document.getElementById('replyImagePreview');
+      imgPreview.src = ev.target.result;
+      imgPreview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  };
+}
+document.getElementById('submitReplyBtn').onclick = function() {
+  const modal = document.getElementById('replyModal');
+  const postId = modal.dataset.postId;
+  const text = document.getElementById('replyInput').value.trim();
+  const imgInput = document.getElementById('replyImageInput');
+  let image = '';
+  if (imgInput && imgInput.files[0]) {
+    image = document.getElementById('replyImagePreview').src;
+  }
+  if (!text && !image) return document.getElementById('replyInput').focus();
+  // Fake user
+  const user = window.user || { firstName: 'You', avatar: 'assets/avatar.svg' };
+  if (!window.feedReplies[postId]) window.feedReplies[postId] = [];
+  window.feedReplies[postId].push({
+    name: user.firstName + (user.lastName ? ' ' + user.lastName : ''),
+    avatar: user.avatar || 'assets/avatar.svg',
+    text,
+    image,
+    timestamp: Date.now(),
+    reactions: {}
+  });
+  closeReplyModal();
+  renderRecentActivityFeed();
+};
+function closeReplyModal() {
+  const modal = document.getElementById('replyModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+function showRepliesModal(postId) {
+  const modal = document.getElementById('repliesModal');
+  const replies = window.feedReplies[postId] || [];
+  const repliesList = document.getElementById('repliesList');
+  repliesList.innerHTML = replies.length === 0 ? '<div style="text-align:center;color:#888;">No replies yet.</div>' : replies.map(r => `
+    <div class='reply-item'>
+      <img class='reply-item-avatar' src='${r.avatar}' alt='${r.name}' />
+      <div class='reply-item-content'>
+        <div class='reply-item-name'>${r.name}</div>
+        <div class='reply-item-text'>${r.text}</div>
+        <div class='reply-item-reactions'>${Object.entries(r.reactions||{}).map(([emoji, count]) => `<span class='reply-item-reaction'>${emoji} ${count}</span>`).join('')}</div>
+      </div>
+    </div>
+  `).join('');
+  modal.style.display = 'flex';
+  modal.dataset.postId = postId;
+}
+function closeRepliesModal() {
+  const modal = document.getElementById('repliesModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+// Additional event listener setup for modal close buttons
+function setupModalCloseButtons() {
+  const closeReplyBtn = document.getElementById('closeReplyModal');
+  const closeRepliesBtn = document.getElementById('closeRepliesModal');
+  
+  if (closeReplyBtn) {
+    closeReplyBtn.onclick = closeReplyModal;
+  }
+  
+  if (closeRepliesBtn) {
+    closeRepliesBtn.onclick = closeRepliesModal;
+  }
+}
+
+// Run setup after page loads
+window.addEventListener('load', setupModalCloseButtons);
+// --- Attach modal close events ---
+document.addEventListener('DOMContentLoaded', () => {
+  // Ensure close buttons work
+  const closeReplyBtn = document.getElementById('closeReplyModal');
+  const closeRepliesBtn = document.getElementById('closeRepliesModal');
+  
+  if (closeReplyBtn) {
+    closeReplyBtn.addEventListener('click', closeReplyModal);
+  }
+  
+  if (closeRepliesBtn) {
+    closeRepliesBtn.addEventListener('click', closeRepliesModal);
+  }
+  
+  // Also handle clicking outside the modal to close
+  const replyModal = document.getElementById('replyModal');
+  const repliesModal = document.getElementById('repliesModal');
+  
+  if (replyModal) {
+    replyModal.addEventListener('click', function(e) {
+      if (e.target === replyModal) {
+        closeReplyModal();
+      }
+    });
+  }
+  
+  if (repliesModal) {
+    repliesModal.addEventListener('click', function(e) {
+      if (e.target === repliesModal) {
+        closeRepliesModal();
+      }
+    });
+  }
+  
+  document.getElementById('submitReplyBtn').onclick = function() {
+    const modal = document.getElementById('replyModal');
+    const postId = modal.dataset.postId;
+    const text = document.getElementById('replyInput').value.trim();
+    if (!text) return document.getElementById('replyInput').focus();
+    // Fake user
+    const user = window.user || { firstName: 'You', avatar: 'assets/avatar.svg' };
+    if (!window.feedReplies[postId]) window.feedReplies[postId] = [];
+    window.feedReplies[postId].push({
+      name: user.firstName + (user.lastName ? ' ' + user.lastName : ''),
+      avatar: user.avatar || 'assets/avatar.svg',
+      text,
+      reactions: {}
+    });
+    closeReplyModal();
+    renderRecentActivityFeed();
+  };
+});
