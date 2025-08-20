@@ -1007,4 +1007,450 @@ body.scrolled {
 .navbar.scrolled {
     background-color: #fff !important;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* Features Section Styles */
+.features-section {
+    padding: 5rem 0;
+    background: #f8f9fa;
+}
+
+/* Demo Section Styles */
+.demo-section {
+    padding: 5rem 0;
+    background: white;
+    text-align: center;
+}
+
+.demo-section h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 3rem;
+    line-height: 1.2;
+}
+
+.video-container {
+    max-width: 800px;
+    margin: 0 auto;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.video-container iframe {
+    display: block;
+    width: 100%;
+    height: 450px;
+    border: none;
+}
+
+/* Responsive Design for Demo */
+@media (max-width: 768px) {
+    .demo-section h2 {
+        font-size: 2rem;
+    }
+    
+    .video-container iframe {
+        height: 250px;
+    }
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+    margin-bottom: 4rem;
+}
+
+.features-left h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 2rem;
+    line-height: 1.2;
+}
+
+.features-list {
+    list-style: none;
+    margin-bottom: 3rem;
+}
+
+.features-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.features-list li {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+    position: relative;
+    border: 1px solid transparent;
+}
+
+.features-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: #333;
+    font-weight: bold;
+    font-size: 1.2rem;
+    z-index: 1;
+}
+
+/* More specific selector to ensure bullet points show */
+.features-section .features-left .features-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: #333;
+    font-weight: bold;
+    font-size: 1.2rem;
+    z-index: 1;
+    display: block !important;
+}
+
+.feature-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 1.5rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.feature-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    background: #e8f5e8;
+    color: #2d5a2d;
+    padding: 1.2rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: center;
+    min-height: 60px;
+}
+
+.feature-button:hover {
+    background: #d4edda;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.feature-button i {
+    font-size: 1.2rem;
+    color: #28a745;
+}
+
+.features-right {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.app-mockup {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 400px;
+}
+
+.mockup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.mockup-header i:first-child {
+    color: #ffc107;
+    font-size: 1.2rem;
+}
+
+.mockup-header span {
+    font-weight: 600;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.mockup-header i:last-child {
+    color: #6c757d;
+    font-size: 1.1rem;
+}
+
+.mockup-content {
+    margin-bottom: 2rem;
+}
+
+.input-group {
+    margin-bottom: 1.5rem;
+}
+
+.input-group label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.input-group textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    resize: vertical;
+    min-height: 60px;
+    transition: border-color 0.3s ease;
+}
+
+.input-group textarea:focus {
+    outline: none;
+    border-color: #6b21a8;
+}
+
+.map-preview {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f8f9fa;
+}
+
+.map-image {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    display: block;
+}
+
+.mockup-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.action-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background: #f8f9fa;
+    color: #6c757d;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn:hover {
+    background: #6b21a8;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.features-bottom {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.features-bottom h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 2rem;
+    line-height: 1.3;
+}
+
+.features-bottom-list {
+    list-style: none;
+    text-align: left;
+}
+
+.features-bottom-list li {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 1rem;
+    padding-left: 2rem;
+    position: relative;
+    line-height: 1.6;
+}
+
+.features-bottom-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #6b21a8;
+    font-weight: bold;
+    font-size: 1.5rem;
+    top: -2px;
+}
+
+/* Responsive Design for Features */
+@media (max-width: 768px) {
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .features-left h2 {
+        font-size: 2rem;
+    }
+    
+    .feature-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .app-mockup {
+        max-width: 100%;
+        padding: 1.5rem;
+    }
+    
+    .features-bottom h3 {
+        font-size: 1.5rem;
+    }
+}
+
+/* App Showcase Section Styles */
+.app-showcase {
+    padding: 5rem 0 8rem 0;
+    background: white;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.app-showcase h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 3rem;
+}
+
+.showcase-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.showcase-item {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: center;
+    min-height: 250px;
+    margin-bottom: 4rem;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    opacity: 0;
+    transform: translateY(50px);
+    transition: all 0.8s ease;
+}
+
+.showcase-item.animate-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.showcase-item:nth-child(even) {
+    direction: rtl;
+}
+
+.showcase-item:nth-child(even) .showcase-text {
+    direction: ltr;
+}
+
+.showcase-text {
+    text-align: left;
+    padding: 0 2rem;
+}
+
+.showcase-text h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #6b21a8;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+}
+
+.showcase-text p {
+    font-size: 1.1rem;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.showcase-features {
+    list-style: none;
+    margin: 1rem 0 0 0;
+    padding: 0;
+}
+
+.showcase-features li {
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 0.8rem;
+    padding-left: 1.5rem;
+    position: relative;
+    line-height: 1.4;
+}
+
+.showcase-features li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: #333;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.showcase-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 2rem;
+}
+
+.showcase-image img {
+    max-width: 80%;
+    height: auto;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* Responsive Design for App Showcase */
+@media (max-width: 768px) {
+    .app-showcase h2 {
+        font-size: 2rem;
+    }
+    
+    .showcase-item {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        text-align: center;
+    }
+    
+    .showcase-text {
+        text-align: center;
+    }
 } 
