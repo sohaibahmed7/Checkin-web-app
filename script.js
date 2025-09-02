@@ -59,14 +59,9 @@ const mobileMenuToggle = () => {
 // Handle window resize
 window.addEventListener('resize', mobileMenuToggle);
 
-// Parallax effect for hero section
-const hero = document.querySelector('.hero');
-if (hero) {
-    window.addEventListener('scroll', () => {
-        const scrolled = window.pageYOffset;
-        hero.style.backgroundPositionY = -(scrolled * 0.5) + 'px';
-    });
-}
+
+
+
 
 // Add hover effect to feature cards
 document.querySelectorAll('.feature-card').forEach(card => {
@@ -97,6 +92,151 @@ if (contactForm) {
         contactForm.reset();
     });
 }
+
+// Single Feature Display - Neighborhood Chat Only
+function showFeature(featureId) {
+    console.log('Showing feature:', featureId);
+    
+    // Remove active class from all buttons
+    document.querySelectorAll('.feature-button').forEach(button => {
+        button.classList.remove('active');
+    });
+    
+    // Add active class to the clicked button
+    const clickedButton = event.target.closest('.feature-button');
+    if (clickedButton) {
+        clickedButton.classList.add('active');
+    }
+    
+    // Show live chat mockup by default and when live-chat button is clicked
+    const liveChatFeature = document.getElementById('live-chat-feature');
+    if (liveChatFeature) {
+        if (featureId === 'live-chat') {
+            liveChatFeature.style.display = 'block';
+        } else {
+            liveChatFeature.style.display = 'none';
+        }
+    }
+    
+    console.log('Feature display updated');
+}
+
+// Safety Pings Functions
+function showPingDetails(pingId) {
+    const pingDetails = {
+        'ping1': {
+            title: 'Suspicious Activity',
+            location: 'Oak Street & Main Ave',
+            time: '2 minutes ago',
+            description: 'Suspicious person walking up and down the street, taking photos of houses. Wearing dark clothing and acting suspiciously.',
+            reporter: 'Sarah Johnson',
+            status: 'URGENT'
+        },
+        'ping2': {
+            title: 'Fire Alert',
+            location: 'Maple Drive',
+            time: '15 minutes ago',
+            description: 'Smoke visible from house on Maple Drive. Fire department has been called and is responding.',
+            reporter: 'Mike Chen',
+            status: 'ACTIVE'
+        },
+        'ping3': {
+            title: 'Car Theft',
+            location: 'Pine Street',
+            time: '1 hour ago',
+            description: 'Vehicle reported stolen from driveway. Blue Honda Civic with license plate ABC123.',
+            reporter: 'Lisa Park',
+            status: 'ACTIVE'
+        }
+    };
+    
+    const ping = pingDetails[pingId];
+    if (ping) {
+        alert(`🔹 ${ping.title}\n📍 Location: ${ping.location}\n⏰ Time: ${ping.time}\n👤 Reporter: ${ping.reporter}\n📝 Description: ${ping.description}\n🚨 Status: ${ping.status}`);
+    }
+}
+
+function placeNewPing() {
+    // Removed alert message
+}
+
+function viewAllPings() {
+    // Removed alert message
+}
+
+// Chat Functions
+function joinChat() {
+    // Removed alert message
+}
+
+function viewChatHistory() {
+    // Removed alert message
+}
+
+// Rich Reports Functions
+function showReportDetails(reportId) {
+    const reportDetails = {
+        'report1': {
+            title: 'Suspicious Person Report',
+            location: 'Oak Street',
+            time: '1 hour ago',
+            description: 'Suspicious person walking up and down the street, taking photos of houses. Wearing dark clothing and acting suspiciously.',
+            reporter: 'Sarah Johnson',
+            priority: 'HIGH',
+            media: '2 photos attached'
+        },
+        'report2': {
+            title: 'Vehicle Break-in Attempt',
+            location: 'Maple Drive',
+            time: '3 hours ago',
+            description: 'Witnessed someone trying to break into a parked car. Called police immediately.',
+            reporter: 'Mike Chen',
+            priority: 'MEDIUM',
+            media: '1 video attached'
+        },
+        'report3': {
+            title: 'Street Light Maintenance',
+            location: 'Pine Street',
+            time: '5 hours ago',
+            description: 'Street light at the corner is flickering and needs maintenance.',
+            reporter: 'Lisa Park',
+            priority: 'LOW',
+            media: 'No media'
+        }
+    };
+    
+    const report = reportDetails[reportId];
+    if (report) {
+        alert(`📋 ${report.title}\n📍 Location: ${report.location}\n⏰ Time: ${report.time}\n👤 Reporter: ${report.reporter}\n📝 Description: ${report.description}\n🚨 Priority: ${report.priority}\n📷 Media: ${report.media}`);
+    }
+}
+
+function createNewReport() {
+    // Removed alert message
+}
+
+function viewAllReports() {
+    // Removed alert message
+}
+
+// Dashboard Functions
+function quickPing() {
+    // Removed alert message
+}
+
+function viewMap() {
+    // Removed alert message
+}
+
+function openChat() {
+    // Removed alert message
+}
+
+// Initialize first feature
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, neighborhood chat is the only feature...');
+    // No need to call showFeature since the mockup is already visible by default
+});
 
 // Add active class to current page in navigation
 const currentPage = window.location.pathname.split('/').pop();
@@ -274,4 +414,19 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Neighborhood chat functionality set up successfully!');
 });
 
- 
+// Initialize page with live chat mockup visible
+document.addEventListener('DOMContentLoaded', function() {
+    // Show live chat mockup by default
+    const liveChatFeature = document.getElementById('live-chat-feature');
+    if (liveChatFeature) {
+        liveChatFeature.style.display = 'block';
+    }
+    
+    // Set live chat button as active by default
+    const liveChatButton = document.querySelector('.feature-button[onclick="showFeature(\'live-chat\')"]');
+    if (liveChatButton) {
+        liveChatButton.classList.add('active');
+    }
+    
+    console.log('Page initialized with live chat mockup');
+});
