@@ -17,6 +17,7 @@
         </div>
         <div class="nav-links">
             <a href="../../index.html">Home</a>
+            <a href="about-us.html">About Us</a>
             <a href="how-it-works.html">How it Works</a>
             <a href="contact.html" class="active">Contact</a>
             <!-- COMMENTING OUT FOR NOW -->
@@ -41,6 +42,7 @@
             </div>
             <div class="mobile-nav-links">
                 <a href="../../index.html" class="mobile-nav-link">Home</a>
+                <a href="about-us.html" class="mobile-nav-link">About Us</a>
                 <a href="how-it-works.html" class="mobile-nav-link">How It Works</a>
                 <a href="contact.html" class="mobile-nav-link active">Contact</a>
             </div>
@@ -51,76 +53,76 @@
         </div>
     </div>
 
-    <section class="contact-page" style="background: #f6f8fc; min-height: 100vh; padding: 40px 0; margin-top: 90px;">
-        <div class="container" style="max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; align-items: center;">
-            <h2 style="font-weight: bold; font-size: 2.5rem; color: #6b21a8; margin-bottom: 0.5rem;">Contact Us</h2>
-            <p class="contact-subtitle" style="font-size: 1.2rem; color: #444; margin-bottom: 2.5rem;">Have questions? We're here to help.</p>
-            <div style="display: flex; gap: 3rem; width: 100%; justify-content: center;">
+    <section class="contact-page">
+        <div class="container contact-container">
+            <h2 class="contact-title">Contact Us</h2>
+            <p class="contact-subtitle">Have questions? We're here to help.</p>
+            <div class="contact-content-wrapper">
                 <!-- Left: Info Cards -->
-                <div style="flex: 1; display: flex; flex-direction: column; gap: 2rem;">
-                    <div style="background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(70,102,229,0.07); padding: 2rem; display: flex; flex-direction: column; align-items: center;">
-                        <i class="fas fa-envelope" style="font-size: 2rem; color: #6b21a8; margin-bottom: 0.5rem;"></i>
-                        <div style="font-weight: 600; margin-bottom: 0.2rem;">Email Us</div>
-                        <div style="color: #444;">teamatcheckin@gmail.com</div>
+                <div class="contact-info-cards">
+                    <div class="info-card">
+                        <i class="fas fa-envelope"></i>
+                        <div class="info-card-title">Email Us</div>
+                        <div>teamatcheckin@gmail.com</div>
                     </div>
-                    <div style="background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(70,102,229,0.07); padding: 2rem; display: flex; flex-direction: column; align-items: center;">
-                        <i class="fas fa-phone" style="font-size: 2rem; color: #6b21a8; margin-bottom: 0.5rem;"></i>
-                        <div style="font-weight: 600; margin-bottom: 0.2rem;">Call Us</div>
-                        <div style="color: #444;">416-786-8163</div>
+                    <div class="info-card">
+                        <i class="fas fa-phone"></i>
+                        <div class="info-card-title">Call Us</div>
+                        <div>416-786-8163</div>
                     </div>
-                    <div style="background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(70,102,229,0.07); padding: 2rem; display: flex; flex-direction: column; align-items: center;">
-                        <i class="fas fa-share-alt" style="font-size: 2rem; color: #6b21a8; margin-bottom: 0.5rem;"></i>
-                        <div style="font-weight: 600; margin-bottom: 0.2rem;">Follow Us</div>
-                        <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
-                            <a href="https://twitter.com/thecheckin_ca" style="color: #6b21a8; font-size: 2.2rem; display: flex; align-items: center; background: #fff; border-radius: 50%; padding: 0.3rem;" target="_blank" rel="noopener">
-                                <svg viewBox="0 0 1200 1227" width="28" height="28" fill="currentColor" style="display: block;"><path d="M1199.61 0 741.68 558.41 1199.61 1227H1047.6L677.36 715.47 345.44 1227H0L484.64 615.41 55.36 0h163.2l331.92 472.94L841.36 0h358.25ZM1002.56 1140.47l-627.2-866.5h-81.6l627.2 866.5h81.6Z"></path></svg>
+                    <div class="info-card">
+                        <i class="fas fa-share-alt"></i>
+                        <div class="info-card-title">Follow Us</div>
+                        <div class="social-links-contact">
+                            <a href="https://twitter.com/thecheckin_ca" target="_blank" rel="noopener">
+                                <svg viewBox="0 0 1200 1227" width="28" height="28" fill="currentColor"><path d="M1199.61 0 741.68 558.41 1199.61 1227H1047.6L677.36 715.47 345.44 1227H0L484.64 615.41 55.36 0h163.2l331.92 472.94L841.36 0h358.25ZM1002.56 1140.47l-627.2-866.5h-81.6l627.2 866.5h81.6Z"></path></svg>
                             </a>
-                            <a href="https://instagram.com/thecheckin.ca" style="color: #6b21a8; font-size: 2.2rem; display: flex; align-items: center; background: #fff; border-radius: 50%; padding: 0.3rem; margin-left: 0.5rem;" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
+                            <a href="https://instagram.com/thecheckin.ca" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
                         </div>
                     </div>
                 </div>
                 <!-- Right: Contact Form -->
-                <div style="flex: 1; background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(70,102,229,0.07); padding: 2.5rem 2rem; display: flex; flex-direction: column; gap: 1.2rem;">
+                <div class="contact-form-wrapper">
                     <form id="contactForm" autocomplete="off">
-                        <div class="form-group" style="margin-bottom: 1.2rem;">
-                            <label for="name" style="font-weight: 500;">Name</label>
-                            <input type="text" id="name" name="name" required autocomplete="off" style="width: 100%; padding: 0.7rem; border-radius: 8px; border: 1px solid #d1d5db; margin-top: 0.3rem;">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" id="name" name="name" required autocomplete="off">
                         </div>
-                        <div class="form-group" style="margin-bottom: 1.2rem;">
-                            <label for="email" style="font-weight: 500;">Email</label>
-                            <input type="email" id="email" name="email" required autocomplete="off" style="width: 100%; padding: 0.7rem; border-radius: 8px; border: 1px solid #d1d5db; margin-top: 0.3rem;">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" required autocomplete="off">
                         </div>
-                        <div class="form-group" style="margin-bottom: 1.2rem;">
-                            <label for="message" style="font-weight: 500;">Message</label>
-                            <textarea id="message" name="message" rows="5" required autocomplete="off" style="width: 100%; padding: 0.7rem; border-radius: 8px; border: 1px solid #d1d5db; margin-top: 0.3rem;"></textarea>
+                        <div class="form-group">
+                            <label for="message">Message</label>
+                            <textarea id="message" name="message" rows="5" required autocomplete="off"></textarea>
                         </div>
-                        <button type="submit" class="submit-button" style="background: #6b21a8; color: #fff; border: none; border-radius: 8px; padding: 0.9rem 2rem; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: background 0.2s;">Send Message</button>
+                        <button type="submit" class="submit-button">Send Message</button>
                     </form>
                 </div>
             </div>
         </div>
     </section>
 
-    <footer class="footer" style="background: #18191a; color: #fff; padding: 2.5rem 0 1.2rem 0;">
-        <div class="footer-content" style="display: flex; justify-content: center; align-items: flex-start; gap: 6rem; flex-wrap: wrap;">
-            <div class="footer-section" style="text-align: center; min-width: 220px;">
-                <h3 style="font-weight: 600; color: #fff; margin-bottom: 0.5rem;">Contact Us</h3>
-                <p style="color: #b0b3b8; margin: 0;">Email: teamatcheckin@gmail.com</p>
-                <p style="color: #b0b3b8; margin: 0;">Phone: 416-786-8163</p>
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: teamatcheckin@gmail.com</p>
+                <p>Phone: 416-786-8163</p>
             </div>
-            <div class="footer-section" style="text-align: center; min-width: 220px;">
-                <h3 style="font-weight: 600; color: #fff; margin-bottom: 0.5rem;">Follow Us</h3>
-                <div class="social-links" style="display: flex; justify-content: center; gap: 1.2rem; margin-top: 0.5rem;">
+            <div class="footer-section">
+                <h3>Follow Us</h3>
+                <div class="social-links">
                     <!-- X (Twitter) SVG -->
-                    <a href="https://twitter.com/thecheckin_ca" style="color: #fff; font-size: 1.7rem; display: flex; align-items: center;" target="_blank" rel="noopener">
-                        <svg viewBox="0 0 1200 1227" width="24" height="24" fill="currentColor" style="display: block;"><path d="M1199.61 0 741.68 558.41 1199.61 1227H1047.6L677.36 715.47 345.44 1227H0L484.64 615.41 55.36 0h163.2l331.92 472.94L841.36 0h358.25ZM1002.56 1140.47l-627.2-866.5h-81.6l627.2 866.5h81.6Z"></path></svg>
+                    <a href="https://twitter.com/thecheckin_ca" target="_blank" rel="noopener">
+                        <svg viewBox="0 0 1200 1227" width="24" height="24" fill="currentColor"><path d="M1199.61 0 741.68 558.41 1199.61 1227H1047.6L677.36 715.47 345.44 1227H0L484.64 615.41 55.36 0h163.2l331.92 472.94L841.36 0h358.25ZM1002.56 1140.47l-627.2-866.5h-81.6l627.2 866.5h81.6Z"></path></svg>
                     </a>
-                    <a href="https://instagram.com/thecheckin.ca" style="color: #fff; font-size: 1.7rem; display: flex; align-items: center;" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
+                    <a href="https://instagram.com/thecheckin.ca" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
                 </div>
             </div>
         </div>
-        <div class="footer-bottom" style="text-align: center; color: #b0b3b8; margin-top: 1.5rem; font-size: 1rem;">
-            <p style="margin: 0;">&copy; 2025 Check-In. All rights reserved.</p>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Check-In. All rights reserved.</p>
         </div>
     </footer>
 
