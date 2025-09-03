@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Check-In</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="../../favicon.svg">
+    <style>
+        .about-hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6rem 0 4rem 0;
+            text-align: center;
+        }
+        
+        .about-hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .about-hero p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+        
+        .about-content {
+            padding: 4rem 0;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .about-section {
+            margin-bottom: 3rem;
+        }
+        
+        .about-section h2 {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .about-section p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+        
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .problem-card {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 12px;
+            transition: transform 0.3s ease;
+        }
+        
+        .problem-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .problem-card h3 {
+            color: #764ba2;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        .problem-card p {
+            color: #666;
+            margin: 0;
+        }
+        
+
+        
+
+        
+        .mission-section {
+            text-align: center;
+            padding: 1rem 0 3rem 0;
+            background: white;
+        }
+        
+        .mission-section h2 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .mission-statement {
+            font-size: 1.3rem;
+            color: #666;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.8;
+            font-style: italic;
+        }
+        
+        @media (max-width: 768px) {
+            .about-hero h1 {
+                font-size: 2rem;
+            }
+            
+            .about-hero p {
+                font-size: 1rem;
+            }
+            
+            .about-content {
+                padding: 2rem 1rem;
+            }
+            
+            .problem-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .solution-features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <a href="../../index.html"><h1>Check-In</h1></a>
+        </div>
+        <div class="nav-links">
+            <a href="../../index.html">Home</a>
+            <a href="about-us.html" class="active">About Us</a>
+            <a href="how-it-works.html">How It Works</a>
+            <a href="contact.html">Contact</a>
+        </div>
+        <div class="mobile-menu-toggle">
+            <i class="fas fa-bars"></i>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation Overlay -->
+    <div class="mobile-nav-overlay">
+        <div class="mobile-nav-content">
+            <div class="mobile-nav-header">
+                <h2>Check-In</h2>
+                <button class="mobile-nav-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="mobile-nav-links">
+                <a href="../../index.html" class="mobile-nav-link">Home</a>
+                <a href="about-us.html" class="mobile-nav-link active">About Us</a>
+                <a href="how-it-works.html" class="mobile-nav-link">How It Works</a>
+                <a href="contact.html" class="mobile-nav-link">Contact</a>
+            </div>
+        </div>
+    </div>
+
+    <section class="about-hero">
+        <div class="container">
+            <h1>About Check-In</h1>
+            <p>Empowering communities to stay safe, connected, and informed in an increasingly uncertain world.</p>
+        </div>
+    </section>
+
+    <div class="about-content">
+        <div class="container">
+            <div class="about-section">
+                <h2>Why We Created Check-In</h2>
+                <p>In today's world, we've witnessed a troubling surge in crime rates across communities. Traditional safety measures and communication systems have become fragmented, leaving residents feeling isolated and uninformed. We recognized that current processes are too confusing, spread across multiple platforms, and lack the reliability that communities desperately need.</p>
+                
+                <p>Check-In was born from a simple yet powerful belief: <strong>every community deserves to be safe, connected, and well-informed.</strong> We saw the gap between what people needed and what was available, and we decided to bridge it.</p>
+            </div>
+
+            <div class="about-section">
+                <h2>The Problems We're Solving</h2>
+                <div class="problem-grid">
+                    <div class="problem-card">
+                        <h3><i class="fas fa-chart-line"></i> Rising Crime Rates</h3>
+                        <p>Communities are experiencing unprecedented levels of crime, leaving residents feeling vulnerable and unsafe in their own neighborhoods.</p>
+                    </div>
+                    <div class="problem-card">
+                        <h3><i class="fas fa-puzzle-piece"></i> Fragmented Systems</h3>
+                        <p>Current safety information is scattered across multiple platforms, making it difficult for residents to get a complete picture of what's happening around them.</p>
+                    </div>
+                    <div class="problem-card">
+                        <h3><i class="fas fa-question-circle"></i> Lack of Reliable Information</h3>
+                        <p>Residents struggle to find trustworthy, real-time information about safety concerns in their area, leading to confusion and anxiety.</p>
+                    </div>
+                    <div class="problem-card">
+                        <h3><i class="fas fa-users-slash"></i> Disconnected Communities</h3>
+                        <p>Neighbors often don't know each other or have ways to communicate about safety concerns, creating isolated pockets within communities.</p>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+            <div class="about-section">
+                <h2>Join the Movement</h2>
+                <p>Safety shouldn't be a luxury—it should be a fundamental right for every community. By joining Check-In, you're not just downloading an app; you're becoming part of a movement to make neighborhoods safer, more connected, and better informed.</p>
+                
+                <p>Together, we can transform how communities handle safety, turning isolated residents into a united force for security and peace of mind.</p>
+            </div>
+
+            <div class="mission-section">
+                <h2>Our Mission</h2>
+                <div class="mission-statement">
+                    "To create safer, more connected communities by providing a unified platform where residents can share information, stay informed, and work together to build a secure environment for everyone."
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer" style="background: #18191a; color: #fff; padding: 2.5rem 0 1.2rem 0;">
+        <div class="footer-content" style="display: flex; justify-content: center; align-items: flex-start; gap: 6rem; flex-wrap: wrap;">
+            <div class="footer-section" style="text-align: center; min-width: 220px;">
+                <h3 style="font-weight: 600; color: #fff; margin-bottom: 0.5rem;">Contact Us</h3>
+                <p style="color: #b0b3b8; margin: 0;">Email: teamatcheckin@gmail.com</p>
+                <p style="color: #b0b3b8; margin: 0;">Phone: 416-786-8163</p>
+            </div>
+            <div class="footer-section" style="text-align: center; min-width: 220px;">
+                <h3 style="font-weight: 600; color: #fff; margin-bottom: 0.5rem;">Follow Us</h3>
+                <div class="social-links" style="display: flex; justify-content: center; gap: 1.2rem; margin-top: 0.5rem;">
+                    <a href="https://twitter.com/thecheckin_ca" style="color: #fff; font-size: 1.7rem; display: flex; align-items: center;" target="_blank" rel="noopener">
+                        <svg viewBox="0 0 1200 1227" width="24" height="24" fill="currentColor" style="display: block;"><path d="M1199.61 0 741.68 558.41 1199.61 1227H1047.6L677.36 715.47 345.44 1227H0L484.64 615.41 55.36 0h163.2l331.92 472.94L841.36 0h358.25ZM1002.56 1140.47l-627.2-866.5h-81.6l627.2 866.5h81.6Z"></path></svg>
+                    </a>
+                    <a href="https://instagram.com/thecheckin.ca" style="color: #fff; font-size: 1.7rem; display: flex; align-items: center;" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom" style="text-align: center; color: #b0b3b8; margin-top: 1.5rem; font-size: 1rem;">
+            <p style="margin: 0;">&copy; 2025 Check-In. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Mobile Navigation JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+            const mobileNavOverlay = document.querySelector('.mobile-nav-overlay');
+            const mobileNavClose = document.querySelector('.mobile-nav-close');
+            const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+
+            // Open mobile menu
+            mobileMenuToggle.addEventListener('click', function() {
+                mobileNavOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+
+            // Close mobile menu
+            function closeMobileMenu() {
+                mobileNavOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            mobileNavClose.addEventListener('click', closeMobileMenu);
+
+            // Close menu when clicking on overlay background
+            mobileNavOverlay.addEventListener('click', function(e) {
+                if (e.target === mobileNavOverlay) {
+                    closeMobileMenu();
+                }
+            });
+
+            // Close menu when clicking on navigation links
+            mobileNavLinks.forEach(link => {
+                link.addEventListener('click', closeMobileMenu);
+            });
+
+            // Close menu on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && mobileNavOverlay.classList.contains('active')) {
+                    closeMobileMenu();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
