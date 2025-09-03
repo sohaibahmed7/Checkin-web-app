@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -151,54 +152,46 @@
                 <div class="features-right">
                     <!-- Feature Title -->
                     <div class="feature-navigation">
-                        <h3 id="feature-title">🔹 Neighborhood Chat</h3>
+                        <h3 id="feature-title">🔹 Live Safety Ping</h3>
                         </div>
 
-                        <!-- Live Chat Feature -->
+                        <!-- Safety Ping Dashboard Feature -->
                         <div class="feature-content" id="live-chat-feature" style="display: block;">
-                            <div class="chat-overview">
-                                <div class="chat-header">
-                                    <h4>Live Chat</h4>
-                                    <span class="chat-status">12 Online</span>
+                            <div class="safety-dashboard">
+                                <div class="dashboard-header">
+                                    <h4>⚡ Community Safety Dashboard</h4>
+                                    <span class="dashboard-status">Active</span>
                                 </div>
                                 
-                                <div class="chat-preview">
-                                    <div class="chat-message-preview">
-                                        <div class="message-avatar">👤</div>
-                                        <div class="message-preview-content">
-                                            <div class="message-sender">Sarah Johnson</div>
-                                            <div class="message-preview">Did anyone see that suspicious person earlier?</div>
-                                            <div class="message-time">2 min ago</div>
-                                        </div>
-                                        <div class="message-badge">3</div>
-                                    </div>
-                                    
-                                    <div class="chat-message-preview">
-                                        <div class="message-avatar">👤</div>
-                                        <div class="message-preview-content">
-                                            <div class="message-sender">Mike Chen</div>
-                                            <div class="message-preview">I noticed them too, very concerning!</div>
-                                            <div class="message-time">1 min ago</div>
+                                <div class="dashboard-form">
+                                    <div class="form-section">
+                                        <label class="form-label">Report Type *</label>
+                                        <div class="form-input">
+                                            <span class="input-placeholder">Select the type of incident to report...</span>
+                                            <i class="fas fa-chevron-down"></i>
                                         </div>
                                     </div>
                                     
-                                    <div class="chat-message-preview">
-                                        <div class="message-avatar">👤</div>
-                                        <div class="message-preview-content">
-                                            <div class="message-sender">Lisa Park</div>
-                                            <div class="message-preview">Should we report this to the police?</div>
-                                            <div class="message-time">Just now</div>
+                                    <div class="form-section">
+                                        <label class="form-label">Select Location *</label>
+                                        <div class="form-map">
+                                            <img src="pages/assets/map alerts.png" alt="Neighborhood Map" class="map-image">
                                         </div>
                                     </div>
-                                </div>
-                                
-                                <div class="chat-actions">
-                                    <button class="action-btn primary" onclick="joinChat()">
-                                        <i class="fas fa-comments"></i> Join Chat
-                                    </button>
-                                    <button class="action-btn secondary" onclick="viewChatHistory()">
-                                        <i class="fas fa-history"></i> Chat History
-                                    </button>
+                                    
+                                    <div class="form-section">
+                                        <label class="form-label">Priority Level</label>
+                                        <div class="form-input">
+                                            <span class="input-placeholder">Set the urgency level...</span>
+                                            <i class="fas fa-chevron-down"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="dashboard-buttons">
+                                        <button class="action-btn primary" onclick="joinChat()">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
