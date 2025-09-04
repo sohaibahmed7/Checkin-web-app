@@ -1,18 +1,22 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Check-In - Community Safety App</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=96">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/png" href="favicon.svg">
+    <link rel="icon" type="image/png" href="Checklogopngping (1).png">
+    <script src="script.js" defer></script>
 </head>
 <body>
     <nav class="navbar">
         <div class="logo">
-            <a href="index.html"><h1>Check-In</h1></a>
+            <a href="index.html">
+                <img src="Check-In Logo.png" alt="Check-In Logo" class="logo-image">
+            </a>
         </div>
         <div class="nav-links">
             <a href="index.html" class="active">Home</a>
@@ -34,7 +38,9 @@
     <div class="mobile-nav-overlay">
         <div class="mobile-nav-content">
             <div class="mobile-nav-header">
-                <h2>Check-In</h2>
+                <div class="mobile-logo">
+                    <img src="Check-In Logo.png" alt="Check-In Logo" class="logo-image">
+                </div>
                 <button class="mobile-nav-close">
                     <i class="fas fa-times"></i>
                 </button>
@@ -55,27 +61,44 @@
 
     <header class="hero">
         <div class="hero-content">
-            <h1 class="animate-text">Keep Your Community Connected & Informed</h1>
-            <p class="animate-text">Real-time safety alerts, live maps, and group chat — all in one app.</p>
-            <!-- <a href="pages/info/download.html" class="cta-button animate-button"> -->
-                <!-- <span>Download Now</span> -->
-                <!-- <i class="fas fa-arrow-right"></i> -->
-            <!-- </a> -->
+
+            <h1 class="hero-headline animate-text">
+                <span class="headline-line-1">Keep Your Community</span>
+                <span class="headline-line-2"><span class="highlight-purple">Connected &</span></span>
+                <span class="headline-line-3 gradient-text"><span class="highlight-purple">Safe</span></span>
+            </h1>
+            <p class="hero-subheading animate-text">
+                Real-time safety alerts, live maps, and group chat — all in one app.
+            </p>
+            <div class="hero-cta-section">
+                <a href="pages/info/contact.html" class="cta-button-primary animate-button" style="background: white !important; color: #6b21a8 !important; border: none !important;">
+                    <span>Get Started</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+                <a href="#features" class="cta-button-secondary animate-button">
+                    <span>Learn More</span>
+                </a>
+            </div>
         </div>
         <div class="hero-image">
-            <img src="pages/assets/Check-In Pitchdeck.png" alt="Check-In App Interface" class="animate-image app-screenshot" style="max-width: 300px;">
+            <div class="phone-mockup-container">
+                <img src="pages/assets/iphonemockupfirstpage.png" alt="Check-In App Interface" class="animate-image app-screenshot primary-mockup">
+                <img src="pages/assets/iphonemockupfirstpage.png" alt="Check-In App Interface" class="animate-image app-screenshot secondary-mockup">
+            </div>
         </div>
     </header>
 
     <!-- YouTube Demo Section -->
     <section class="demo-section">
+
+        
         <div class="container">
-            <h2>See a Demo of the Product in Action</h2>
+            <h2>See a <span class="highlight-purple">Demo</span> of the Product in Action</h2>
             <div class="video-container">
                 <iframe 
                     width="100%" 
                     height="400" 
-                    src="https://www.youtube.com/embed/zyq9GzMlA7s?si=WgDkGmBJ-SbjEgbP" 
+                    src="https://www.youtube.com/embed/zyq9GzMlA7s" 
                     title="Check-In App Demo" 
                     frameborder="0" 
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -86,77 +109,100 @@
     </section>
 
     <!-- Features Section -->
-    <section id="features" class="features-section">
+    <section id="features" class="features-section" style="padding: 3rem 0 !important; min-height: auto !important; background: #f8f9fa !important;">
         <div class="container">
             <div class="features-grid">
                 <!-- Left Column -->
                 <div class="features-left">
-                    <h2>Check-In is your all-in-one community safety assistant</h2>
+                    <h2>Check-In Is Your All-In-One <span class="highlight-purple">Community Safety</span> Platform</h2>
                     <ul class="features-list">
-                        <li>Report incidents and suspicious activities instantly</li>
-                        <li>Get real-time alerts about safety concerns in your area</li>
-                        <li>Connect with neighbors through secure group messaging</li>
-                        <li>Jot notes and share updates with your community</li>
+                        <li>Place <strong>real-time</strong> safety pings on your neighborhood map</li>
+                        <li>Connect with <strong>neighbors</strong> through live group chat</li>
+                        <li>Create <strong>comprehensive</strong> safety reports with rich media</li>
+                        <li>Experience <strong>seamless</strong> navigation through all features</li>
                     </ul>
                     
                     <div class="feature-buttons">
-                        <div class="feature-button">
-                            <i class="fas fa-map-marked-alt"></i>
-                            <span>Map Alerts</span>
+                        <div class="feature-button" onclick="showFeature('safety-pings')">
+                            <i class="fas fa-map-pin"></i>
+                            <span>Local Safety <br>Pings</span>
                         </div>
-                        <div class="feature-button">
+                        <div class="feature-button active" onclick="showFeature('live-chat')">
                             <i class="fas fa-comments"></i>
-                            <span>Group Chat</span>
+                            <span>Live Chat</span>
                         </div>
-                        <div class="feature-button">
-                            <i class="fas fa-clipboard-list"></i>
-                            <span>Report Creation</span>
+                        <div class="feature-button" onclick="showFeature('rich-reports')">
+                            <i class="fas fa-file-alt"></i>
+                            <span>Rich Reports</span>
                         </div>
-                        <div class="feature-button">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>Security Updates</span>
+                        <div class="feature-button" onclick="showFeature('home-dashboard')">
+                            <i class="fas fa-home"></i>
+                            <span>Home Dashboard</span>
                         </div>
-                        <div class="feature-button">
+                        <div class="feature-button" onclick="showFeature('real-time-alerts')">
                             <i class="fas fa-bell"></i>
-                            <span>Real-time Notifications</span>
+                            <span>Real-time <br>Alerts</span>
                         </div>
-                        <div class="feature-button">
+                        <div class="feature-button" onclick="showFeature('community-connect')">
                             <i class="fas fa-users"></i>
-                            <span>Neighborhood Watch</span>
+                            <span>Community Connect</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Right Column -->
                 <div class="features-right">
-                    <div class="app-mockup">
-                        <div class="mockup-header">
-                            <i class="fas fa-bolt"></i>
-                            <span>Community Safety Dashboard</span>
-                            <i class="fas fa-cog"></i>
+                    <!-- Feature Title -->
+                    <div class="feature-navigation">
+                        <h3 id="feature-title">🔹 Live Safety Ping</h3>
                         </div>
-                        <div class="mockup-content">
-                            <div class="input-group">
-                                <label>Report Type *</label>
-                                <textarea placeholder="Select the type of incident to report..."></textarea>
-                            </div>
-                            <div class="input-group">
-                                <label>Select Location *</label>
-                                <div class="map-preview">
-                                    <img src="pages/assets/map alerts.png" alt="Map Interface" class="map-image">
+
+                        <!-- Safety Ping Dashboard Feature -->
+                        <div class="feature-content" id="live-chat-feature" style="display: block;">
+                            <div class="safety-dashboard">
+                                <div class="dashboard-header">
+                                    <h4>⚡ Community Safety Dashboard</h4>
+                                    <span class="dashboard-status">⚙️</span>
+                                </div>
+                                
+                                <div class="dashboard-form">
+                                    <div class="form-section">
+                                        <label class="form-label">Report Type *</label>
+                                        <div class="form-input">
+                                            <span class="input-placeholder">Select the type of incident to report...</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-section">
+                                        <label class="form-label">Select Location *</label>
+                                        <div class="form-map">
+                                            <img src="pages/assets/map alerts.png" alt="Neighborhood Map" class="map-image">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-section">
+                                        <label class="form-label">Priority Level</label>
+                                        <div class="form-input">
+                                            <span class="input-placeholder">Set the urgency level...</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="dashboard-buttons">
+                                        <button class="action-btn primary" onclick="joinChat()">
+                                            ✈️
+                                        </button>
+                                        <button class="action-btn secondary" onclick="voiceInput()">
+                                            🎤
+                                        </button>
+                                        <button class="action-btn secondary" onclick="textFormat()">
+                                            A
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="input-group">
-                                <label>Priority Level</label>
-                                <textarea placeholder="Set the urgency level..."></textarea>
-                            </div>
                         </div>
-                        <div class="mockup-actions">
-                            <button class="action-btn"><i class="fas fa-paper-plane"></i></button>
-                            <button class="action-btn"><i class="fas fa-microphone"></i></button>
-                            <button class="action-btn"><i class="fas fa-font"></i></button>
-                        </div>
-                    </div>
+
+
                 </div>
             </div>
 
@@ -168,81 +214,91 @@
     <!-- App Showcase Section -->
     <section class="app-showcase">
         <div class="container">
-            <h2>App Features</h2>
+            <h2>App <span class="highlight-purple">Features</span></h2>
             <div class="showcase-grid">
                 <div class="showcase-item">
                     <div class="showcase-text">
-                        <h3>Create Your Own Alerts in Your Neighborhood</h3>
+                        <h3 style="color: black;">Drop <span class="highlight-purple">Safety Pings</span> Instantly on Your Neighborhood Map</h3>
                         <ul class="showcase-features">
-                            <li>Real-time incident tracking with time stamps</li>
-                            <li>Interactive map with street-level detail</li>
-                            <li>Quick reporting with location pinpointing</li>
-                            <li>Community-wide safety monitoring</li>
+                            <li>One-tap safety alert placement with GPS precision</li>
+                            <li>Real-time incident tracking with live map updates</li>
+                            <li>Instant community-wide safety notifications</li>
+                            <li>Interactive neighborhood monitoring system</li>
                         </ul>
                     </div>
-                    <div class="showcase-image">
-                        <img src="pages/assets/map alerts.png" alt="Map Alerts Interface" class="feature-image">
+                    <div class="video-frame-small">
+                        <div class="frame-content">
+                            <iframe src="pages/assets/video-player.html?v=4" frameborder="0" allowfullscreen></iframe>
+                        </div>
                     </div>
                 </div>
 
                 <div class="showcase-item">
                     <div class="showcase-text">
-                        <h3>Stay Connected with Your Community Through Secure Group Messaging</h3>
+                        <h3 style="color: black;">Connect with Neighbors Through <span class="highlight-purple">Real-Time</span> Group Messaging</h3>
                         <ul class="showcase-features">
-                            <li>Secure neighborhood group conversations</li>
-                            <li>Instant safety alerts and updates</li>
-                            <li>Photo and location sharing</li>
-                            <li>Moderated community discussions</li>
+                            <li>Live neighborhood chat with instant messaging</li>
+                            <li>Share safety alerts and community updates instantly</li>
+                            <li>Secure photo and location sharing capabilities</li>
+                            <li>Coordinated community safety discussions</li>
                         </ul>
                     </div>
-                    <div class="showcase-image">
-                        <img src="pages/assets/groupchat reports.png" alt="Group Chat Interface" class="feature-image">
+                    <div class="video-frame-small">
+                        <div class="frame-content">
+                            <iframe src="pages/assets/video-player-2.html?v=4" frameborder="0" allowfullscreen></iframe>
+                        </div>
                     </div>
                 </div>
 
                 <div class="showcase-item">
                     <div class="showcase-text">
-                        <h3>Easily Create and Share Detailed Safety Reports</h3>
+                        <h3 style="color: black;">Build Detailed <span class="highlight-purple">Safety Reports</span> with Photos & Videos</h3>
                         <ul class="showcase-features">
-                            <li>Quick incident documentation</li>
-                            <li>Photo and video attachments</li>
-                            <li>Priority level classification</li>
-                            <li>Automated report distribution</li>
+                            <li>Comprehensive incident documentation with media</li>
+                            <li>Add photos, videos, and audio evidence easily</li>
+                            <li>Smart priority classification system</li>
+                            <li>Automatic report sharing with your community</li>
                         </ul>
                     </div>
-                    <div class="showcase-image">
-                        <img src="pages/assets/report creation.png" alt="Report Creation Interface" class="feature-image">
+                    <div class="video-frame-small">
+                        <div class="frame-content">
+                            <iframe src="pages/assets/video-player-3.html?v=4" frameborder="0" allowfullscreen></iframe>
+                        </div>
                     </div>
                 </div>
 
+
+
                 <div class="showcase-item">
                     <div class="showcase-text">
-                        <h3>Direct, Fast, and Secure Communication with Local Security Personnel</h3>
+                        <h3 style="color: black;">Navigate the Complete Check-In <span class="highlight-purple">Dashboard</span> Experience</h3>
                         <ul class="showcase-features">
-                            <li>Direct security personnel contact</li>
-                            <li>Emergency response coordination</li>
-                            <li>Patrol guard status updates</li>
-                            <li>24/7 security monitoring</li>
+                            <li>Seamless access to all safety features</li>
+                            <li>Quick navigation between tools and reports</li>
+                            <li>Real-time alerts and notification center</li>
+                            <li>Unified interface for community safety</li>
                         </ul>
                     </div>
-                    <div class="showcase-image">
-                        <img src="pages/assets/security updates .png" alt="Security Communication Interface" class="feature-image">
+                    <div class="video-frame-small">
+                        <div class="frame-content">
+                            <iframe src="pages/assets/video-player-4.html?v=4" frameborder="0" allowfullscreen></iframe>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <footer class="footer" style="background: #18191a; color: #fff; padding: 2.5rem 0 1.2rem 0;">
+    <footer class="footer" style="background: #18191a; color: #fff; padding: 3rem 0 1.5rem 0;">
         <div class="footer-content" style="display: flex; justify-content: center; align-items: flex-start; gap: 6rem; flex-wrap: wrap;">
             <div class="footer-section" style="text-align: center; min-width: 220px;">
-                <h3 style="font-weight: 600; color: #fff; margin-bottom: 0.5rem;">Contact Us</h3>
-                <p style="color: #b0b3b8; margin: 0;">Email: teamatcheckin@gmail.com</p>
+                <h3 style="font-weight: 600; color: #fff; margin-bottom: 1rem;">Contact Us</h3>
+                <p style="color: #b0b3b8; margin: 0 0 0.5rem 0;">Email: teamatcheckin@gmail.com</p>
                 <p style="color: #b0b3b8; margin: 0;">Phone: 416-786-8163</p>
             </div>
             <div class="footer-section" style="text-align: center; min-width: 220px;">
-                <h3 style="font-weight: 600; color: #fff; margin-bottom: 0.5rem;">Follow Us</h3>
-                <div class="social-links" style="display: flex; justify-content: center; gap: 1.2rem; margin-top: 0.5rem;">
+                <h3 style="font-weight: 600; color: #fff; margin-bottom: 1rem;">Follow Us</h3>
+                <div class="social-links" style="display: flex; justify-content: center; gap: 1.5rem; margin-top: 0.5rem;">
                     <!-- X (Twitter) SVG -->
                     <a href="https://twitter.com/thecheckin_ca" style="color: #fff; font-size: 1.7rem; display: flex; align-items: center;" target="_blank" rel="noopener">
                         <svg viewBox="0 0 1200 1227" width="24" height="24" fill="currentColor" style="display: block;"><path d="M1199.61 0 741.68 558.41 1199.61 1227H1047.6L677.36 715.47 345.44 1227H0L484.64 615.41 55.36 0h163.2l331.92 472.94L841.36 0h358.25ZM1002.56 1140.47l-627.2-866.5h-81.6l627.2 866.5h81.6Z"></path></svg>
@@ -251,10 +307,12 @@
                 </div>
             </div>
         </div>
-        <div class="footer-bottom" style="text-align: center; color: #b0b3b8; margin-top: 1.5rem; font-size: 1rem;">
+        <div class="footer-bottom" style="text-align: center; color: #b0b3b8; margin-top: 2rem; font-size: 1rem;">
             <p style="margin: 0;">&copy; 2025 Check-In. All rights reserved.</p>
         </div>
     </footer>
+
+
 
     <!-- Mobile Navigation JavaScript -->
     <script>
@@ -316,6 +374,86 @@
             
             // Check on initial load
             checkScroll();
+            
+            // Video loading debug
+            const videos = document.querySelectorAll('video');
+            videos.forEach((video, index) => {
+                video.addEventListener('loadstart', () => {
+                    console.log(`Video ${index + 1} started loading`);
+                });
+                video.addEventListener('canplay', () => {
+                    console.log(`Video ${index + 1} can play`);
+                });
+                video.addEventListener('error', (e) => {
+                    console.error(`Video ${index + 1} error:`, e);
+                });
+            });
+        });
+    </script>
+    
+    <!-- Phone Mockup Outline Removal Script -->
+    <script>
+        // Remove phone mockup outlines on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 Removing phone mockup outlines...');
+            
+            // Remove outlines from all phone mockup elements
+            document.querySelectorAll(".phone-mockup-container img, .primary-mockup, .secondary-mockup, .animate-image, .app-screenshot").forEach(el => {
+                el.style.border = "none";
+                el.style.outline = "none";
+                el.style.boxShadow = "none";
+                el.style.filter = "none";
+                el.style.webkitBoxShadow = "none";
+                el.style.mozBoxShadow = "none";
+                el.style.webkitAppearance = "none";
+                el.style.mozAppearance = "none";
+                el.style.appearance = "none";
+                el.style.userSelect = "none";
+                el.style.webkitUserSelect = "none";
+                el.style.mozUserSelect = "none";
+                el.style.msUserSelect = "none";
+                el.style.background = "transparent";
+                el.style.backgroundColor = "transparent";
+                el.style.backgroundImage = "none";
+            });
+            
+            // Also remove backgrounds from container elements
+            document.querySelectorAll(".phone-mockup-container, .hero-image, .hero div, .phone-mockup-container *, .hero-image *").forEach(el => {
+                el.style.background = "transparent";
+                el.style.backgroundColor = "transparent";
+                el.style.backgroundImage = "none";
+                el.style.backgroundSize = "none";
+                el.style.backgroundRepeat = "none";
+                el.style.backgroundPosition = "none";
+                el.style.backgroundAttachment = "none";
+                el.style.backgroundClip = "none";
+                el.style.backgroundOrigin = "none";
+            });
+            
+            console.log('✅ Phone mockup outlines removed!');
+            
+            // Force light purple borders on feature headers
+            document.querySelectorAll('.pings-header, .chat-header, .reports-header, .dashboard-header, .alerts-header, .community-header').forEach(el => {
+                el.style.border = '2px solid #e9d5ff';
+                el.style.borderColor = '#e9d5ff';
+                console.log('✅ Applied light purple borders to feature headers!');
+            });
+            
+            // Force the Get Started button to be white
+            const getStartedButton = document.querySelector('.cta-button-primary');
+            if (getStartedButton) {
+                getStartedButton.style.background = 'white';
+                getStartedButton.style.color = '#6b21a8';
+                getStartedButton.style.border = 'none';
+                console.log('✅ Get Started button forced to white!');
+                
+                // Continuously ensure button stays white
+                setInterval(() => {
+                    getStartedButton.style.background = 'white';
+                    getStartedButton.style.color = '#6b21a8';
+                    getStartedButton.style.border = 'none';
+                }, 100);
+            }
         });
     </script>
 </body>
