@@ -1,13 +1,14 @@
 :root {
     --primary-color: #6b21a8;
-    --secondary-color: #6b21a8;
+    --secondary-color: #8b5cf6;
     --text-color: #333;
-    --light-gray: #f5f5f5;
+    --light-gray: #f8f9fa;
     --white: #ffffff;
     --gradient-start: #6b21a8;
-    --gradient-end: #6b21a8;
-    --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    --button-shadow: 0 4px 12px rgba(162, 89, 230, 0.3);
+    --gradient-end: #a855f7;
+    --card-shadow: 0 8px 25px rgba(107, 33, 168, 0.15);
+    --button-shadow: 0 4px 16px rgba(107, 33, 168, 0.25);
+    --hover-shadow: 0 12px 35px rgba(107, 33, 168, 0.3);
     
     /* Spacing System */
     --spacing-xs: 0.5rem;
@@ -98,6 +99,7 @@ body {
 /* Navbar Styles */
 .navbar {
     display: flex;
+    box-shadow: 0 2px 20px rgba(107, 33, 168, 0.1);
     justify-content: space-between;
     align-items: center;
     padding: 0.5rem 5%;
@@ -461,6 +463,7 @@ body {
     max-width: 600px;
     position: relative;
     z-index: 2;
+    margin-right: var(--spacing-lg);
 }
 
 
@@ -469,7 +472,7 @@ body {
     font-size: 4rem;
     margin-bottom: var(--spacing-md);
     font-weight: 800;
-    line-height: 1.1;
+    line-height: 1.3;
     display: flex;
     flex-direction: column;
     letter-spacing: -0.02em;
@@ -2758,20 +2761,31 @@ body.scrolled {
     align-items: center;
     justify-content: center;
     gap: var(--spacing-sm);
-    background: #ffffff;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
     color: #374151;
-    padding: var(--spacing-sm) 1.5rem;
-    border-radius: 12px;
+    padding: var(--spacing-md) 1.5rem;
+    border-radius: 16px;
     font-weight: 600;
     transition: all 0.3s ease;
     cursor: pointer;
     text-align: center;
-    min-height: 60px;
+    min-height: 70px;
     border: 2px solid #e5e7eb;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: var(--card-shadow);
+    position: relative;
+    overflow: hidden;
 }
 
-/* Removed hover effect for feature buttons */
+.feature-button:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--hover-shadow);
+    border-color: var(--primary-color);
+    background: linear-gradient(135deg, #ffffff 0%, #f0f3ff 100%);
+}
+
+.feature-button:active {
+    transform: translateY(-2px) scale(1.01);
+}
 
 .feature-button i {
     font-size: 1.2rem;
@@ -2792,9 +2806,10 @@ body.scrolled {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 2rem;
-    padding: 1.25rem 1.75rem;
-    background: linear-gradient(135deg, #6b21a8 0%, #7c3aed 100%);
-    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
     box-shadow: 0 4px 20px rgba(107, 33, 168, 0.15);
     position: relative;
     overflow: hidden;
@@ -6561,69 +6576,69 @@ html {
 
 /* Safety Dashboard Styles */
 .safety-dashboard {
-    background: transparent;
-    border-radius: 6px;
-    padding: 0.3rem;
-    box-shadow: none;
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     margin-top: 0.5rem;
-    border: none;
-    max-width: 80%;
+    border: 1px solid #e5e7eb;
+    max-width: 100%;
 }
 
 .dashboard-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.4rem;
-    padding-bottom: 0.2rem;
-    border-bottom: 1px solid #e9ecef;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
 }
 
 .dashboard-header h4 {
     margin: 0;
-    color: white;
-    font-size: 0.8rem;
-    font-weight: 600;
+    color: #374151;
+    font-size: 1.1rem;
+    font-weight: 700;
 }
 
 .dashboard-status {
-    background: #6b21a8;
-    color: white;
-    padding: 0.1rem 0.3rem;
-    border-radius: 6px;
-    font-size: 0.55rem;
-    font-weight: 500;
+    background: transparent;
+    color: #6b7280;
+    padding: 0;
+    border-radius: 0;
+    font-size: 1.2rem;
+    font-weight: 400;
 }
 
 .dashboard-form {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 1.25rem;
 }
 
 .form-section {
-    margin-bottom: 0.25rem;
+    margin-bottom: 0;
 }
 
 .form-label {
     display: block;
     font-weight: 600;
-    color: white;
-    margin-bottom: 0.15rem;
-    font-size: 0.65rem;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
 }
 
 .form-input {
     background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 3px;
-    padding: 0.25rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.75rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-height: 22px;
+    min-height: 44px;
 }
 
 .form-input:hover {
@@ -6634,9 +6649,9 @@ html {
 }
 
 .input-placeholder {
-    color: #6c757d;
-    font-size: 0.8rem;
-    font-style: italic;
+    color: #9ca3af;
+    font-size: 0.9rem;
+    font-style: normal;
 }
 
 .form-input i {
@@ -6646,10 +6661,10 @@ html {
 
 .form-map {
     background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 3px;
-    padding: 0.15rem;
-    min-height: 25px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.5rem;
+    min-height: 120px;
     position: relative;
     display: flex;
     align-items: center;
@@ -6661,19 +6676,19 @@ html {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 2px;
+    border-radius: 6px;
 }
 
 .dashboard-buttons {
     display: flex;
-    gap: 0.3rem;
+    gap: 0.75rem;
     justify-content: center;
-    margin-top: 0.4rem;
+    margin-top: 1rem;
 }
 
 .dashboard-buttons .action-btn {
-    width: 28px;
-    height: 28px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     border: none;
     display: flex;
@@ -6681,25 +6696,27 @@ html {
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-size: 0.7rem;
+    font-size: 1rem;
 }
 
 .dashboard-buttons .action-btn.primary {
-    background: #6b21a8;
-    color: white;
-    box-shadow: 0 2px 8px rgba(107, 33, 168, 0.2);
+    background: #f8f9fa;
+    color: #6b21a8;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .dashboard-buttons .action-btn.primary:hover {
-    background: #581c87;
+    background: #f0f0f0;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(107, 33, 168, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: #6b21a8;
 }
 
 .dashboard-buttons .action-btn.secondary {
     background: #f8f9fa;
     color: #6b21a8;
-    border: 1px solid #e9ecef;
+    border: 1px solid #e5e7eb;
 }
 
 .dashboard-buttons .action-btn.secondary:hover {

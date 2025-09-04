@@ -169,6 +169,14 @@ function joinChat() {
     // Removed alert message
 }
 
+function voiceInput() {
+    // Removed alert message
+}
+
+function textFormat() {
+    // Removed alert message
+}
+
 function viewChatHistory() {
     // Removed alert message
 }
