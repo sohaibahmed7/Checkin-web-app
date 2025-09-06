@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Check-In - Community Safety App</title>
-    <link rel="stylesheet" href="styles.css?v=96">
+    <link rel="stylesheet" href="styles.css?v=130">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="Checklogopngping (1).png">
@@ -151,8 +151,8 @@
                 <!-- Right Column -->
                 <div class="features-right">
                     <!-- Feature Title -->
-                    <div class="feature-navigation">
-                        <h3 id="feature-title">🔹 Live Safety Ping</h3>
+                    <div class="feature-navigation" style="display: none;">
+                        <h3 id="feature-title">Live Safety Ping</h3>
                         </div>
 
                         <!-- Safety Ping Dashboard Feature -->
@@ -165,9 +165,9 @@
                                 
                                 <div class="dashboard-form">
                                     <div class="form-section">
-                                        <label class="form-label">Report Type *</label>
+                                        <label class="form-label">Search Address *</label>
                                         <div class="form-input">
-                                            <span class="input-placeholder">Select the type of incident to report...</span>
+                                            <span class="input-placeholder">Enter address or location...</span>
                                         </div>
                                     </div>
                                     
@@ -179,21 +179,15 @@
                                     </div>
                                     
                                     <div class="form-section">
-                                        <label class="form-label">Priority Level</label>
+                                        <label class="form-label">Type of Ping</label>
                                         <div class="form-input">
-                                            <span class="input-placeholder">Set the urgency level...</span>
-                                        </div>
+                                            <span class="input-placeholder">Select ping type...</span>
                                     </div>
-                                    
+                                </div>
+                                
                                     <div class="dashboard-buttons">
-                                        <button class="action-btn primary" onclick="joinChat()">
-                                            ✈️
-                                        </button>
-                                        <button class="action-btn secondary" onclick="voiceInput()">
-                                            🎤
-                                        </button>
-                                        <button class="action-btn secondary" onclick="textFormat()">
-                                            A
+                                        <button class="action-btn primary" onclick="sendPing()">
+                                            <i class="fas fa-paper-plane"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -455,4 +449,4 @@
         });
     </script>
 </body>
-</html> 
+</html>  
