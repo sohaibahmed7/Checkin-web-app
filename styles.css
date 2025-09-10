@@ -4483,11 +4483,11 @@ body.scrolled {
 .features-right {
     flex: 1;
     padding: 2rem;
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    background: transparent;
     border-radius: 20px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    box-shadow: none;
     position: relative;
-    backdrop-filter: blur(10px);
+    backdrop-filter: none;
 }
 
 /* Removed the blue line at the top */
@@ -6770,32 +6770,43 @@ html {
 .safety-dashboard {
     background: white;
     border-radius: 12px;
-    padding: 1.5rem;
+    padding: 1rem;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    margin-top: 0.5rem;
-    border: 1px solid #e5e7eb;
-    max-width: 100%;
+    margin-top: -1rem;
+    margin-left: 2rem;
+    border: none;
+    max-width: 85%;
+    width: 85%;
+    min-height: 240px;
 }
 
 .dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid #e5e7eb;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 0.75rem !important;
+    padding: 0.5rem 0.75rem !important;
+    background: #6b21a8 !important;
+    border-radius: 16px !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.dashboard-header::before {
+    display: none !important;
 }
 
 .dashboard-header h4 {
     margin: 0;
-    color: #374151;
-    font-size: 1.1rem;
+    color: white;
+    font-size: 0.85rem;
     font-weight: 700;
 }
 
 .dashboard-status {
     background: transparent;
-    color: #6b7280;
+    color: white;
     padding: 0;
     border-radius: 0;
     font-size: 1.2rem;
@@ -6805,7 +6816,7 @@ html {
 .dashboard-form {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1rem;
 }
 
 .form-section {
@@ -6817,26 +6828,25 @@ html {
     font-weight: 600;
     color: #374151;
     margin-bottom: 0.5rem;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
 }
 
 .form-input {
     background: #f8f9fa;
     border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 0.75rem;
+    border-radius: 6px;
+    padding: 0.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-height: 44px;
+    min-height: 35px;
 }
 
 .form-input:hover {
     border-color: #6b21a8;
     background: #f0f0f0;
-    transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(107, 33, 168, 0.1);
 }
 
@@ -6854,9 +6864,11 @@ html {
 .form-map {
     background: #f8f9fa;
     border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 0.5rem;
-    min-height: 120px;
+    border-radius: 6px;
+    padding: 0.15rem !important;
+    min-height: 220px !important;
+    max-height: 220px !important;
+    height: 220px !important;
     position: relative;
     display: flex;
     align-items: center;
@@ -6879,8 +6891,8 @@ html {
 }
 
 .dashboard-buttons .action-btn {
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     border: none;
     display: flex;
@@ -6888,21 +6900,22 @@ html {
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-size: 1rem;
+    font-size: 0.8rem;
 }
 
 .dashboard-buttons .action-btn.primary {
-    background: #f8f9fa;
-    color: #6b21a8;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: #6b21a8;
+    color: white;
+    border: none;
+    box-shadow: 0 2px 8px rgba(107, 33, 168, 0.3);
+    width: 40px;
+    height: 40px;
 }
 
 .dashboard-buttons .action-btn.primary:hover {
-    background: #f0f0f0;
+    background: #5a1a96;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border-color: #6b21a8;
+    box-shadow: 0 4px 12px rgba(107, 33, 168, 0.4);
 }
 
 .dashboard-buttons .action-btn.secondary {
@@ -6914,5 +6927,5 @@ html {
 .dashboard-buttons .action-btn.secondary:hover {
     background: #e9ecef;
     transform: translateY(-1px);
-    border-color: #6b21a8;
+    border-color: #e5e7eb;
 }
