@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Check-In</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="../../Checklogopngping (1).png">
+    <script src="/config.js"></script>
+    <style>
+        .about-page {
+            background: linear-gradient(135deg, #fafbfc 0%, #f1f5f9 100%);
+            min-height: 100vh;
+            padding: 0;
+            margin-top: 0;
+        }
+        
+        .about-banner {
+            background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a855f7 100%);
+            color: white;
+            text-align: center;
+            padding: 4rem 1.5rem;
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+            margin-top: 90px;
+        }
+        
+        .about-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.05"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.05"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.05"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.05"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.2;
+        }
+        
+        .about-banner h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .about-banner p {
+            font-size: 1.25rem;
+            font-weight: 400;
+            max-width: 42rem;
+            margin: 0 auto;
+            color: white;
+            line-height: 1.6;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .about-content {
+            max-width: 56rem;
+            margin: 0 auto;
+            padding: 0 1.5rem 2rem 1.5rem;
+            background: linear-gradient(135deg, #fafbfc 0%, #f1f5f9 100%);
+        }
+        
+        .about-section {
+            margin-bottom: 1.5rem;
+            background: white;
+            padding: 1.25rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.08);
+        }
+        
+        .why-created-section {
+            background: white;
+            padding: 2rem;
+        }
+        
+        .why-created-section h2 {
+            color: #1e293b;
+            font-size: 1.75rem;
+        }
+        
+        .why-created-section p {
+            color: #475569;
+            font-size: 1.125rem;
+        }
+        
+        .about-section h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1rem;
+            text-align: left;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        
+        .about-section h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 2rem;
+            height: 2px;
+            background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+            border-radius: 1px;
+        }
+        
+        .about-section p {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #475569;
+            margin-bottom: 1.5rem;
+            text-align: left;
+            font-weight: 400;
+        }
+        
+        .about-section p strong {
+            font-weight: 600;
+            color: #7c3aed;
+        }
+        
+        .purple-word {
+            color: #6b21a8;
+            font-weight: 600;
+        }
+        
+        
+        .problems-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .problem-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .problem-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #6b21a8;
+        }
+        
+        .problem-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: #c4b5fd;
+        }
+        
+        .problem-card i {
+            font-size: 2.5rem;
+            color: #6b21a8;
+            margin-bottom: 1rem;
+        }
+        
+        .problem-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.75rem;
+            line-height: 1.3;
+        }
+        
+        .problem-card p {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #64748b;
+            margin: 0;
+            text-align: left;
+        }
+        
+        
+        .join-movement {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(124, 58, 237, 0.08);
+            position: relative;
+            text-align: center;
+        }
+        
+        .join-movement h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+            position: relative;
+        }
+        
+        .join-movement p {
+            text-align: center;
+            max-width: 45rem;
+            margin: 0 auto 1rem auto;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #475569;
+            position: relative;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a855f7 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(124, 58, 237, 0.3);
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(124, 58, 237, 0.4);
+            background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 50%, #9333ea 100%);
+        }
+        
+        @media (max-width: 768px) {
+            .about-page {
+                padding: 0;
+            }
+            
+            .about-banner {
+                padding: 2.5rem 1rem;
+                margin-bottom: 2rem;
+            }
+            
+            .about-banner h1 {
+                font-size: 2.5rem;
+            }
+            
+            .about-banner p {
+                font-size: 1.125rem;
+            }
+            
+            .about-content {
+                padding: 0 1rem;
+            }
+            
+            .about-section {
+                padding: 1.25rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .about-section h2 {
+                font-size: 1.375rem;
+            }
+            
+            
+            .problems-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .join-movement {
+                padding: 1.25rem;
+                border-radius: 6px;
+            }
+            
+            .join-movement h2 {
+                font-size: 1.375rem;
+            }
+            
+            .cta-button {
+                padding: 0.625rem 1.25rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <a href="../../index.html">
+                <img src="../../Check-In Logo.png" alt="Check-In Logo" class="logo-image">
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="../../index.html">Home</a>
+            <a href="how-it-works.html">How It Works</a>
+            <a href="about-us.html" class="active">About Us</a>
+            <a href="contact.html">Contact</a>
+            <!-- COMMENTING OUT FOR NOW -->
+            <!-- <div class="nav-buttons"> -->
+                <!-- <a href="../auth/login.html" class="button button-primary">Login</a> -->
+                <!-- <a href="download.html" class="button button-secondary">Download</a> -->
+            <!-- </div> -->
+        </div>
+        <div class="mobile-menu-toggle">
+            <i class="fas fa-bars"></i>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation Overlay -->
+    <div class="mobile-nav-overlay">
+        <div class="mobile-nav-content">
+            <div class="mobile-nav-header">
+                <div class="mobile-logo">
+                    <img src="../../Check-In Logo.png" alt="Check-In Logo" class="logo-image">
+                </div>
+                <button class="mobile-nav-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="mobile-nav-links">
+                <a href="../../index.html" class="mobile-nav-link">Home</a>
+                <a href="how-it-works.html" class="mobile-nav-link">How It Works</a>
+                <a href="about-us.html" class="mobile-nav-link active">About Us</a>
+                <a href="contact.html" class="mobile-nav-link">Contact</a>
+            </div>
+            <!-- COMMENTING OUT FOR NOW -->
+            <!-- <div class="mobile-nav-buttons">
+                <a href="../auth/login.html" class="mobile-button mobile-button-primary">Login</a>
+                <a href="download.html" class="mobile-button mobile-button-secondary">Download</a> -->
+            <!-- </div> -->
+        </div>
+    </div>
+
+    <section class="about-page">
+        <div class="about-banner">
+            <h1>About Check-In</h1>
+            <p>Empowering communities to stay <span style="color: #ffffff;">safe, connected, and informed</span> in an increasingly uncertain world.</p>
+        </div>
+
+        <div class="about-content">
+            <div class="about-section why-created-section">
+                <h2><span class="purple-word">Why</span> We <span class="purple-word">Created</span> Check-In</h2>
+                <p>In today's world, we've witnessed a troubling surge in crime rates across communities. Traditional safety measures and communication systems have become fragmented, leaving residents feeling isolated and uninformed. We recognized that current processes are too confusing, spread across multiple platforms, and lack the reliability that communities desperately need.</p>
+                
+                <p>Check-In was born from a simple yet powerful belief: <strong><span class="purple-word">every community deserves to be safe, connected, and well-informed.</span></strong> We saw the gap between what people needed and what was available, and we decided to bridge it.</p>
+            </div>
+
+            <div class="about-section">
+                <h2>The <span class="purple-word">Problems</span> We're Solving</h2>
+                <div class="problems-grid">
+                    <div class="problem-card">
+                        <i class="fas fa-chart-line"></i>
+                        <h3><span class="purple-word">Rising</span> Crime Rates</h3>
+                        <p>Communities are experiencing unprecedented levels of crime, leaving residents feeling vulnerable and unsafe in their own neighborhoods.</p>
+                    </div>
+                    <div class="problem-card">
+                        <i class="fas fa-link"></i>
+                        <h3><span class="purple-word">Fragmented</span> Systems</h3>
+                        <p>Current safety information is scattered across multiple platforms, making it difficult for residents to get a complete picture of what's happening around them.</p>
+                    </div>
+                    <div class="problem-card">
+                        <i class="fas fa-question-circle"></i>
+                        <h3>Lack of <span class="purple-word">Reliable</span> Information</h3>
+                        <p>Residents struggle to find trustworthy, real-time information about safety concerns in their area, leading to confusion and anxiety.</p>
+                    </div>
+                    <div class="problem-card">
+                        <i class="fas fa-users"></i>
+                        <h3><span class="purple-word">Disconnected</span> Communities</h3>
+                        <p>Neighbors often don't know each other or have ways to communicate about safety concerns, creating isolated pockets within communities.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="join-movement">
+                <h2>Join the <span class="purple-word">Movement</span></h2>
+                <p>Safety shouldn't be a luxury—it should be a <span class="purple-word">fundamental right</span> for every community. By joining Check-In, you're not just downloading an app; you're becoming part of a movement to make neighborhoods safer, more connected, and better informed.</p>
+                
+                <p>Together, we can <span class="purple-word">transform</span> how communities handle safety, turning isolated residents into a united force for security and peace of mind.</p>
+                
+                <a href="contact.html" class="cta-button">Get Started</a>
+            </div>
+
+        </div>
+    </section>
+
+    <footer class="footer" style="background: #18191a; color: #fff; padding: 3rem 0 1.5rem 0;">
+        <div class="footer-content" style="display: flex; justify-content: center; align-items: flex-start; gap: 6rem; flex-wrap: wrap;">
+            <div class="footer-section" style="text-align: center; min-width: 220px;">
+                <h3 style="font-weight: 600; color: #fff; margin-bottom: 1rem;">Contact Us</h3>
+                <p style="color: #b0b3b8; margin: 0 0 0.5rem 0;">Email: teamatcheckin@gmail.com</p>
+                <p style="color: #b0b3b8; margin: 0;">Phone: 416-786-8163</p>
+            </div>
+            <div class="footer-section" style="text-align: center; min-width: 220px;">
+                <h3 style="font-weight: 600; color: #fff; margin-bottom: 1rem;">Follow Us</h3>
+                <div class="social-links" style="display: flex; justify-content: center; gap: 1.5rem; margin-top: 0.5rem;">
+                    <!-- X (Twitter) SVG -->
+                    <a href="https://twitter.com/thecheckin_ca" style="color: #fff; font-size: 1.7rem; display: flex; align-items: center;" target="_blank" rel="noopener">
+                        <svg viewBox="0 0 1200 1227" width="24" height="24" fill="currentColor" style="display: block;"><path d="M1199.61 0 741.68 558.41 1199.61 1227H1047.6L677.36 715.47 345.44 1227H0L484.64 615.41 55.36 0h163.2l331.92 472.94L841.36 0h358.25ZM1002.56 1140.47l-627.2-866.5h-81.6l627.2 866.5h81.6Z"></path></svg>
+                    </a>
+                    <a href="https://instagram.com/thecheckin.ca" style="color: #fff; font-size: 1.7rem; display: flex; align-items: center;" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom" style="text-align: center; color: #b0b3b8; margin-top: 2rem; font-size: 1rem;">
+            <p style="margin: 0;">&copy; 2025 Check-In. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Mobile Navigation JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+            const mobileNavOverlay = document.querySelector('.mobile-nav-overlay');
+            const mobileNavClose = document.querySelector('.mobile-nav-close');
+            const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+
+            // Open mobile menu
+            mobileMenuToggle.addEventListener('click', function() {
+                mobileNavOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            });
+
+            // Close mobile menu
+            function closeMobileMenu() {
+                mobileNavOverlay.classList.remove('active');
+                document.body.style.overflow = ''; // Restore scrolling
+            }
+
+            mobileNavClose.addEventListener('click', closeMobileMenu);
+
+            // Close menu when clicking on overlay background
+            mobileNavOverlay.addEventListener('click', function(e) {
+                if (e.target === mobileNavOverlay) {
+                    closeMobileMenu();
+                }
+            });
+
+            // Close menu when clicking on navigation links
+            mobileNavLinks.forEach(link => {
+                link.addEventListener('click', closeMobileMenu);
+            });
+
+            // Close menu on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && mobileNavOverlay.classList.contains('active')) {
+                    closeMobileMenu();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
