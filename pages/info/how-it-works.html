@@ -8,6 +8,157 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="../../Checklogopngping (1).png">
+    <style>
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a855f7 100%);
+            color: white;
+            padding: 0.625rem 1.25rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(124, 58, 237, 0.3);
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-top: 1rem;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(124, 58, 237, 0.4);
+            background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 50%, #9333ea 100%);
+        }
+        
+        .cta-button i {
+            margin-left: 0.5rem;
+        }
+        
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .how-it-works-page {
+                padding: 6rem 0 1rem 0;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .how-it-works-page h2 {
+                font-size: 2rem;
+                margin-bottom: 2rem;
+                margin-top: 1rem;
+                text-align: center;
+            }
+            
+            .steps-container {
+                gap: 1.5rem;
+                margin-bottom: 2rem;
+            }
+            
+            .step-card {
+                padding: 1.5rem 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .step-card h3 {
+                font-size: 1.25rem;
+                margin-bottom: 1rem;
+                line-height: 1.3;
+            }
+            
+            .step-card p {
+                font-size: 0.95rem;
+                line-height: 1.5;
+            }
+            
+            .step-image {
+                margin-bottom: 1rem;
+            }
+            
+            .step-image i {
+                font-size: 2.5rem;
+            }
+            
+            .moderator-info {
+                padding: 1.5rem 1rem;
+                margin-top: 2rem;
+            }
+            
+            .moderator-info h3 {
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+                text-align: center;
+            }
+            
+            .moderator-info p {
+                font-size: 0.95rem;
+                line-height: 1.5;
+                margin-bottom: 1rem;
+            }
+            
+            .moderator-info ul {
+                padding-left: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .moderator-info li {
+                font-size: 0.9rem;
+                line-height: 1.4;
+                margin-bottom: 0.5rem;
+            }
+            
+            .cta-button {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.95rem;
+                margin-top: 1.5rem;
+                display: block;
+                text-align: center;
+                width: 100%;
+                max-width: 200px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .how-it-works-page {
+                padding: 5.5rem 0 0.5rem 0;
+            }
+            
+            .how-it-works-page h2 {
+                font-size: 1.75rem;
+                margin-top: 1rem;
+            }
+            
+            .step-card {
+                padding: 1.25rem 0.75rem;
+            }
+            
+            .step-card h3 {
+                font-size: 1.125rem;
+            }
+            
+            .step-card p {
+                font-size: 0.9rem;
+            }
+            
+            .moderator-info {
+                padding: 1.25rem 0.75rem;
+            }
+            
+            .moderator-info h3 {
+                font-size: 1.375rem;
+            }
+            
+            .cta-button {
+                padding: 0.625rem 1.25rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -18,8 +169,8 @@
         </div>
         <div class="nav-links">
             <a href="../../index.html">Home</a>
-            <a href="about-us.html">About Us</a>
             <a href="how-it-works.html" class="active">How it Works</a>
+            <a href="about-us.html">About Us</a>
             <a href="contact.html">Contact</a>
             <!-- COMMENTING OUT FOR NOW -->
             <!-- <div class="nav-buttons"> -->
@@ -45,8 +196,8 @@
             </div>
             <div class="mobile-nav-links">
                 <a href="../../index.html" class="mobile-nav-link">Home</a>
-                <a href="about-us.html" class="mobile-nav-link">About Us</a>
                 <a href="how-it-works.html" class="mobile-nav-link active">How It Works</a>
+                <a href="about-us.html" class="mobile-nav-link">About Us</a>
                 <a href="contact.html" class="mobile-nav-link">Contact</a>
             </div>
             <!-- COMMENTING OUT FOR NOW -->
@@ -59,19 +210,19 @@
 
     <section class="how-it-works-page">
         <div class="container">
-            <h2>How Check-In Works</h2>
+            <h2><span style="color: #000000;">How</span> <span style="color: #6b21a8;">Check-In</span> <span style="color: #6b21a8;">Works</span></h2>
             <div class="steps-container">
                 <div class="step-card">
                     <div class="step-image">
                         <i class="fas fa-download"></i>
                     </div>
-                    <h3>1. Create an 
+                    <h3><span style="color: #000000;">1.</span> <span style="color: #6b21a8;">Create</span> <span style="color: #000000;">an 
                         <br>
-                        Account</h3>
-                    <p>Create an account with your email and password on the webapp*.
+                        Account</span></h3>
+                    <p>Create an account with your email and password on the webapp.
                         <br>
                         <br>
-                        *mobile app is being developed - check back soon!
+                        * Mobile app is being developed check back soon!
                     </p>
                 </div>
                 
@@ -79,7 +230,7 @@
                     <div class="step-image">
                         <i class="fas fa-search"></i>
                     </div>
-                    <h3>2. Find Your Neighborhood</h3>
+                    <h3><span style="color: #000000;">2. Find Your</span> <span style="color: #6b21a8;">Neighborhood</span></h3>
                     <p>Search for your neighborhood and request to join. You'll need an access code from your community moderator.</p>
                 </div>
                 
@@ -87,19 +238,19 @@
                     <div class="step-image">
                         <i class="fas fa-bell"></i>
                     </div>
-                    <h3>3. Connect & Stay Safe</h3>
+                    <h3><span style="color: #000000;">3.</span> <span style="color: #6b21a8;">Connect</span> <span style="color: #000000;">& Stay</span> <span style="color: #6b21a8;">Safe</span></h3>
                     <p>Once approved, receive private alerts, chat with neighbors, and help keep your community informed.</p>
                 </div>
             </div>
             
             <div class="moderator-info">
-                <h3>About Community Moderators</h3>
-                <p>Each neighborhood is private and managed by trusted moderators who:</p>
+                <h3><span style="color: #000000;">About</span> <span style="color: #6b21a8;">Community</span> <span style="color: #000000;">Moderators</span></h3>
+                <p>Each neighborhood is <span style="color: #6b21a8;">private</span> and managed by <span style="color: #6b21a8;">trusted</span> moderators who:</p>
                 <ul>
-                    <li>Control access to the neighborhood group</li>
-                    <li>Verify new members through access codes</li>
-                    <li>Manage community discussions</li>
-                    <li>Ensure neighborhood safety updates stay private</li>
+                    <li><span style="color: #6b21a8;">Control</span> access to the neighborhood group</li>
+                    <li>Verify <span style="color: #6b21a8;">new members</span> through access codes</li>
+                    <li><span style="color: #6b21a8;">Manage</span> community discussions</li>
+                    <li>Ensure neighborhood <span style="color: #6b21a8;">safety updates</span> stay private</li>
                 </ul>
                 <a href="contact.html" class="cta-button">
                     <span>Become a Moderator</span>
