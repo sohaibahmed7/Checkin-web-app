@@ -14,6 +14,7 @@ const config = {
         VERIFY_EMAIL: '/api/verify-email',
         RESEND_CODE: '/api/resend-code',
         CONTACT: '/api/contact',
+        NEWSLETTER_SUBSCRIBE: '/api/newsletter/subscribe',
         REQUEST_PASSWORD_RESET: '/api/request-password-reset',
         RESET_PASSWORD: '/api/reset-password',
         // Enhanced Reports API endpoints

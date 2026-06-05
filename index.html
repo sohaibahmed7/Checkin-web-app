@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Check-In - Community Safety App</title>
-    <link rel="stylesheet" href="styles.css?v=152">
+    <link rel="stylesheet" href="styles.css?v=166">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="Checklogopngping (1).png">
@@ -23,6 +23,14 @@
             <a href="pages/info/how-it-works.html">How It Works</a>
             <a href="pages/info/about-us.html">About Us</a>
             <a href="pages/info/contact.html">Contact</a>
+            <a
+                href="#"
+                class="newsletter-nav-link newsletter-trigger"
+                aria-label="Subscribe to GTA Crime Updates newsletter"
+                title="Subscribe to newsletter"
+            >
+                <i class="fas fa-envelope"></i>
+            </a>
             <!-- COMMENTING OUT FOR NOW -->
             <div class="nav-buttons"> 
                 <!-- <a href="pages/auth/login.html" class="button button-primary">Login</a> -->
@@ -50,6 +58,12 @@
                 <a href="pages/info/how-it-works.html" class="mobile-nav-link">How It Works</a>
                 <a href="pages/info/about-us.html" class="mobile-nav-link">About Us</a>
                 <a href="pages/info/contact.html" class="mobile-nav-link">Contact</a>
+                <a
+                    href="#"
+                    class="mobile-nav-link mobile-newsletter-link newsletter-trigger"
+                >
+                    Newsletter
+                </a>
             </div>
             <!-- COMMENTING OUT FOR NOW -->
             <div class="mobile-nav-buttons">
@@ -339,6 +353,7 @@
                         <svg viewBox="0 0 1200 1227" width="24" height="24" fill="currentColor" style="display: block;"><path d="M1199.61 0 741.68 558.41 1199.61 1227H1047.6L677.36 715.47 345.44 1227H0L484.64 615.41 55.36 0h163.2l331.92 472.94L841.36 0h358.25ZM1002.56 1140.47l-627.2-866.5h-81.6l627.2 866.5h81.6Z"></path></svg>
                     </a>
                     <a href="https://instagram.com/thecheckin.ca" style="color: #fff; font-size: 1.7rem; display: flex; align-items: center;" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="newsletter-link newsletter-trigger" aria-label="Subscribe to GTA Crime Updates newsletter" title="Subscribe to newsletter"><i class="fas fa-envelope"></i></a>
                 </div>
             </div>
         </div>
@@ -346,6 +361,30 @@
             <p style="margin: 0;">&copy; 2025 Check-In. All rights reserved.</p>
         </div>
     </footer>
+
+    <!-- Newsletter signup modal -->
+    <div id="newsletterModal" class="newsletter-modal-wrap" aria-hidden="true">
+        <div class="newsletter-modal-overlay">
+            <div class="newsletter-modal" role="dialog" aria-labelledby="newsletterModalTitle" aria-modal="true">
+                <button type="button" class="newsletter-modal-close" aria-label="Close">&times;</button>
+                <p class="newsletter-modal-kicker">Don't miss out!</p>
+                <h2 id="newsletterModalTitle" class="newsletter-modal-title">Get Weekly GTA Safety Updates</h2>
+                <p class="newsletter-modal-subtitle">Your free neighbourhood safety briefing from Check-In</p>
+                <form class="newsletter-modal-form" novalidate>
+                    <label for="newsletterEmail">Your email address</label>
+                    <input type="email" id="newsletterEmail" name="email" placeholder="you@email.com" required autocomplete="email">
+                    <button type="submit" class="newsletter-modal-submit">Subscribe</button>
+                </form>
+                <button type="button" class="newsletter-modal-dismiss">Continue without subscribing</button>
+                <p class="newsletter-modal-fine-print">
+                    By subscribing, you agree to receive emails from Check-In. Unsubscribe anytime via the link in each email.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="newsletter-modal.js" defer></script>
 
 
 
@@ -389,6 +428,25 @@
                     closeMobileMenu();
                 }
             });
+
+            // Partners swipe: reveal on touch, reset when finger lifts (mobile)
+            const partnersSwipeCard = document.querySelector('.partners-swipe-card');
+            const isTouchSwipeDevice = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+
+            if (partnersSwipeCard && isTouchSwipeDevice) {
+                partnersSwipeCard.removeAttribute('tabindex');
+
+                function hidePartnersInfo() {
+                    partnersSwipeCard.classList.remove('partners-revealed');
+                }
+
+                partnersSwipeCard.addEventListener('touchstart', function() {
+                    partnersSwipeCard.classList.add('partners-revealed');
+                }, { passive: true });
+
+                partnersSwipeCard.addEventListener('touchend', hidePartnersInfo, { passive: true });
+                partnersSwipeCard.addEventListener('touchcancel', hidePartnersInfo, { passive: true });
+            }
 
             // Scroll animation for showcase items
             const showcaseItems = document.querySelectorAll('.showcase-item');

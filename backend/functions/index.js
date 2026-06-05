@@ -29,7 +29,14 @@ config({path: __dirname + "/.env"});
 const app = express();
 
 // CORS middleware - allow requests from your Vercel frontend
-const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(",") : ["http://localhost:8000"];
+const allowedOrigins = process.env.ALLOWED_ORIGINS ?
+  process.env.ALLOWED_ORIGINS.split(",") :
+  [
+    "http://localhost:8000",
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+    "http://127.0.0.1:8000",
+  ];
 
 app.use(cors({
   origin: function(origin, callback) {
@@ -685,8 +692,78 @@ app.post("/api/resend-code", async (req, res) => {
   }
 });
 
+// --- Newsletter (Beehiiv) ---
+app.post("/api/newsletter/subscribe", express.json(), async (req, res) => {
+  try {
+    const email = typeof req.body?.email === "string" ? req.body.email.trim() : "";
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({message: "Please enter a valid email address."});
+    }
+
+    const apiKey = process.env.BEEHIIV_API_KEY;
+    const publicationId = process.env.BEEHIIV_PUBLICATION_ID;
+    if (!apiKey || !publicationId) {
+      console.error("Beehiiv credentials missing: set BEEHIIV_API_KEY and BEEHIIV_PUBLICATION_ID");
+      return res.status(503).json({
+        message: "Newsletter signup is not available right now. Please try again later.",
+      });
+    }
+
+    const referringSite = req.get("origin") || req.get("referer") || "https://thecheckin.ca";
+    const beehiivResponse = await fetch(
+        `https://api.beehiiv.com/v2/publications/${publicationId}/subscriptions`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            email,
+            reactivate_existing: true,
+            send_welcome_email: true,
+            utm_source: "checkin-website",
+            utm_medium: "newsletter-modal",
+            referring_site: referringSite,
+          }),
+        },
+    );
+
+    let beehiivData = {};
+    try {
+      beehiivData = await beehiivResponse.json();
+    } catch (parseErr) {
+      beehiivData = {};
+    }
+
+    if (beehiivResponse.ok) {
+      return res.status(200).json({
+        message: "You're subscribed! Watch your inbox for GTA safety updates from Check-In.",
+      });
+    }
+
+    const beehiivMessage = beehiivData?.errors?.[0]?.message || beehiivData?.message || "";
+    const alreadySubscribed = beehiivResponse.status === 409 ||
+      /already|exist/i.test(beehiivMessage);
+
+    if (alreadySubscribed) {
+      return res.status(200).json({
+        message: "You're already subscribed. Thanks for following Check-In!",
+      });
+    }
+
+    console.error("Beehiiv subscription failed:", beehiivResponse.status, beehiivData);
+    return res.status(502).json({
+      message: "We couldn't complete your subscription. Please try again.",
+    });
+  } catch (err) {
+    console.error("Newsletter subscribe error:", err);
+    return res.status(500).json({message: "Something went wrong. Please try again later."});
+  }
+});
+
 // --- Contact Form ---
-app.post("/api/contact", async (req, res) => {
+app.post("/api/contact", express.json(), async (req, res) => {
   try {
     const {name, email, message} = req.body;
     const contactMsg = new ContactMessage({name, email, message});

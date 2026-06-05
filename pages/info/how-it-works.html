@@ -274,6 +274,7 @@
                         <svg viewBox="0 0 1200 1227" width="24" height="24" fill="currentColor" style="display: block;"><path d="M1199.61 0 741.68 558.41 1199.61 1227H1047.6L677.36 715.47 345.44 1227H0L484.64 615.41 55.36 0h163.2l331.92 472.94L841.36 0h358.25ZM1002.56 1140.47l-627.2-866.5h-81.6l627.2 866.5h81.6Z"></path></svg>
                     </a>
                     <a href="https://instagram.com/thecheckin.ca" style="color: #fff; font-size: 1.7rem; display: flex; align-items: center;" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="newsletter-link newsletter-trigger" aria-label="Subscribe to GTA Crime Updates newsletter" title="Subscribe to newsletter"><i class="fas fa-envelope"></i></a>
                 </div>
             </div>
         </div>
@@ -281,6 +282,28 @@
             <p style="margin: 0;">&copy; 2025 Check-In. All rights reserved.</p>
         </div>
     </footer>
+
+    <div id="newsletterModal" class="newsletter-modal-wrap" aria-hidden="true">
+        <div class="newsletter-modal-overlay">
+            <div class="newsletter-modal" role="dialog" aria-labelledby="newsletterModalTitle" aria-modal="true">
+                <button type="button" class="newsletter-modal-close" aria-label="Close">&times;</button>
+                <p class="newsletter-modal-kicker">Don't miss out!</p>
+                <h2 id="newsletterModalTitle" class="newsletter-modal-title">Get Weekly GTA Safety Updates</h2>
+                <p class="newsletter-modal-subtitle">Your free neighbourhood safety briefing from Check-In</p>
+                <form class="newsletter-modal-form" novalidate>
+                    <label for="newsletterEmail">Your email address</label>
+                    <input type="email" id="newsletterEmail" name="email" placeholder="you@email.com" required autocomplete="email">
+                    <button type="submit" class="newsletter-modal-submit">Subscribe</button>
+                </form>
+                <button type="button" class="newsletter-modal-dismiss">Continue without subscribing</button>
+                <p class="newsletter-modal-fine-print">
+                    By subscribing, you agree to receive emails from Check-In. Unsubscribe anytime via the link in each email.
+                </p>
+            </div>
+        </div>
+    </div>
+    <script src="/config.js"></script>
+    <script src="../../newsletter-modal.js" defer></script>
 
     <!-- Mobile Navigation JavaScript -->
     <script>
