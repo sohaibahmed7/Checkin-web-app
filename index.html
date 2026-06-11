@@ -5,10 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Check-In - Community Safety App</title>
-    <link rel="stylesheet" href="styles.css?v=166">
+    <link rel="stylesheet" href="styles.css?v=182">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="Checklogopngping (1).png">
+    <script src="config.js"></script>
+    <script src="landing-map-mockup.js" defer></script>
     <script src="script.js" defer></script>
 </head>
 <body>
@@ -23,14 +25,6 @@
             <a href="pages/info/how-it-works.html">How It Works</a>
             <a href="pages/info/about-us.html">About Us</a>
             <a href="pages/info/contact.html">Contact</a>
-            <a
-                href="#"
-                class="newsletter-nav-link newsletter-trigger"
-                aria-label="Subscribe to GTA Crime Updates newsletter"
-                title="Subscribe to newsletter"
-            >
-                <i class="fas fa-envelope"></i>
-            </a>
             <!-- COMMENTING OUT FOR NOW -->
             <div class="nav-buttons"> 
                 <!-- <a href="pages/auth/login.html" class="button button-primary">Login</a> -->
@@ -106,7 +100,7 @@
     <section class="exclusive-partners-section" aria-label="Official partner">
         <div class="exclusive-partners-inner">
             <div class="partners-swipe-card" tabindex="0">
-                <p class="exclusive-partner-heading">Official <span class="highlight-purple">partner</span></p>
+                <p class="exclusive-partner-heading">Official <span class="highlight-purple">Partner</span></p>
                 <div class="partners-swipe-viewport">
                     <div class="partners-swipe-track">
                         <div class="partners-slide partners-slide-logo">
@@ -122,12 +116,12 @@
                         <div class="partners-slide partners-slide-info" id="partners-info-panel">
                             <div class="partners-info-inner">
                                 <div class="partners-metric-block">
-                                    <p class="partners-deploy-line">Check-In will deploy to over</p>
+                                    <p class="partners-deploy-line">Check-In Will Deploy to Over</p>
                                     <span class="partners-metric-value">10,000+</span>
-                                    <p class="partners-deploy-line">people in Halton this summer</p>
+                                    <p class="partners-deploy-line">People in Halton This Summer</p>
                                 </div>
                                 <div class="partners-allies">
-                                    <p class="partners-allies-label">Crime Stoppers of Halton partners with</p>
+                                    <p class="partners-allies-label">Crime Stoppers of Halton Partners With</p>
                                     <div class="partners-logo-strip" aria-label="Partners of Crime Stoppers of Halton">
                                         <img src="pages/assets/partners/OPP.gif" alt="Ontario Provincial Police">
                                         <img src="pages/assets/partners/HRPS.gif" alt="Halton Regional Police Service">
@@ -138,7 +132,7 @@
                         </div>
                     </div>
                 </div>
-                <p class="partners-swipe-hint"><span>Hover for details</span> <i class="fas fa-arrow-right"></i></p>
+                <p class="partners-swipe-hint"><span>Hover For Details</span> <i class="fas fa-arrow-right"></i></p>
             </div>
         </div>
     </section>
@@ -212,40 +206,43 @@
                         <h3 id="feature-title">Live Safety Ping</h3>
                         </div>
 
-                        <!-- Safety Ping Dashboard Feature -->
+                        <!-- Community Safety Dashboard – Live Map mockup -->
                         <div class="feature-content" id="live-chat-feature" style="display: block;">
-                            <div class="safety-dashboard">
-                                <div class="dashboard-header">
-                                    <h4>⚡ Community Safety Dashboard</h4>
-                                    <span class="dashboard-status">⚙️</span>
+                            <div class="safety-dashboard landing-live-map-mockup">
+                                <div class="landing-map-intro">
+                                    <h3 class="landing-map-title">Welcome to your <span class="highlight-purple">Neighbourhood</span></h3>
+                                    <p class="landing-map-subtitle">See placed pings to know whats going on</p>
                                 </div>
-                                
-                                <div class="dashboard-form">
-                                    <div class="form-section">
-                                        <label class="form-label">Search Address *</label>
-                                        <div class="form-input">
-                                            <span class="input-placeholder">Enter address or location...</span>
+
+                                <div class="landing-map-toolbar">
+                                    <div class="landing-map-filters">
+                                        <select class="landing-time-filter" aria-label="Time filter">
+                                            <option value="all" selected>All time</option>
+                                            <option value="24h">&lt; 24h</option>
+                                            <option value="7d">&lt; 7 Days</option>
+                                        </select>
+                                        <div class="landing-category-toggles">
+                                            <button type="button" class="active" data-category="all">All</button>
+                                            <button type="button" data-category="suspicious">Suspicious</button>
+                                            <button type="button" data-category="break-enter">Break &amp; Enter</button>
+                                            <button type="button" data-category="fire">Fire</button>
+                                            <button type="button" data-category="other">Other</button>
                                         </div>
                                     </div>
-                                    
-                                    <div class="form-section">
-                                        <label class="form-label">Select Location *</label>
-                                        <div class="form-map">
-                                            <img src="pages/assets/map alerts.png" alt="Neighborhood Map" class="map-image">
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="form-section">
-                                        <label class="form-label">Type of Ping</label>
-                                        <div class="form-input">
-                                            <span class="input-placeholder">Select ping type...</span>
-                                    </div>
+                                    <button type="button" class="landing-ping-button" aria-label="Place a Ping">
+                                        <i class="fas fa-plus"></i> Place a Ping
+                                    </button>
                                 </div>
-                                
-                                    <div class="dashboard-buttons">
-                                        <button class="action-btn primary" onclick="sendPing()">
-                                            <i class="fas fa-paper-plane"></i>
-                                        </button>
+
+                                <div class="landing-map-layout">
+                                    <div class="landing-map-view">
+                                        <div id="landing-map-mockup" aria-label="Interactive neighborhood safety map"></div>
+                                    </div>
+                                    <div class="landing-ping-sidebar">
+                                        <div class="landing-ping-sidebar-header">
+                                            <h3>Pings in your neighborhood</h3>
+                                        </div>
+                                        <div id="landing-ping-list" class="landing-ping-list"></div>
                                     </div>
                                 </div>
                             </div>
@@ -353,7 +350,6 @@
                         <svg viewBox="0 0 1200 1227" width="24" height="24" fill="currentColor" style="display: block;"><path d="M1199.61 0 741.68 558.41 1199.61 1227H1047.6L677.36 715.47 345.44 1227H0L484.64 615.41 55.36 0h163.2l331.92 472.94L841.36 0h358.25ZM1002.56 1140.47l-627.2-866.5h-81.6l627.2 866.5h81.6Z"></path></svg>
                     </a>
                     <a href="https://instagram.com/thecheckin.ca" style="color: #fff; font-size: 1.7rem; display: flex; align-items: center;" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
-                    <a href="#" class="newsletter-link newsletter-trigger" aria-label="Subscribe to GTA Crime Updates newsletter" title="Subscribe to newsletter"><i class="fas fa-envelope"></i></a>
                 </div>
             </div>
         </div>
@@ -383,8 +379,8 @@
         </div>
     </div>
 
-    <script src="config.js"></script>
-    <script src="newsletter-modal.js" defer></script>
+    <script src="config.js?v=3"></script>
+    <script src="newsletter-modal.js?v=6" defer></script>
 
 
 
@@ -429,23 +425,43 @@
                 }
             });
 
-            // Partners swipe: reveal on touch, reset when finger lifts (mobile)
+            // Partners swipe: tap to reveal on mobile, auto-reset after 4 seconds
             const partnersSwipeCard = document.querySelector('.partners-swipe-card');
             const isTouchSwipeDevice = window.matchMedia('(hover: none), (pointer: coarse)').matches;
 
             if (partnersSwipeCard && isTouchSwipeDevice) {
                 partnersSwipeCard.removeAttribute('tabindex');
 
-                function hidePartnersInfo() {
-                    partnersSwipeCard.classList.remove('partners-revealed');
+                const hintSpan = partnersSwipeCard.querySelector('.partners-swipe-hint span');
+                if (hintSpan) {
+                    hintSpan.textContent = 'Tap for details';
                 }
 
-                partnersSwipeCard.addEventListener('touchstart', function() {
-                    partnersSwipeCard.classList.add('partners-revealed');
-                }, { passive: true });
+                let revertTimer = null;
 
-                partnersSwipeCard.addEventListener('touchend', hidePartnersInfo, { passive: true });
-                partnersSwipeCard.addEventListener('touchcancel', hidePartnersInfo, { passive: true });
+                function hidePartnersInfo() {
+                    partnersSwipeCard.classList.remove('partners-revealed');
+                    if (revertTimer) {
+                        clearTimeout(revertTimer);
+                        revertTimer = null;
+                    }
+                }
+
+                function showPartnersInfo() {
+                    partnersSwipeCard.classList.add('partners-revealed');
+                    if (revertTimer) {
+                        clearTimeout(revertTimer);
+                    }
+                    revertTimer = setTimeout(hidePartnersInfo, 4000);
+                }
+
+                partnersSwipeCard.addEventListener('click', function () {
+                    if (partnersSwipeCard.classList.contains('partners-revealed')) {
+                        hidePartnersInfo();
+                    } else {
+                        showPartnersInfo();
+                    }
+                });
             }
 
             // Scroll animation for showcase items

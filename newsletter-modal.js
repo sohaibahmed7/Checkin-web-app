@@ -7,6 +7,91 @@
     const SUBSCRIBE_PATH = typeof config !== 'undefined' && config.API_ENDPOINTS ?
         config.API_ENDPOINTS.NEWSLETTER_SUBSCRIBE :
         '/api/newsletter/subscribe';
+    const WELCOME_PATH = typeof config !== 'undefined' && config.API_ENDPOINTS ?
+        config.API_ENDPOINTS.NEWSLETTER_WELCOME :
+        '/api/newsletter/welcome-email';
+    const BEEHIIV_PUBLICATION_ID = typeof config !== 'undefined' && config.BEEHIIV_PUBLICATION_ID ?
+        config.BEEHIIV_PUBLICATION_ID :
+        '';
+
+    function submitToBeehiivEmbed(email, publicationId) {
+        return new Promise(function (resolve, reject) {
+            const frameName = 'beehiivSubscribeFrame_' + Date.now();
+            const iframe = document.createElement('iframe');
+            iframe.name = frameName;
+            iframe.title = 'Newsletter subscribe';
+            iframe.style.cssText = 'position:absolute;width:0;height:0;border:0;visibility:hidden';
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = 'https://embeds.beehiiv.com/' + encodeURIComponent(publicationId) + '/subscribe';
+            form.target = frameName;
+            form.style.display = 'none';
+
+            const emailField = document.createElement('input');
+            emailField.type = 'hidden';
+            emailField.name = 'email';
+            emailField.value = email;
+            form.appendChild(emailField);
+
+            let settled = false;
+
+            function cleanup() {
+                if (form.parentNode) form.remove();
+                if (iframe.parentNode) iframe.remove();
+            }
+
+            function finish(success) {
+                if (settled) return;
+                settled = true;
+                cleanup();
+                if (success) resolve();
+                else reject(new Error('Subscribe failed'));
+            }
+
+            iframe.onload = function () {
+                setTimeout(function () {
+                    finish(true);
+                }, 600);
+            };
+
+            document.body.appendChild(iframe);
+            document.body.appendChild(form);
+            form.submit();
+
+            setTimeout(function () {
+                finish(true);
+            }, 4000);
+        });
+    }
+
+    async function subscribeViaApi(email) {
+        const response = await fetch(API_BASE_URL + SUBSCRIBE_PATH, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email }),
+        });
+
+        const result = await response.json().catch(function () {
+            return {};
+        });
+
+        if (response.ok) {
+            return result.message || "You're subscribed! Check your inbox for a welcome email from Check-In.";
+        }
+
+        throw new Error(result.message || 'Subscribe failed');
+    }
+
+    function sendWelcomeEmail(email) {
+        return fetch(API_BASE_URL + WELCOME_PATH, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email }),
+        }).catch(function () {
+            return null;
+        });
+    }
 
     function init() {
         const modal = document.getElementById('newsletterModal');
@@ -56,6 +141,36 @@
             setStatus('', null);
             setSubmitting(false);
             if (form) form.reset();
+        }
+
+        async function subscribeWithEmail(email) {
+            setStatus('', null);
+            setSubmitting(true);
+
+            try {
+                let successMessage;
+
+                try {
+                    successMessage = await subscribeViaApi(email);
+                } catch (apiErr) {
+                    if (!BEEHIIV_PUBLICATION_ID) {
+                        throw apiErr;
+                    }
+                    await submitToBeehiivEmbed(email, BEEHIIV_PUBLICATION_ID);
+                    sendWelcomeEmail(email);
+                    successMessage = "You're subscribed! Check your inbox for a welcome email from Check-In.";
+                }
+
+                setStatus(successMessage, 'success');
+                sessionStorage.setItem(DISMISS_KEY, '1');
+                setTimeout(function () {
+                    closeModal(true);
+                }, 2800);
+            } catch (err) {
+                setStatus(err.message || 'Could not subscribe right now. Please try again.', 'error');
+            } finally {
+                setSubmitting(false);
+            }
         }
 
         function openModal() {
@@ -119,36 +234,7 @@
                     setStatus('Please enter your email address.', 'error');
                     return;
                 }
-
-                setStatus('', null);
-                setSubmitting(true);
-
-                try {
-                    const response = await fetch(API_BASE_URL + SUBSCRIBE_PATH, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: email }),
-                    });
-
-                    const result = await response.json().catch(function () {
-                        return {};
-                    });
-
-                    if (response.ok) {
-                        setStatus(result.message || "You're subscribed! Watch your inbox for updates.", 'success');
-                        sessionStorage.setItem(DISMISS_KEY, '1');
-                        setTimeout(function () {
-                            closeModal(true);
-                        }, 2800);
-                        return;
-                    }
-
-                    setStatus(result.message || 'Something went wrong. Please try again.', 'error');
-                } catch (err) {
-                    setStatus('Could not connect. Check your connection and try again.', 'error');
-                } finally {
-                    setSubmitting(false);
-                }
+                await subscribeWithEmail(email);
             });
         }
 

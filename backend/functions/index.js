@@ -30,7 +30,7 @@ const app = express();
 
 // CORS middleware - allow requests from your Vercel frontend
 const allowedOrigins = process.env.ALLOWED_ORIGINS ?
-  process.env.ALLOWED_ORIGINS.split(",") :
+  process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim()).filter(Boolean) :
   [
     "http://localhost:8000",
     "http://localhost:8080",
@@ -43,9 +43,8 @@ app.use(cors({
     if (!origin) return callback(null, true);
     if (allowedOrigins.indexOf(origin) !== -1) {
       return callback(null, true);
-    } else {
-      return callback(new Error("Not allowed by CORS"));
     }
+    return callback(null, false);
   },
   credentials: true,
 }));
@@ -65,6 +64,9 @@ const connectDb = async () => {
   isConnected = true;
 };
 app.use(async (req, res, next) => {
+  if (req.path === "/api/newsletter/subscribe" || req.path === "/api/newsletter/welcome-email") {
+    return next();
+  }
   try {
     await connectDb();
     next();
@@ -86,6 +88,127 @@ function getTransporter() {
     });
   }
   return transporter;
+}
+
+function buildNewsletterWelcomeHtml() {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Check-In</title>
+</head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f4f6;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" style="max-width:560px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+          <tr>
+            <td style="background:linear-gradient(135deg,#581c87 0%,#7c3aed 100%);padding:36px 40px;text-align:center;">
+              <p style="margin:0 0 6px;color:rgba(255,255,255,0.85);font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">Check-In</p>
+              <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;line-height:1.2;">Welcome to GTA Crime Updates</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:40px 40px 32px;">
+              <h2 style="margin:0 0 16px;color:#111827;font-size:20px;font-weight:700;">Thank you for subscribing</h2>
+              <p style="margin:0 0 16px;color:#374151;font-size:16px;line-height:1.65;">
+                You're now signed up for <strong>weekly crime and safety updates across the GTA</strong>,
+                delivered straight to your inbox by the Check-In team.
+              </p>
+              <p style="margin:0 0 24px;color:#374151;font-size:16px;line-height:1.65;">
+                Each edition covers major incidents, neighbourhood alerts, and other important information
+                to help you stay informed and protected in your community.
+              </p>
+              <table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 0 28px;">
+                <tr>
+                  <td style="background:#6b21a8;border-radius:8px;">
+                    <a href="https://thecheckin.ca" style="display:inline-block;padding:14px 32px;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;">Explore Check-In</a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:0;color:#6b7280;font-size:14px;line-height:1.55;">
+                Questions? Contact us at
+                <a href="mailto:team@thecheckin.ca" style="color:#6b21a8;text-decoration:none;">team@thecheckin.ca</a>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 40px;background:#f9fafb;border-top:1px solid #e5e7eb;text-align:center;">
+              <p style="margin:0;color:#9ca3af;font-size:12px;line-height:1.55;">
+                &copy; 2025 Check-In. All rights reserved.<br>
+                You received this email because you subscribed at thecheckin.ca.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+async function sendNewsletterWelcomeEmail(email) {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+    console.warn("Email credentials missing: welcome email not sent to", email);
+    return false;
+  }
+
+  await getTransporter().sendMail({
+    from: `"Check-In" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "You're subscribed — Weekly GTA Safety Updates from Check-In",
+    html: buildNewsletterWelcomeHtml(),
+    text: [
+      "Thank you for subscribing to Check-In!",
+      "",
+      "You're now signed up for weekly crime and safety updates across the GTA,",
+      "plus other important community safety information.",
+      "",
+      "Visit us: https://thecheckin.ca",
+      "",
+      "— The Check-In Team",
+      "team@thecheckin.ca",
+    ].join("\n"),
+  });
+  return true;
+}
+
+async function fetchBeehiivSubscriptionStatus(email, apiKey, publicationId) {
+  const response = await fetch(
+      `https://api.beehiiv.com/v2/publications/${publicationId}/subscriptions?email=${encodeURIComponent(email)}`,
+      {
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+        },
+      },
+  );
+  if (!response.ok) return null;
+  const payload = await response.json().catch(() => ({}));
+  return payload?.data?.[0]?.status || null;
+}
+
+async function resolveBeehiivSubscriptionStatus(email, apiKey, publicationId, initialStatus) {
+  let status = initialStatus;
+  if (status === "validating") {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    status = await fetchBeehiivSubscriptionStatus(email, apiKey, publicationId) || status;
+  }
+  return status;
+}
+
+function buildSubscribeSuccessMessage(status, welcomeSent) {
+  if (status === "pending") {
+    return "Almost there! Check your inbox and click the confirmation link to finish subscribing.";
+  }
+  if (status === "validating") {
+    return "You're subscribed! We're verifying your email now — you'll be on the list shortly.";
+  }
+  if (welcomeSent) {
+    return "You're subscribed! Check your inbox for a welcome email from Check-In.";
+  }
+  return "You're subscribed! Check your inbox for a welcome email shortly.";
 }
 
 // Chat System Schemas
@@ -693,9 +816,11 @@ app.post("/api/resend-code", async (req, res) => {
 });
 
 // --- Newsletter (Beehiiv) ---
+// Newsletter routes: /api/newsletter/subscribe, /api/newsletter/welcome-email (redeploy)
 app.post("/api/newsletter/subscribe", express.json(), async (req, res) => {
   try {
     const email = typeof req.body?.email === "string" ? req.body.email.trim() : "";
+    const source = typeof req.body?.source === "string" ? req.body.source.trim() : "email-form";
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({message: "Please enter a valid email address."});
     }
@@ -722,8 +847,9 @@ app.post("/api/newsletter/subscribe", express.json(), async (req, res) => {
             email,
             reactivate_existing: true,
             send_welcome_email: true,
+            double_opt_override: "off",
             utm_source: "checkin-website",
-            utm_medium: "newsletter-modal",
+            utm_medium: source === "gmail" ? "gmail-button" : "newsletter-modal",
             referring_site: referringSite,
           }),
         },
@@ -737,8 +863,29 @@ app.post("/api/newsletter/subscribe", express.json(), async (req, res) => {
     }
 
     if (beehiivResponse.ok) {
+      const initialStatus = beehiivData?.data?.status || null;
+      const subStatus = await resolveBeehiivSubscriptionStatus(
+          email, apiKey, publicationId, initialStatus,
+      );
+
+      if (subStatus === "invalid") {
+        console.warn("Beehiiv marked subscription invalid:", email);
+        return res.status(400).json({
+          message: "That email address could not be verified. Please check for typos and use a real inbox you check regularly.",
+        });
+      }
+
+      let welcomeSent = false;
+      if (subStatus === "active" || subStatus === "validating") {
+        try {
+          welcomeSent = await sendNewsletterWelcomeEmail(email);
+        } catch (emailErr) {
+          console.error("Welcome email failed:", emailErr);
+        }
+      }
+
       return res.status(200).json({
-        message: "You're subscribed! Watch your inbox for GTA safety updates from Check-In.",
+        message: buildSubscribeSuccessMessage(subStatus, welcomeSent),
       });
     }
 
@@ -747,9 +894,18 @@ app.post("/api/newsletter/subscribe", express.json(), async (req, res) => {
       /already|exist/i.test(beehiivMessage);
 
     if (alreadySubscribed) {
-      return res.status(200).json({
-        message: "You're already subscribed. Thanks for following Check-In!",
-      });
+      let welcomeSent = false;
+      try {
+        welcomeSent = await sendNewsletterWelcomeEmail(email);
+      } catch (emailErr) {
+        console.error("Welcome email failed:", emailErr);
+      }
+
+      const message = welcomeSent ?
+        "You're already subscribed — we just sent your welcome email again!" :
+        "You're already subscribed. Thanks for following Check-In!";
+
+      return res.status(200).json({message});
     }
 
     console.error("Beehiiv subscription failed:", beehiivResponse.status, beehiivData);
@@ -758,6 +914,25 @@ app.post("/api/newsletter/subscribe", express.json(), async (req, res) => {
     });
   } catch (err) {
     console.error("Newsletter subscribe error:", err);
+    return res.status(500).json({message: "Something went wrong. Please try again later."});
+  }
+});
+
+app.post("/api/newsletter/welcome-email", express.json(), async (req, res) => {
+  try {
+    const email = typeof req.body?.email === "string" ? req.body.email.trim() : "";
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({message: "Please enter a valid email address."});
+    }
+
+    const sent = await sendNewsletterWelcomeEmail(email);
+    if (!sent) {
+      return res.status(503).json({message: "Welcome email is not available right now."});
+    }
+
+    return res.status(200).json({message: "Welcome email sent."});
+  } catch (err) {
+    console.error("Newsletter welcome email error:", err);
     return res.status(500).json({message: "Something went wrong. Please try again later."});
   }
 });

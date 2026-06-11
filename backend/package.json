@@ -1,0 +1,13 @@
+{
+  "name": "checkin-backend",
+  "private": true,
+  "scripts": {
+    "firebase": "firebase",
+    "login": "firebase login",
+    "deploy": "firebase deploy --only functions",
+    "deploy:force": "firebase deploy --only functions --force"
+  },
+  "devDependencies": {
+    "firebase-tools": "^14.0.0"
+  }
+}

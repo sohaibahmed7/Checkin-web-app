@@ -15,6 +15,7 @@ const config = {
         RESEND_CODE: '/api/resend-code',
         CONTACT: '/api/contact',
         NEWSLETTER_SUBSCRIBE: '/api/newsletter/subscribe',
+        NEWSLETTER_WELCOME: '/api/newsletter/welcome-email',
         REQUEST_PASSWORD_RESET: '/api/request-password-reset',
         RESET_PASSWORD: '/api/reset-password',
         // Enhanced Reports API endpoints
@@ -26,17 +27,19 @@ const config = {
         PING_PHOTO: '/api/ping'
     },
 
+    // Beehiiv newsletter — publication ID from Beehiiv Settings → Integrations (safe to expose in frontend)
+    BEEHIIV_PUBLICATION_ID: 'pub_1bbbfb5a-c142-4f10-bcbd-014e766f8066',
+
     // Mapbox Configuration
     MAPBOX_ACCESS_TOKEN: 'pk.eyJ1IjoiYW5zaG1ha2thciIsImEiOiJjbTl2ams5OGcwbGwwMm1vbGpiaDduczg1In0.4yzUyxSxV9lHLtbRQfjdWA',
-    
-    
+
     // App Configuration
     APP_NAME: 'CheckIn',
     APP_VERSION: '1.0.0',
-    
+
     // Default Values
     DEFAULT_AVATAR: 'assets/avatar.svg',
-    
+
     // Helper function to get full API URL
     getApiUrl: function(endpoint, id = null) {
         let url = this.API_BASE_URL + endpoint;
@@ -45,7 +48,7 @@ const config = {
         }
         return url;
     },
-    
+
     // Helper function to get user profile picture URL
     getUserAvatarUrl: function(userId) {
         return userId ? this.getApiUrl(`/api/user/${userId}/profile-picture`) : this.DEFAULT_AVATAR;
@@ -55,4 +58,4 @@ const config = {
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = config;
-} 
+}
