@@ -83,7 +83,7 @@
             type: 'break-enter',
             coordinates: [-79.742, 43.718],
             description: 'Attempted window entry on a ground-floor unit. Police notified; please secure side gates.',
-            user: { name: 'The Checkin Team', avatar: 'https://randomuser.me/api/portraits/men/22.jpg' },
+            user: { name: 'David Nathan', avatar: 'https://randomuser.me/api/portraits/men/22.jpg' },
             timestamp: new Date(Date.now() - 30 * 60 * 1000)
         },
         {
@@ -105,10 +105,10 @@
     ];
 
     const PING_ICONS = {
-        suspicious: 'pages/dashboard/assets/Ping-Suspicious.svg',
-        'break-enter': 'pages/dashboard/assets/Ping-Break-enter.svg',
-        fire: 'pages/dashboard/assets/Ping-Fire.svg',
-        other: 'pages/dashboard/assets/Ping-Car-theft.svg'
+        suspicious: 'pages/assets/pings/ping-suspicious.png',
+        'break-enter': 'pages/assets/pings/ping-break-enter.png',
+        fire: 'pages/assets/pings/ping-fire.png',
+        other: 'pages/assets/pings/ping-other.png'
     };
 
     let mapBounds = null;
@@ -147,7 +147,7 @@
     function getPingTypeIcon(type) {
         const src = PING_ICONS[type] || PING_ICONS.other;
         const label = formatPingTypeDisplay(type);
-        return `<img src="${src}" alt="${label}" class="ping-svg-icon">`;
+        return `<img src="${src}" alt="${label}" class="ping-png-icon">`;
     }
 
     function getUserName(ping) {

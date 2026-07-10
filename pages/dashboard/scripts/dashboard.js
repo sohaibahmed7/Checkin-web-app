@@ -2500,14 +2500,14 @@ function isSameDay(d1, d2) {
 function getPingTypeIcon(type) {
     switch(type) {
         case 'suspicious':
-            return `<img src="./assets/Ping-Suspicious.svg" alt="Suspicious" class="ping-svg-icon">`;
+            return `<img src="./assets/Ping-Suspicious.svg?v=2" alt="Suspicious" class="ping-svg-icon">`;
         case 'break-enter':
-            return `<img src="./assets/Ping-Break-enter.svg" alt="Break & Enter" class="ping-svg-icon">`;
+            return `<img src="./assets/Ping-Break-enter.svg?v=2" alt="Break & Enter" class="ping-svg-icon">`;
         case 'fire':
-            return `<img src="./assets/Ping-Fire.svg" alt="Fire" class="ping-svg-icon">`;
+            return `<img src="./assets/Ping-Fire.svg?v=2" alt="Fire" class="ping-svg-icon">`;
         case 'other':
         default:
-            return `<img src="./assets/Ping-Car-theft.svg" alt="Other" class="ping-svg-icon">`;
+            return `<img src="./assets/Ping-Car-theft.svg?v=2" alt="Other" class="ping-svg-icon">`;
     }
 }
 

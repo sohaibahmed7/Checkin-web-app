@@ -7833,10 +7833,12 @@ html {
     transform: scale(1.1);
 }
 
+.landing-static-marker .ping-png-icon,
 .landing-static-marker .ping-svg-icon {
-    width: 28px;
-    height: 28px;
+    width: 40px;
+    height: 40px;
     display: block;
+    object-fit: contain;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
@@ -7981,9 +7983,11 @@ html {
     font-weight: 500;
 }
 
+.landing-feed-type .ping-png-icon,
 .landing-feed-type .ping-svg-icon {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
 }
 
 .landing-feed-text {
@@ -8149,8 +8153,8 @@ html {
     }
 
     #landing-map-mockup {
-        min-height: 240px;
-        height: auto;
+        min-height: 0;
+        height: 280px;
     }
 
     .landing-ping-sidebar {

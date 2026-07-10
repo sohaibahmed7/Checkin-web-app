@@ -158,7 +158,7 @@ async function sendNewsletterWelcomeEmail(email) {
   await getTransporter().sendMail({
     from: `"Check-In" <${process.env.EMAIL_USER}>`,
     to: email,
-    subject: "You're subscribed — Weekly GTA Safety Updates from Check-In",
+    subject: "You're subscribed - Weekly GTA Safety Updates from Check-In",
     html: buildNewsletterWelcomeHtml(),
     text: [
       "Thank you for subscribing to Check-In!",
@@ -168,7 +168,7 @@ async function sendNewsletterWelcomeEmail(email) {
       "",
       "Visit us: https://thecheckin.ca",
       "",
-      "— The Check-In Team",
+      "- The Check-In Team",
       "team@thecheckin.ca",
     ].join("\n"),
   });
@@ -846,7 +846,7 @@ app.post("/api/newsletter/subscribe", express.json(), async (req, res) => {
           body: JSON.stringify({
             email,
             reactivate_existing: true,
-            send_welcome_email: true,
+            send_welcome_email: false,
             double_opt_override: "off",
             utm_source: "checkin-website",
             utm_medium: source === "gmail" ? "gmail-button" : "newsletter-modal",
@@ -902,7 +902,7 @@ app.post("/api/newsletter/subscribe", express.json(), async (req, res) => {
       }
 
       const message = welcomeSent ?
-        "You're already subscribed — we just sent your welcome email again!" :
+        "You're already subscribed - we just sent your welcome email again!" :
         "You're already subscribed. Thanks for following Check-In!";
 
       return res.status(200).json({message});
