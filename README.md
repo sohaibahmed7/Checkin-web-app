@@ -44,7 +44,9 @@ cd check-in-dashboard
 
 ### 2. Configure Firebase Functions Backend
 - Go to `backend/functions/`
-- Insert `.env` and fill in your secrets (MongoDB URI, email, etc.)
+- Insert `.env` and fill in your secrets (MongoDB URI, email, Beehiiv keys, etc.)
+- For inline newsletter signup on the website, add `BEEHIIV_API_KEY` and `BEEHIIV_PUBLICATION_ID` to `backend/functions/.env`, then deploy Firebase Functions
+- See `backend/functions/.env.example`
 - Install dependencies:
   ```bash
   cd backend/functions

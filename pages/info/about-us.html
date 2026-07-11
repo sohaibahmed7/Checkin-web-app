@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="../../Checklogopngping (1).png">
-    <script src="/config.js"></script>
+    <script src="/config.js?v=3"></script>
     <style>
         .about-page {
             background: linear-gradient(135deg, #fafbfc 0%, #f1f5f9 100%);
@@ -419,6 +419,27 @@
             <p style="margin: 0;">&copy; 2025 Check-In. All rights reserved.</p>
         </div>
     </footer>
+
+    <div id="newsletterModal" class="newsletter-modal-wrap" aria-hidden="true">
+        <div class="newsletter-modal-overlay">
+            <div class="newsletter-modal" role="dialog" aria-labelledby="newsletterModalTitle" aria-modal="true">
+                <button type="button" class="newsletter-modal-close" aria-label="Close">&times;</button>
+                <p class="newsletter-modal-kicker">Don't miss out!</p>
+                <h2 id="newsletterModalTitle" class="newsletter-modal-title">Get Weekly GTA Safety Updates</h2>
+                <p class="newsletter-modal-subtitle">Your free neighbourhood safety briefing from Check-In</p>
+                <form class="newsletter-modal-form" novalidate>
+                    <label for="newsletterEmail">Your email address</label>
+                    <input type="email" id="newsletterEmail" name="email" placeholder="you@email.com" required autocomplete="email">
+                    <button type="submit" class="newsletter-modal-submit">Subscribe</button>
+                </form>
+                <button type="button" class="newsletter-modal-dismiss">Continue without subscribing</button>
+                <p class="newsletter-modal-fine-print">
+                    By subscribing, you agree to receive emails from Check-In. Unsubscribe anytime via the link in each email.
+                </p>
+            </div>
+        </div>
+    </div>
+    <script src="../../newsletter-modal.js?v=6" defer></script>
 
     <!-- Mobile Navigation JavaScript -->
     <script>

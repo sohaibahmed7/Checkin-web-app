@@ -1,8 +1,16 @@
-// Smooth scrolling for navigation links
+// Smooth scrolling for navigation links (skip placeholder # and newsletter triggers)
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        if (href === '#' || this.classList.contains('newsletter-trigger')) {
+            return;
+        }
+
+        const target = document.querySelector(href);
+        if (!target) return;
+
         e.preventDefault();
-        document.querySelector(this.getAttribute('href')).scrollIntoView({
+        target.scrollIntoView({
             behavior: 'smooth'
         });
     });
