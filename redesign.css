@@ -1,0 +1,1115 @@
+/* ============================================================
+   Check-In — "Editorial x Brutalist" redesign layer.
+   Everything here is scoped under body.ci-redesign so it can
+   only ever affect the 4 marketing pages that opt in
+   (index, about-us, contact, how-it-works). Nothing in
+   styles.css is edited or removed — this file is loaded AFTER
+   it and only reskins colour/type/border/shadow. All existing
+   IDs, classes, JS hooks, form actions and layout mechanics
+   (flex/grid/position/transform) are left untouched so nothing
+   functional breaks. Remove the <link> + body class to fully
+   revert.
+
+   NOTE: nearly every declaration below uses !important. This is
+   not stylistic — styles.css is a legacy file full of defensive
+   !important overrides (and a few inline style="...!important"
+   attributes), so this layer has to match that specificity to
+   reliably win, regardless of selector specificity.
+   ============================================================ */
+
+body.ci-redesign {
+  --ci-paper: #F8F4EC;
+  --ci-ink: #1A1A2E;
+  --ci-muted: #55556d;
+  --ci-purple: #7C5CBF;
+  --ci-purple-deep: #4C3A99;
+  --ci-teal: #4ECBA5;
+  --ci-purple-tint: #EFEAFA;
+  --ci-teal-tint: #E3F7EE;
+  --ci-serif: 'Merriweather', ui-serif, Georgia, serif;
+  --ci-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --ci-mono: 'Geist Mono', ui-monospace, monospace;
+
+  background: var(--ci-paper) !important;
+  color: var(--ci-ink) !important;
+}
+
+body.ci-redesign,
+body.ci-redesign p,
+body.ci-redesign a,
+body.ci-redesign li,
+body.ci-redesign span,
+body.ci-redesign button,
+body.ci-redesign input,
+body.ci-redesign textarea,
+body.ci-redesign label {
+  font-family: var(--ci-sans) !important;
+}
+
+body.ci-redesign h1,
+body.ci-redesign h2,
+body.ci-redesign h3 {
+  font-family: var(--ci-serif) !important;
+  font-weight: 300 !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* ---------- Tag / kicker pill (new component, purely additive) ---------- */
+body.ci-redesign .ci-tag {
+  display: inline-block;
+  background: #fff !important;
+  border: 2px solid var(--ci-ink) !important;
+  box-shadow: 4px 4px 0 var(--ci-ink) !important;
+  padding: 6px 13px;
+  font-family: var(--ci-mono) !important;
+  font-size: 11.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ci-ink) !important;
+}
+
+/* ---------- Nav ---------- */
+body.ci-redesign .navbar {
+  background-color: var(--ci-paper) !important;
+  border-bottom: 2px solid var(--ci-ink) !important;
+  box-shadow: none !important;
+}
+body.ci-redesign .logo h1 {
+  font-family: var(--ci-serif) !important;
+  color: var(--ci-ink) !important;
+}
+body.ci-redesign .logo-image {
+  width: auto !important;
+  height: 56px !important;
+}
+body.ci-redesign .mobile-logo .logo-image {
+  width: auto !important;
+  height: 45px !important;
+}
+body.ci-redesign .nav-links a {
+  font-family: var(--ci-mono) !important;
+  font-size: 12.5px !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ci-ink) !important;
+}
+body.ci-redesign .nav-links a:hover,
+body.ci-redesign .nav-links a.active {
+  color: var(--ci-purple) !important;
+}
+body.ci-redesign .nav-links a::after {
+  background: var(--ci-teal) !important;
+}
+body.ci-redesign .mobile-menu-toggle,
+body.ci-redesign .mobile-menu-toggle i {
+  color: var(--ci-ink) !important;
+}
+body.ci-redesign .mobile-nav-content {
+  background-color: var(--ci-paper) !important;
+  border-left: 2px solid var(--ci-ink) !important;
+}
+body.ci-redesign .mobile-nav-link:hover,
+body.ci-redesign .mobile-nav-link.active {
+  color: var(--ci-purple) !important;
+}
+body.ci-redesign .mobile-button-primary,
+body.ci-redesign .mobile-button-primary:hover {
+  background-color: var(--ci-ink) !important;
+  box-shadow: 4px 4px 0 var(--ci-purple) !important;
+}
+
+/* ---------- Buttons (shared) ---------- */
+body.ci-redesign .cta-button-primary,
+body.ci-redesign .cta-button-primary:link,
+body.ci-redesign .cta-button-primary:visited,
+body.ci-redesign .cta-button-primary:hover,
+body.ci-redesign .cta-button-primary:active,
+body.ci-redesign .cta-button-primary:focus {
+  background: var(--ci-ink) !important;
+  color: var(--ci-paper) !important;
+  border: 2px solid var(--ci-ink) !important;
+  border-radius: 0 !important;
+  box-shadow: 5px 5px 0 var(--ci-purple) !important;
+  font-family: var(--ci-mono) !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: transform 0.1s ease, box-shadow 0.1s ease !important;
+}
+body.ci-redesign .cta-button-primary:hover {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 3px 3px 0 var(--ci-purple) !important;
+}
+body.ci-redesign .cta-button-secondary,
+body.ci-redesign .cta-button-secondary:hover {
+  background: transparent !important;
+  color: var(--ci-ink) !important;
+  border: 2px solid var(--ci-ink) !important;
+  border-radius: 0 !important;
+  font-family: var(--ci-mono) !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  backdrop-filter: none !important;
+}
+body.ci-redesign .cta-button-secondary:hover {
+  background: var(--ci-ink) !important;
+  color: var(--ci-paper) !important;
+  box-shadow: none !important;
+}
+body.ci-redesign .button.button-primary,
+body.ci-redesign .login-button {
+  background-color: var(--ci-ink) !important;
+  border-radius: 0 !important;
+  box-shadow: 4px 4px 0 var(--ci-purple) !important;
+}
+
+/* ---------- Hero ---------- */
+body.ci-redesign .hero {
+  background: var(--ci-paper) !important;
+  background-color: var(--ci-paper) !important;
+  background-image: none !important;
+  color: var(--ci-ink) !important;
+  border-bottom: 2px solid var(--ci-ink) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: clamp(2rem, 6vw, 4.5rem) !important;
+  padding: 7.5rem 6% 5rem !important;
+}
+body.ci-redesign .hero::before {
+  display: none !important;
+}
+/* The phone screenshots are transparent PNGs of a tilted phone — a plain
+   box-shadow follows the image's rectangular bounding box (not the phone's
+   silhouette), which shows up as a visible card/halo behind the tilt.
+   drop-shadow follows the actual alpha shape instead. */
+body.ci-redesign .phone-mockup-container img,
+body.ci-redesign .animate-image,
+body.ci-redesign .app-screenshot,
+body.ci-redesign .primary-mockup,
+body.ci-redesign .secondary-mockup {
+  box-shadow: none !important;
+  filter: drop-shadow(0 20px 34px rgba(26, 26, 46, 0.28)) !important;
+}
+body.ci-redesign .headline-line-1,
+body.ci-redesign .headline-line-2,
+body.ci-redesign .headline-line-3 {
+  color: var(--ci-ink) !important;
+  font-family: var(--ci-serif) !important;
+  font-weight: 300 !important;
+  font-size: 1.15em !important;
+}
+body.ci-redesign .gradient-text,
+body.ci-redesign .highlight-purple {
+  color: var(--ci-purple) !important;
+  font-style: italic;
+}
+body.ci-redesign .gradient-text::after {
+  background: var(--ci-teal) !important;
+}
+
+/* Hero copy block: bring it in from the hard-left edge and close the gap
+   to the phone mockup — previously .hero used justify-content: space-between
+   with both columns at max-width, which pinned text left and image right. */
+body.ci-redesign .hero-content {
+  max-width: 540px !important;
+  padding-right: 0 !important;
+  margin-right: 0 !important;
+  text-align: left !important;
+}
+body.ci-redesign .hero-headline {
+  text-align: left !important;
+  width: auto !important;
+  margin: 0 0 1.75rem !important;
+  font-size: clamp(2.25rem, 2.4vw + 1.6rem, 4rem) !important;
+  line-height: 1.15 !important;
+}
+body.ci-redesign .hero-headline .headline-line-1,
+body.ci-redesign .hero-headline .headline-line-2 {
+  margin-bottom: 0.15em !important;
+}
+body.ci-redesign .hero-headline .headline-line-3 {
+  margin-bottom: 0 !important;
+}
+body.ci-redesign .hero-subheading {
+  color: var(--ci-muted) !important;
+  font-family: var(--ci-sans) !important;
+  text-align: left !important;
+  width: auto !important;
+  max-width: 42ch !important;
+  margin: 0 0 2.25rem !important;
+}
+body.ci-redesign .hero-cta-section {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  width: auto !important;
+  text-align: left !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 1rem !important;
+}
+body.ci-redesign .hero-cta-section .cta-button-primary,
+body.ci-redesign .hero-cta-section .cta-button-secondary {
+  width: auto !important;
+  max-width: 220px !important;
+  margin: 0 !important;
+}
+body.ci-redesign .hero-image {
+  max-width: 400px !important;
+  flex: 0 1 400px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+@media (max-width: 900px) {
+  body.ci-redesign .hero {
+    flex-direction: column !important;
+    padding: 6.5rem 6% 3.5rem !important;
+    gap: 2.5rem !important;
+  }
+  body.ci-redesign .hero-content {
+    max-width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+  body.ci-redesign .hero-headline,
+  body.ci-redesign .hero-subheading {
+    text-align: center !important;
+  }
+  body.ci-redesign .hero-subheading {
+    margin: 0 auto 2rem !important;
+  }
+  body.ci-redesign .hero-cta-section {
+    align-items: center !important;
+    width: 100% !important;
+  }
+  body.ci-redesign .hero-image {
+    max-width: 320px !important;
+    flex: 0 1 auto !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 560px) {
+  body.ci-redesign .hero {
+    padding: 6rem 5% 3rem !important;
+    gap: 2rem !important;
+  }
+  body.ci-redesign .hero-cta-section {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 0.85rem !important;
+  }
+  body.ci-redesign .hero-cta-section .cta-button-primary,
+  body.ci-redesign .hero-cta-section .cta-button-secondary {
+    width: 100% !important;
+    max-width: 280px !important;
+  }
+  body.ci-redesign .hero-image {
+    max-width: 240px !important;
+  }
+}
+
+/* ---------- Official Partner band (static two-column layout) ---------- */
+body.ci-redesign .exclusive-partners-section {
+  border-top: 2px solid var(--ci-ink) !important;
+  border-bottom: 2px solid var(--ci-ink) !important;
+  padding: 0 !important;
+}
+body.ci-redesign .partner-band {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) !important;
+  background: var(--ci-ink) !important;
+  gap: 2px !important;
+}
+body.ci-redesign .partner-band > div {
+  background: var(--ci-paper) !important;
+  min-width: 0 !important;
+}
+body.ci-redesign .partner-main {
+  padding: 48px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 28px;
+  background: var(--ci-teal-tint) !important;
+}
+body.ci-redesign .partner-main-text {
+  flex: 1;
+  min-width: 0;
+}
+body.ci-redesign .partner-logo-featured {
+  width: 280px !important;
+  flex-shrink: 0;
+  align-self: center !important;
+}
+@media (max-width: 900px) {
+  body.ci-redesign .partner-main {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  body.ci-redesign .partner-logo-featured {
+    margin-top: 20px;
+    align-self: center !important;
+  }
+}
+body.ci-redesign .partner-label {
+  font-family: var(--ci-mono) !important;
+  font-size: 11px !important;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ci-muted) !important;
+  margin-bottom: 16px !important;
+}
+body.ci-redesign .partner-name {
+  font-family: var(--ci-serif) !important;
+  font-weight: 300 !important;
+  font-size: 34px !important;
+  line-height: 1.05 !important;
+  color: var(--ci-ink) !important;
+  margin: 0 0 20px !important;
+}
+body.ci-redesign .partner-stat {
+  display: flex !important;
+  align-items: baseline !important;
+  gap: 14px !important;
+  flex-wrap: wrap;
+}
+body.ci-redesign .partner-stat-num {
+  font-family: var(--ci-serif) !important;
+  font-weight: 300 !important;
+  font-size: 64px !important;
+  line-height: 1 !important;
+  color: var(--ci-purple) !important;
+}
+body.ci-redesign .partner-stat-cap {
+  font-family: var(--ci-sans) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  max-width: 22ch;
+  line-height: 1.35 !important;
+  color: var(--ci-ink) !important;
+}
+body.ci-redesign .partner-logos {
+  position: relative !important;
+  padding: 40px 48px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+}
+body.ci-redesign .partner-logos .partner-label {
+  position: absolute !important;
+  top: 40px !important;
+  left: 48px !important;
+  right: 48px !important;
+  margin: 0 !important;
+}
+body.ci-redesign .partner-logo-row {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  margin-top: 0 !important;
+}
+body.ci-redesign .partner-logo {
+  border: none !important;
+  background: transparent !important;
+  aspect-ratio: 4 / 3 !important;
+  display: block !important;
+  padding: 14px !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+body.ci-redesign .partner-logo img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+}
+@media (max-width: 900px) {
+  body.ci-redesign .partner-band {
+    grid-template-columns: 1fr !important;
+  }
+}
+/* Three columns squeezed the logos down to postage-stamp size on phones —
+   stack them into their own full-width rows instead so each one reads. */
+@media (max-width: 600px) {
+  body.ci-redesign .partner-logos {
+    padding: 32px 24px !important;
+  }
+  body.ci-redesign .partner-logos .partner-label {
+    left: 24px !important;
+    right: 24px !important;
+  }
+  body.ci-redesign .partner-logo-row {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  body.ci-redesign .partner-logo {
+    aspect-ratio: auto !important;
+    height: 100px !important;
+  }
+}
+
+/* ---------- Demo (YouTube) section ---------- */
+body.ci-redesign .demo-section {
+  background: var(--ci-paper) !important;
+  border-bottom: 2px solid var(--ci-ink) !important;
+  min-height: 0 !important;
+}
+body.ci-redesign .demo-section .fog-effect,
+body.ci-redesign .fog-layer {
+  display: none !important;
+}
+body.ci-redesign .demo-section h2 {
+  color: var(--ci-ink) !important;
+}
+body.ci-redesign .demo-section h2 .highlight-purple {
+  color: var(--ci-purple) !important;
+  font-style: italic;
+}
+body.ci-redesign .video-container {
+  border: 2px solid var(--ci-ink) !important;
+  border-radius: 0 !important;
+  box-shadow: 8px 8px 0 rgba(26, 26, 46, 0.15) !important;
+}
+
+/* ---------- Features / live map widget ---------- */
+body.ci-redesign .features-section {
+  background: var(--ci-ink) !important;
+  border-bottom: 2px solid var(--ci-ink) !important;
+}
+/* Grid items default to min-width: auto, so their content's natural width
+   becomes the floor for the 1fr track — on narrow screens the live-map
+   widget and the button grid refused to shrink and blew the page out
+   sideways. min-width: 0 lets them respect the track and wrap normally. */
+body.ci-redesign .features-left,
+body.ci-redesign .features-right,
+body.ci-redesign .feature-button {
+  min-width: 0 !important;
+}
+/* The heading/list still used their desktop sizes down to phone widths —
+   they technically fit after the min-width fix above, but at 32px the
+   headline was fighting the rest of the mobile type scale for room. */
+@media (max-width: 480px) {
+  body.ci-redesign .features-section .container {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  body.ci-redesign .features-left h2 {
+    font-size: 1.6rem !important;
+    line-height: 1.25 !important;
+    margin-bottom: 1.25rem !important;
+  }
+  body.ci-redesign .features-left .features-list,
+  body.ci-redesign .features-list {
+    margin-bottom: 1.5rem !important;
+  }
+  body.ci-redesign .features-left .features-list li,
+  body.ci-redesign .features-list li {
+    font-size: 0.95rem !important;
+  }
+  body.ci-redesign .feature-buttons {
+    gap: 0.6rem !important;
+  }
+}
+body.ci-redesign .features-section h2 {
+  color: var(--ci-paper) !important;
+}
+body.ci-redesign .features-section h2 .highlight-purple {
+  color: var(--ci-purple) !important;
+  font-style: italic;
+}
+body.ci-redesign .features-left .features-list li,
+body.ci-redesign .features-list li {
+  color: var(--ci-paper) !important;
+}
+body.ci-redesign .features-left .features-list li strong,
+body.ci-redesign .features-list li strong {
+  color: var(--ci-purple) !important;
+}
+body.ci-redesign .features-list li::before {
+  color: var(--ci-paper) !important;
+}
+/* These are static labels, not controls — showFeature() was removed because
+   only the live-chat mockup ever had real content behind it. Every button
+   keeps the "active" purple border permanently; hover is the only feedback. */
+body.ci-redesign .feature-button {
+  background: var(--ci-paper) !important;
+  color: var(--ci-ink) !important;
+  border: 2px solid var(--ci-purple) !important;
+  border-radius: 0 !important;
+  box-shadow: 4px 4px 0 var(--ci-purple) !important;
+  cursor: default !important;
+}
+body.ci-redesign .feature-button:hover {
+  border-color: var(--ci-teal) !important;
+  background: var(--ci-teal-tint) !important;
+  box-shadow: 4px 4px 0 var(--ci-teal) !important;
+}
+body.ci-redesign .feature-button:active {
+  transform: none !important;
+}
+body.ci-redesign .feature-button i {
+  color: var(--ci-purple) !important;
+}
+body.ci-redesign .safety-dashboard.landing-live-map-mockup {
+  border: 2px solid var(--ci-ink) !important;
+  border-radius: 0 !important;
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.25) !important;
+}
+body.ci-redesign .landing-map-title {
+  font-family: var(--ci-serif) !important;
+  font-weight: 300 !important;
+  font-size: 1.3rem !important;
+}
+body.ci-redesign .landing-map-title .highlight-purple {
+  color: var(--ci-purple) !important;
+  font-style: italic;
+}
+body.ci-redesign .landing-category-toggles button.active {
+  background: var(--ci-ink) !important;
+  border-color: var(--ci-ink) !important;
+}
+/* styles.css gives the widget width:100% *and* margin-left:2.25rem above
+   900px — that's 2.25rem wider than its container allows, so between
+   ~900-1200px it pushes past the right edge of .features-right. */
+@media (min-width: 901px) {
+  body.ci-redesign .safety-dashboard.landing-live-map-mockup {
+    width: calc(100% - 2.25rem) !important;
+  }
+}
+body.ci-redesign .landing-category-toggles button:hover {
+  background: var(--ci-purple-tint) !important;
+}
+body.ci-redesign .landing-ping-button {
+  background: var(--ci-ink) !important;
+  border-radius: 0 !important;
+  box-shadow: 3px 3px 0 var(--ci-purple) !important;
+}
+body.ci-redesign .landing-map-view {
+  border: 2px solid var(--ci-ink) !important;
+  border-radius: 0 !important;
+}
+
+/* ---------- App showcase (feature video rows) ---------- */
+body.ci-redesign .app-showcase {
+  background: var(--ci-paper) !important;
+}
+body.ci-redesign .app-showcase h2 {
+  color: var(--ci-ink) !important;
+}
+body.ci-redesign .app-showcase h2 .highlight-purple {
+  color: var(--ci-purple) !important;
+  font-style: italic;
+}
+/* styles.css stacks the grid gap (3rem) + margin-bottom (2rem) + the next
+   item's padding (2rem) between rows — well over 100px of dead air on
+   desktop. Tighten it and drop the separator line the rows no longer need. */
+body.ci-redesign .showcase-grid {
+  gap: 0.5rem !important;
+}
+body.ci-redesign .showcase-item {
+  margin-bottom: 0 !important;
+}
+@media (min-width: 769px) {
+  body.ci-redesign .showcase-item {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+  }
+}
+body.ci-redesign .showcase-text h3 {
+  color: var(--ci-ink) !important;
+  font-family: var(--ci-serif) !important;
+  font-weight: 300 !important;
+  font-size: 1.8rem !important;
+}
+body.ci-redesign .showcase-text h3 .highlight-purple {
+  color: var(--ci-purple) !important;
+  font-style: italic;
+}
+body.ci-redesign .showcase-features li {
+  color: var(--ci-ink) !important;
+}
+body.ci-redesign .showcase-features li::before {
+  color: var(--ci-purple) !important;
+}
+body.ci-redesign .video-frame-small {
+  border: 2px solid var(--ci-ink) !important;
+  box-shadow: 6px 6px 0 rgba(26, 26, 46, 0.15) !important;
+}
+/* styles.css boxes these at a fixed 450x338 (and fixed mobile heights like
+   200-250px), but the source recordings are 1680x1080 (14:9) — object-fit:
+   contain then letterboxes the picture inside, leaving a gap between the
+   video and the border/shadow drawn around the box. Drive height from the
+   video's real ratio instead so the outline hugs the picture exactly. */
+body.ci-redesign .video-frame-small {
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  aspect-ratio: 14 / 9 !important;
+}
+body.ci-redesign .video-frame-small .frame-content,
+body.ci-redesign .video-frame-small iframe,
+body.ci-redesign .showcase-item .video-frame-small .frame-content iframe {
+  height: 100% !important;
+  max-height: none !important;
+  min-height: 0 !important;
+}
+
+/* ---------- Newsletter modal ---------- */
+body.ci-redesign .newsletter-modal {
+  background: var(--ci-ink) !important;
+  border: 2px solid var(--ci-ink) !important;
+  border-radius: 0 !important;
+  box-shadow: 10px 10px 0 var(--ci-purple) !important;
+}
+body.ci-redesign .newsletter-modal-kicker {
+  color: var(--ci-teal) !important;
+  font-family: var(--ci-mono) !important;
+}
+body.ci-redesign .newsletter-modal-title {
+  font-family: var(--ci-serif) !important;
+  font-weight: 300 !important;
+}
+body.ci-redesign .newsletter-modal-form input[type="email"] {
+  border: 2px solid var(--ci-paper) !important;
+  border-radius: 0 !important;
+}
+body.ci-redesign .newsletter-modal-submit {
+  background: var(--ci-teal) !important;
+  color: var(--ci-ink) !important;
+  border-radius: 0 !important;
+  font-family: var(--ci-mono) !important;
+}
+body.ci-redesign .newsletter-modal-close {
+  border-radius: 0 !important;
+  border: 2px solid var(--ci-paper) !important;
+}
+
+/* ---------- Inline newsletter band ---------- */
+body.ci-redesign .news-band {
+  background: var(--ci-purple) !important;
+  border-bottom: 2px solid var(--ci-ink) !important;
+}
+body.ci-redesign .news-inner {
+  display: flex !important;
+  align-items: center !important;
+  gap: 24px !important;
+  padding: 22px 48px !important;
+  max-width: 1240px;
+  margin: 0 auto !important;
+  flex-wrap: wrap;
+}
+body.ci-redesign .news-text {
+  flex: 1;
+  min-width: 240px;
+}
+body.ci-redesign .news-title {
+  font-family: var(--ci-serif) !important;
+  font-weight: 300 !important;
+  font-style: italic;
+  font-size: 24px !important;
+  line-height: 1.15 !important;
+  color: #fff !important;
+  margin: 0 !important;
+}
+body.ci-redesign .news-sub {
+  font-family: var(--ci-sans) !important;
+  font-size: 13px !important;
+  opacity: 0.85;
+  margin: 4px 0 0 !important;
+  color: #fff !important;
+}
+body.ci-redesign .news-fine {
+  font-family: var(--ci-sans) !important;
+  font-size: 10.5px !important;
+  opacity: 0.65;
+  margin: 6px 0 0 !important;
+  color: #fff !important;
+}
+body.ci-redesign .news-form {
+  display: flex !important;
+  gap: 0 !important;
+  flex-shrink: 0;
+}
+body.ci-redesign .news-form input {
+  border: 2px solid var(--ci-ink) !important;
+  border-radius: 0 !important;
+  padding: 11px 14px !important;
+  font-size: 14px !important;
+  width: 220px;
+  outline: none;
+  background: #fff !important;
+  color: var(--ci-ink) !important;
+  font-family: var(--ci-sans) !important;
+}
+body.ci-redesign .news-form button {
+  border: 2px solid var(--ci-ink) !important;
+  border-left: none !important;
+  border-radius: 0 !important;
+  background: var(--ci-ink) !important;
+  color: var(--ci-paper) !important;
+  font-weight: 600 !important;
+  padding: 0 20px !important;
+  cursor: pointer;
+  font-family: var(--ci-mono) !important;
+  font-size: 0.8rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+body.ci-redesign .news-form button:hover {
+  background: var(--ci-purple-deep) !important;
+  color: #fff !important;
+}
+body.ci-redesign .news-form button:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+body.ci-redesign .news-status {
+  flex-basis: 100%;
+  font-family: var(--ci-sans) !important;
+  font-size: 13px !important;
+  margin: 8px 0 0 !important;
+  color: #fff !important;
+}
+/* Before a submit attempt this <p> is empty, but flex-basis:100% still
+   forces it onto its own line and .news-inner's gap still applies above
+   that line — 32px of dead space at the bottom, pushing the title/form
+   off-center. Collapse it out of flow until JS actually puts a message
+   in it. */
+body.ci-redesign .news-status:empty {
+  display: none !important;
+}
+@media (max-width: 700px) {
+  body.ci-redesign .news-inner {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+  body.ci-redesign .news-form {
+    width: 100%;
+  }
+  body.ci-redesign .news-form input {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+  }
+}
+/* Below ~420px the input + button can no longer share a row without
+   the button's unshrinkable label ("SUBSCRIBE") pushing past the
+   viewport edge — stack them instead. */
+@media (max-width: 420px) {
+  body.ci-redesign .news-form {
+    flex-direction: column;
+  }
+  body.ci-redesign .news-form input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  body.ci-redesign .news-form button {
+    width: 100%;
+    border-left: 2px solid var(--ci-ink) !important;
+    border-top: none !important;
+    padding: 12px 20px !important;
+  }
+}
+
+/* ---------- Footer ---------- */
+body.ci-redesign .footer {
+  background: var(--ci-ink) !important;
+  border-top: 2px solid var(--ci-ink) !important;
+}
+body.ci-redesign .footer-section h3 {
+  font-family: var(--ci-mono) !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ci-paper) !important;
+}
+body.ci-redesign .footer .social-links a:hover {
+  color: var(--ci-teal) !important;
+}
+body.ci-redesign .footer-bottom {
+  font-family: var(--ci-mono) !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.04em;
+}
+
+/* ---------- Inner-page hero (about/contact/how-it-works) ---------- */
+body.ci-redesign .page-hero,
+body.ci-redesign .inner-hero {
+  background: var(--ci-paper) !important;
+  border-bottom: 2px solid var(--ci-ink) !important;
+}
+
+/* ---------- About page ---------- */
+body.ci-redesign .about-banner {
+  background: var(--ci-ink) !important;
+  margin-top: 90px !important;
+}
+body.ci-redesign .about-banner::before {
+  display: none !important;
+}
+body.ci-redesign .about-banner h1 {
+  color: var(--ci-paper) !important;
+  font-family: var(--ci-serif) !important;
+  font-weight: 300 !important;
+  text-shadow: none !important;
+}
+body.ci-redesign .about-banner p,
+body.ci-redesign .about-banner p span {
+  color: var(--ci-paper) !important;
+  text-shadow: none !important;
+}
+body.ci-redesign .about-content {
+  background: var(--ci-paper) !important;
+}
+body.ci-redesign .about-section,
+body.ci-redesign .why-created-section,
+body.ci-redesign .join-movement {
+  background: #fff !important;
+  border: 2px solid var(--ci-ink) !important;
+  border-radius: 0 !important;
+  box-shadow: 6px 6px 0 rgba(26, 26, 46, 0.12) !important;
+}
+body.ci-redesign .about-section h2,
+body.ci-redesign .why-created-section h2,
+body.ci-redesign .join-movement h2 {
+  font-family: var(--ci-serif) !important;
+  font-weight: 300 !important;
+  color: var(--ci-ink) !important;
+}
+body.ci-redesign .about-section h2::after {
+  background: var(--ci-purple-deep) !important;
+}
+body.ci-redesign .about-section p,
+body.ci-redesign .why-created-section p,
+body.ci-redesign .join-movement p {
+  color: var(--ci-muted) !important;
+}
+body.ci-redesign .about-section p strong,
+body.ci-redesign .purple-word {
+  color: var(--ci-purple) !important;
+  font-style: italic;
+}
+body.ci-redesign .problem-card {
+  background: var(--ci-purple-tint) !important;
+  border: 2px solid var(--ci-ink) !important;
+  border-radius: 0 !important;
+  box-shadow: 5px 5px 0 rgba(26, 26, 46, 0.12) !important;
+}
+body.ci-redesign .problem-card::before {
+  background: var(--ci-purple-deep) !important;
+}
+body.ci-redesign .problem-card:hover {
+  border-color: var(--ci-purple) !important;
+}
+body.ci-redesign .problem-card i {
+  color: var(--ci-purple) !important;
+}
+body.ci-redesign .problem-card h3 {
+  font-family: var(--ci-serif) !important;
+  font-weight: 300 !important;
+  color: var(--ci-ink) !important;
+}
+body.ci-redesign .problem-card p {
+  color: var(--ci-muted) !important;
+}
+
+/* ---------- How It Works page ---------- */
+body.ci-redesign .how-it-works-page {
+  background: var(--ci-paper) !important;
+}
+body.ci-redesign .how-it-works-page h2 {
+  font-family: var(--ci-serif) !important;
+  font-weight: 300 !important;
+  color: var(--ci-ink) !important;
+}
+body.ci-redesign .how-it-works-page h2 span {
+  color: inherit !important;
+}
+body.ci-redesign .how-it-works-page h2 span[style*="107, 33, 168"],
+body.ci-redesign .how-it-works-page h2 span[style*="6b21a8"] {
+  color: var(--ci-purple) !important;
+  font-style: italic;
+}
+body.ci-redesign .steps-container {
+  align-items: start !important;
+}
+body.ci-redesign .step-card {
+  background: #fff !important;
+  border: 2px solid var(--ci-ink) !important;
+  border-radius: 0 !important;
+  box-shadow: 6px 6px 0 rgba(26, 26, 46, 0.12) !important;
+}
+body.ci-redesign .step-image {
+  background: var(--ci-ink) !important;
+  border-radius: 0 !important;
+}
+body.ci-redesign .step-card h3 {
+  font-family: var(--ci-serif) !important;
+  font-weight: 300 !important;
+  color: var(--ci-ink) !important;
+}
+body.ci-redesign .step-card h3 span[style*="6b21a8"] {
+  color: var(--ci-purple) !important;
+  font-style: italic;
+}
+body.ci-redesign .step-card p {
+  color: var(--ci-muted) !important;
+}
+body.ci-redesign .step-card p small {
+  display: block !important;
+  margin-top: 8px !important;
+  font-size: 0.82em !important;
+  opacity: 0.75;
+}
+body.ci-redesign .moderator-info {
+  background: var(--ci-purple-tint) !important;
+  border: 2px solid var(--ci-ink) !important;
+  border-radius: 0 !important;
+}
+body.ci-redesign .moderator-info h3 {
+  font-family: var(--ci-serif) !important;
+  font-weight: 300 !important;
+  color: var(--ci-ink) !important;
+}
+body.ci-redesign .moderator-info h3 span[style*="6b21a8"],
+body.ci-redesign .moderator-info p span[style*="6b21a8"],
+body.ci-redesign .moderator-info li span[style*="6b21a8"] {
+  color: var(--ci-purple) !important;
+  font-style: italic;
+}
+body.ci-redesign .moderator-info p,
+body.ci-redesign .moderator-info li {
+  color: var(--ci-muted) !important;
+}
+body.ci-redesign .moderator-info ul li:before {
+  color: var(--ci-purple) !important;
+}
+
+/* ---------- Shared inline .cta-button (about-us "Get Started" / how-it-works "Become a Moderator") ---------- */
+body.ci-redesign .cta-button,
+body.ci-redesign .cta-button:hover {
+  background: var(--ci-ink) !important;
+  color: var(--ci-paper) !important;
+  border: 2px solid var(--ci-ink) !important;
+  border-radius: 0 !important;
+  box-shadow: 4px 4px 0 var(--ci-purple) !important;
+  font-family: var(--ci-mono) !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+body.ci-redesign .cta-button:hover {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 2px 2px 0 var(--ci-purple) !important;
+}
+
+/* ---------- Contact page ---------- */
+body.ci-redesign .contact-page {
+  background: var(--ci-paper) !important;
+}
+body.ci-redesign .contact-title {
+  font-family: var(--ci-serif) !important;
+  font-weight: 300 !important;
+  color: var(--ci-ink) !important;
+}
+body.ci-redesign .contact-subtitle {
+  color: var(--ci-muted) !important;
+}
+body.ci-redesign .info-card {
+  background: #fff !important;
+  border: 2px solid var(--ci-ink) !important;
+  border-radius: 0 !important;
+  box-shadow: 5px 5px 0 rgba(26, 26, 46, 0.12) !important;
+  color: var(--ci-ink) !important;
+}
+body.ci-redesign .info-card i {
+  color: var(--ci-purple) !important;
+}
+body.ci-redesign .info-card-title {
+  font-family: var(--ci-mono) !important;
+  font-size: 0.8rem !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ci-ink) !important;
+}
+body.ci-redesign .social-links-contact a {
+  background: #fff !important;
+  border: 2px solid var(--ci-ink) !important;
+  color: var(--ci-purple) !important;
+  width: 52px !important;
+  height: 52px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
+body.ci-redesign .social-links-contact a svg,
+body.ci-redesign .social-links-contact a i {
+  font-size: 1.4rem !important;
+  width: 22px !important;
+  height: 22px !important;
+}
+/* The right-hand contact form card is an inline-styled div (no class) —
+   target it via its parent + position since it can't be touched via class
+   without editing the shared HTML structure. */
+body.ci-redesign .contact-content-wrapper > div:last-child {
+  background: #fff !important;
+  border: 2px solid var(--ci-ink) !important;
+  border-radius: 0 !important;
+  box-shadow: 6px 6px 0 rgba(26, 26, 46, 0.12) !important;
+}
+body.ci-redesign .contact-content-wrapper h3,
+body.ci-redesign .contact-content-wrapper h3 span {
+  font-family: var(--ci-serif) !important;
+  font-weight: 300 !important;
+  color: var(--ci-ink) !important;
+}
+body.ci-redesign .contact-content-wrapper h3 span {
+  color: var(--ci-purple) !important;
+  font-style: italic;
+}
+body.ci-redesign .form-group label {
+  font-family: var(--ci-mono) !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ci-ink) !important;
+}
+body.ci-redesign .form-group input,
+body.ci-redesign .form-group textarea {
+  border: 2px solid var(--ci-ink) !important;
+  border-radius: 0 !important;
+  background: var(--ci-paper) !important;
+}
+body.ci-redesign .form-group input:focus,
+body.ci-redesign .form-group textarea:focus {
+  border-color: var(--ci-purple) !important;
+  box-shadow: 3px 3px 0 var(--ci-purple) !important;
+  background: #fff !important;
+}
+body.ci-redesign .submit-button {
+  background: var(--ci-ink) !important;
+  border-radius: 0 !important;
+  box-shadow: 4px 4px 0 var(--ci-purple) !important;
+  font-family: var(--ci-mono) !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+body.ci-redesign .submit-button:hover {
+  background: var(--ci-purple-deep) !important;
+  transform: translate(2px, 2px) !important;
+  box-shadow: 2px 2px 0 var(--ci-purple) !important;
+}

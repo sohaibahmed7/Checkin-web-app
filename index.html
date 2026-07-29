@@ -8,16 +8,19 @@
     <link rel="stylesheet" href="styles.css?v=183">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;1,300&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+    <link rel="stylesheet" href="redesign.css?v=1">
     <link rel="icon" type="image/png" href="Checklogopngping (1).png">
     <script src="config.js"></script>
     <script src="landing-map-mockup.js" defer></script>
     <script src="script.js" defer></script>
 </head>
-<body>
+<body class="ci-redesign">
     <nav class="navbar">
         <div class="logo">
             <a href="index.html">
-                <img src="Check-In Logo.png" alt="Check-In Logo" class="logo-image">
+                <img src="pages/assets/check-in-logo-transparent.png" alt="Check-In Logo" class="logo-image">
             </a>
         </div>
         <div class="nav-links">
@@ -41,7 +44,7 @@
         <div class="mobile-nav-content">
             <div class="mobile-nav-header">
                 <div class="mobile-logo">
-                    <img src="Check-In Logo.png" alt="Check-In Logo" class="logo-image">
+                    <img src="pages/assets/check-in-logo-transparent.png" alt="Check-In Logo" class="logo-image">
                 </div>
                 <button class="mobile-nav-close">
                     <i class="fas fa-times"></i>
@@ -59,31 +62,26 @@
                     Newsletter
                 </a>
             </div>
-            <!-- COMMENTING OUT FOR NOW -->
-            <div class="mobile-nav-buttons">
-                <a href="pages/auth/login.html" class="mobile-button mobile-button-primary">Login</a>
-                <!-- <a href="pages/info/download.html" class="mobile-button mobile-button-secondary">Download</a> --> -->
-            </div>
         </div>
     </div>
 
     <header class="hero">
         <div class="hero-content">
 
-            <h1 class="hero-headline animate-text" style="text-align: left !important; width: 100% !important; margin: 0 !important; margin-bottom: 2rem !important;">
-                <span class="headline-line-1">Keep Your Community</span>
-                <span class="headline-line-2"><span class="highlight-purple">Connected &</span></span>
-                <span class="headline-line-3 gradient-text"><span class="highlight-purple">Safe</span></span>
+            <h1 class="hero-headline animate-text">
+                <span class="headline-line-1">Your neighborhood,</span>
+                <span class="headline-line-2"><span class="highlight-purple">looking out</span></span>
+                <span class="headline-line-3 gradient-text"><span class="highlight-purple">for itself.</span></span>
             </h1>
-            <p class="hero-subheading animate-text" style="text-align: center !important; width: 100% !important; margin: 0 auto !important; margin-bottom: 2.5rem !important;">
-                Real-time safety alerts, live maps, and group chat — all in one app.
+            <p class="hero-subheading animate-text">
+                Keep your community connected & safe with one app for real-time safety alerts, live incident map, and group chat.
             </p>
-            <div class="hero-cta-section" style="display: flex !important; flex-direction: column !important; align-items: flex-start !important; justify-content: flex-start !important; width: 100% !important; text-align: left !important; margin: 0 !important; margin-top: 1rem !important; padding: 0 1rem !important;">
-                <a href="pages/info/contact.html" class="cta-button-primary animate-button" style="background: white !important; color: #6b21a8 !important; border: none !important; width: auto !important; max-width: 220px !important; margin: 0 !important; text-align: center !important; display: flex !important; justify-content: center !important; align-items: center !important;">
+            <div class="hero-cta-section">
+                <a href="pages/info/contact.html" class="cta-button-primary animate-button">
                     <span>Get Started</span>
                     <i class="fas fa-arrow-right"></i>
                 </a>
-                <a href="#features" class="cta-button-secondary animate-button" style="width: auto !important; max-width: 220px !important; margin: 0 !important; text-align: center !important; display: flex !important; justify-content: center !important; align-items: center !important;">
+                <a href="#features" class="cta-button-secondary animate-button">
                     <span>Learn More</span>
                 </a>
             </div>
@@ -98,41 +96,25 @@
 
     <!-- Official Partner -->
     <section class="exclusive-partners-section" aria-label="Official partner">
-        <div class="exclusive-partners-inner">
-            <div class="partners-swipe-card" tabindex="0">
-                <p class="exclusive-partner-heading">Official <span class="highlight-purple">Partner</span></p>
-                <div class="partners-swipe-viewport">
-                    <div class="partners-swipe-track">
-                        <div class="partners-slide partners-slide-logo">
-                            <img
-                                class="partners-logo-img"
-                                src="pages/assets/partners/crime-stoppers-halton.png"
-                                alt="Crime Stoppers of Halton"
-                                width="996"
-                                height="531"
-                                loading="lazy"
-                            >
-                        </div>
-                        <div class="partners-slide partners-slide-info" id="partners-info-panel">
-                            <div class="partners-info-inner">
-                                <div class="partners-metric-block">
-                                    <p class="partners-deploy-line">Check-In Will Deploy to Over</p>
-                                    <span class="partners-metric-value">10,000+</span>
-                                    <p class="partners-deploy-line">People in Halton This Summer</p>
-                                </div>
-                                <div class="partners-allies">
-                                    <p class="partners-allies-label">Crime Stoppers of Halton Partners With</p>
-                                    <div class="partners-logo-strip" aria-label="Partners of Crime Stoppers of Halton">
-                                        <img src="pages/assets/partners/OPP.gif" alt="Ontario Provincial Police">
-                                        <img src="pages/assets/partners/HRPS.gif" alt="Halton Regional Police Service">
-                                        <img src="pages/assets/partners/CHCH.gif" alt="CHCH-TV">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+        <div class="partner-band">
+            <div class="partner-main">
+                <div class="partner-main-text">
+                    <p class="partner-label">Official Partner</p>
+                    <h2 class="partner-name">Crime Stoppers of Halton</h2>
+                    <div class="partner-stat">
+                        <span class="partner-stat-num">10,000+</span>
+                        <span class="partner-stat-cap">people in Halton will receive Check-In this summer</span>
                     </div>
                 </div>
-                <p class="partners-swipe-hint"><span>Hover For Details</span> <i class="fas fa-arrow-right"></i></p>
+                <div class="partner-logo partner-logo-featured"><img src="pages/assets/partners/crime-stoppers-halton-transparent.png" alt="Crime Stoppers of Halton"></div>
+            </div>
+            <div class="partner-logos">
+                <p class="partner-label">Crime Stoppers of Halton partners with</p>
+                <div class="partner-logo-row">
+                    <div class="partner-logo"><img src="pages/assets/partners/OPP-transparent.png" alt="Ontario Provincial Police"></div>
+                    <div class="partner-logo"><img src="pages/assets/partners/HRPS-transparent.png" alt="Halton Regional Police Service"></div>
+                    <div class="partner-logo"><img src="pages/assets/partners/CHCH-transparent.png" alt="CHCH-TV"></div>
+                </div>
             </div>
         </div>
     </section>
@@ -158,7 +140,7 @@
     </section>
 
     <!-- Features Section -->
-    <section id="features" class="features-section" style="padding: 3rem 0 !important; min-height: auto !important; background: #f8f9fa !important;">
+    <section id="features" class="features-section" style="padding: 3rem 0 !important; min-height: auto !important;">
         <div class="container">
             <div class="features-grid">
                 <!-- Left Column -->
@@ -172,27 +154,27 @@
                     </ul>
                     
                     <div class="feature-buttons">
-                        <div class="feature-button" onclick="showFeature('safety-pings')">
+                        <div class="feature-button">
                             <i class="fas fa-map-pin"></i>
                             <span>Local Safety <br>Pings</span>
                         </div>
-                        <div class="feature-button active" onclick="showFeature('live-chat')">
+                        <div class="feature-button">
                             <i class="fas fa-comments"></i>
                             <span>Live Chat</span>
                         </div>
-                        <div class="feature-button" onclick="showFeature('rich-reports')">
+                        <div class="feature-button">
                             <i class="fas fa-file-alt"></i>
                             <span>Rich Reports</span>
                         </div>
-                        <div class="feature-button" onclick="showFeature('home-dashboard')">
+                        <div class="feature-button">
                             <i class="fas fa-home"></i>
                             <span>Home Dashboard</span>
                         </div>
-                        <div class="feature-button" onclick="showFeature('real-time-alerts')">
+                        <div class="feature-button">
                             <i class="fas fa-bell"></i>
                             <span>Real-time <br>Alerts</span>
                         </div>
-                        <div class="feature-button" onclick="showFeature('community-connect')">
+                        <div class="feature-button">
                             <i class="fas fa-users"></i>
                             <span>Community Connect</span>
                         </div>
@@ -335,6 +317,20 @@
         </div>
     </section>
 
+    <section class="news-band">
+        <div class="news-inner">
+            <div class="news-text">
+                <h2 class="news-title">Get weekly GTA safety updates.</h2>
+                <p class="news-sub">Your free neighbourhood safety briefing from Check-In.</p>
+                <p class="news-fine">By subscribing, you agree to receive emails from Check-In. Unsubscribe anytime via the link in each email.</p>
+            </div>
+            <form class="news-form" id="inlineNewsletterForm" novalidate>
+                <input type="email" id="inlineNewsletterEmail" name="email" placeholder="Your email address" required autocomplete="email">
+                <button type="submit">Subscribe</button>
+            </form>
+        </div>
+    </section>
+
     <footer class="footer" style="background: #18191a; color: #fff; padding: 3rem 0 1.5rem 0;">
         <div class="footer-content" style="display: flex; justify-content: center; align-items: flex-start; gap: 6rem; flex-wrap: wrap;">
             <div class="footer-section" style="text-align: center; min-width: 220px;">
@@ -354,7 +350,7 @@
             </div>
         </div>
         <div class="footer-bottom" style="text-align: center; color: #b0b3b8; margin-top: 2rem; font-size: 1rem;">
-            <p style="margin: 0;">&copy; 2025 Check-In. All rights reserved.</p>
+            <p style="margin: 0;">&copy; 2026 Check-In. All rights reserved.</p>
         </div>
     </footer>
 
@@ -379,8 +375,59 @@
         </div>
     </div>
 
-    <script src="config.js?v=3"></script>
     <script src="newsletter-modal.js?v=6" defer></script>
+
+    <!-- Inline newsletter band submit — posts to the same subscribe API as the modal -->
+    <script>
+        (function () {
+            const form = document.getElementById('inlineNewsletterForm');
+            if (!form) return;
+            const emailInput = document.getElementById('inlineNewsletterEmail');
+            const button = form.querySelector('button');
+
+            const statusEl = document.createElement('p');
+            statusEl.className = 'news-status';
+            statusEl.setAttribute('role', 'status');
+            statusEl.setAttribute('aria-live', 'polite');
+            form.insertAdjacentElement('afterend', statusEl);
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const email = emailInput.value.trim();
+                if (!email) {
+                    statusEl.textContent = 'Please enter your email address.';
+                    return;
+                }
+
+                button.disabled = true;
+                button.textContent = 'Subscribing…';
+                statusEl.textContent = '';
+
+                const apiBase = (typeof config !== 'undefined' && config.API_BASE_URL) ? config.API_BASE_URL : 'https://api-3ffpwchysq-uc.a.run.app';
+                const subscribePath = (typeof config !== 'undefined' && config.API_ENDPOINTS) ? config.API_ENDPOINTS.NEWSLETTER_SUBSCRIBE : '/api/newsletter/subscribe';
+
+                try {
+                    const response = await fetch(apiBase + subscribePath, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email })
+                    });
+                    const result = await response.json().catch(function () { return {}; });
+                    if (response.ok) {
+                        statusEl.textContent = result.message || "You're subscribed! Check your inbox for a welcome email from Check-In.";
+                        form.reset();
+                    } else {
+                        statusEl.textContent = result.message || 'Could not subscribe right now. Please try again.';
+                    }
+                } catch (err) {
+                    statusEl.textContent = 'Could not subscribe right now. Please try again.';
+                } finally {
+                    button.disabled = false;
+                    button.textContent = 'Subscribe';
+                }
+            });
+        })();
+    </script>
 
 
 
@@ -424,45 +471,6 @@
                     closeMobileMenu();
                 }
             });
-
-            // Partners swipe: tap to reveal on mobile, auto-reset after 4 seconds
-            const partnersSwipeCard = document.querySelector('.partners-swipe-card');
-            const isTouchSwipeDevice = window.matchMedia('(hover: none), (pointer: coarse)').matches;
-
-            if (partnersSwipeCard && isTouchSwipeDevice) {
-                partnersSwipeCard.removeAttribute('tabindex');
-
-                const hintSpan = partnersSwipeCard.querySelector('.partners-swipe-hint span');
-                if (hintSpan) {
-                    hintSpan.textContent = 'Tap for details';
-                }
-
-                let revertTimer = null;
-
-                function hidePartnersInfo() {
-                    partnersSwipeCard.classList.remove('partners-revealed');
-                    if (revertTimer) {
-                        clearTimeout(revertTimer);
-                        revertTimer = null;
-                    }
-                }
-
-                function showPartnersInfo() {
-                    partnersSwipeCard.classList.add('partners-revealed');
-                    if (revertTimer) {
-                        clearTimeout(revertTimer);
-                    }
-                    revertTimer = setTimeout(hidePartnersInfo, 4000);
-                }
-
-                partnersSwipeCard.addEventListener('click', function () {
-                    if (partnersSwipeCard.classList.contains('partners-revealed')) {
-                        hidePartnersInfo();
-                    } else {
-                        showPartnersInfo();
-                    }
-                });
-            }
 
             // Scroll animation for showcase items
             const showcaseItems = document.querySelectorAll('.showcase-item');
@@ -548,14 +556,15 @@
                 console.log('✅ Applied light purple borders to feature headers!');
             });
             
-            // Force the Get Started button to be white
+            // Force the Get Started button to be white (skipped on the redesigned look,
+            // which styles this button via CSS instead)
             const getStartedButton = document.querySelector('.cta-button-primary');
-            if (getStartedButton) {
+            if (getStartedButton && !document.body.classList.contains('ci-redesign')) {
                 getStartedButton.style.background = 'white';
                 getStartedButton.style.color = '#6b21a8';
                 getStartedButton.style.border = 'none';
                 console.log('✅ Get Started button forced to white!');
-                
+
                 // Continuously ensure button stays white
                 setInterval(() => {
                     getStartedButton.style.background = 'white';

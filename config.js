@@ -41,7 +41,7 @@ const config = {
     DEFAULT_AVATAR: 'assets/avatar.svg',
 
     // Helper function to get full API URL
-    getApiUrl: function(endpoint, id = null) {
+    getApiUrl: function (endpoint, id = null) {
         let url = this.API_BASE_URL + endpoint;
         if (id) {
             url += '/' + id;
@@ -50,7 +50,7 @@ const config = {
     },
 
     // Helper function to get user profile picture URL
-    getUserAvatarUrl: function(userId) {
+    getUserAvatarUrl: function (userId) {
         return userId ? this.getApiUrl(`/api/user/${userId}/profile-picture`) : this.DEFAULT_AVATAR;
     }
 };

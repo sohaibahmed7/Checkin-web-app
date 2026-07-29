@@ -37,37 +37,6 @@ document.querySelectorAll('.animate-text, .animate-button, .animate-image').forE
     observer.observe(el);
 });
 
-// Mobile menu toggle
-const mobileMenuToggle = () => {
-    const navLinks = document.querySelector('.nav-links');
-    const menuToggle = document.querySelector('.menu-toggle');
-    
-    if (window.innerWidth <= 768) {
-        if (!menuToggle) {
-            const toggle = document.createElement('button');
-            toggle.className = 'menu-toggle';
-            toggle.innerHTML = '<i class="fas fa-bars"></i>';
-            document.querySelector('.navbar').appendChild(toggle);
-            
-            toggle.addEventListener('click', () => {
-                navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
-            });
-        }
-        
-        navLinks.style.display = 'none';
-    } else {
-        navLinks.style.display = 'flex';
-        const menuToggle = document.querySelector('.menu-toggle');
-        if (menuToggle) {
-            menuToggle.remove();
-        }
-    }
-};
-
-// Handle window resize
-window.addEventListener('resize', mobileMenuToggle);
-
-
 
 
 
@@ -99,34 +68,6 @@ if (contactForm) {
         alert('Thank you for your message! We will get back to you soon.');
         contactForm.reset();
     });
-}
-
-// Single Feature Display - Neighborhood Chat Only
-function showFeature(featureId) {
-    console.log('Showing feature:', featureId);
-    
-    // Remove active class from all buttons
-    document.querySelectorAll('.feature-button').forEach(button => {
-        button.classList.remove('active');
-    });
-    
-    // Add active class to the clicked button
-    const clickedButton = event.target.closest('.feature-button');
-    if (clickedButton) {
-        clickedButton.classList.add('active');
-    }
-    
-    // Show live chat mockup by default and when live-chat button is clicked
-    const liveChatFeature = document.getElementById('live-chat-feature');
-    if (liveChatFeature) {
-        if (featureId === 'live-chat') {
-            liveChatFeature.style.display = 'block';
-        } else {
-            liveChatFeature.style.display = 'none';
-        }
-    }
-    
-    console.log('Feature display updated');
 }
 
 // Safety Pings Functions
@@ -276,9 +217,6 @@ window.addEventListener('scroll', () => {
 
 // Mobile Navigation JavaScript
 document.addEventListener('DOMContentLoaded', function() {
-    // Mobile menu functionality
-    mobileMenuToggle();
-    
     // Mobile navigation overlay
     const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
     const mobileNavOverlay = document.querySelector('.mobile-nav-overlay');
@@ -308,141 +246,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Sample Neighborhood Chat Functionality
-    console.log('Initializing neighborhood chat functionality...');
-    
-    // Response messages for different options
-    const responseMessages = {
-        'no': "No, I didn't see anyone suspicious in the area. Thanks for letting us know though - it's good to stay alert!",
-        'yes': "Yes, I noticed them too - very concerning! They were definitely acting suspicious. Should we call the police?",
-        'details': "I have some details to share about what I observed. They were wearing a dark hoodie and seemed to be taking photos of houses. I got a partial license plate number too."
-    };
-    
-    // Initialize chat
-    function initializeChat() {
-        document.getElementById('chat-response').style.display = 'block';
-        document.getElementById('chat-result').style.display = 'none';
-    }
-    
-    // Initialize chat on page load
-    initializeChat();
-    
-    // Make functions globally available
-    window.sendResponse = function(responseType) {
-        console.log('Response sent:', responseType);
-        
-        const responseMessage = responseMessages[responseType];
-        
-        // Add clicked class to the selected option
-        const clickedButton = event.target;
-        clickedButton.classList.add('clicked');
-        
-        // Hide all other response options but keep the clicked one visible
-        const responseOptions = document.querySelectorAll('.response-option');
-        responseOptions.forEach(option => {
-            if (option !== clickedButton) {
-                option.style.display = 'none';
-            }
-        });
-        
-        // Keep the clicked button visible but disable it
-        clickedButton.style.pointerEvents = 'none';
-        clickedButton.textContent = 'Sending...';
-        
-        // Show typing indicator
-        const chatMessages = document.getElementById('chat-messages');
-        const typingIndicator = document.createElement('div');
-        typingIndicator.className = 'message user-message typing-indicator';
-        typingIndicator.innerHTML = `
-            <div class="message-avatar">👤</div>
-            <div class="message-content">
-                <div class="message-sender">You</div>
-                <div class="typing-dots">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            </div>
-        `;
-        chatMessages.appendChild(typingIndicator);
-        
-        // Scroll to the typing indicator
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-        
-        // Simulate typing delay
-        setTimeout(() => {
-            // Remove typing indicator
-            typingIndicator.remove();
-            
-            // Add user's response to the chat with sending animation
-            const userMessage = document.createElement('div');
-            userMessage.className = 'message user-message sending';
-            userMessage.innerHTML = `
-                <div class="message-avatar">👤</div>
-                <div class="message-content">
-                    <div class="message-sender">You</div>
-                    <div class="message-text">${responseMessage}</div>
-                    <div class="message-time">Just now</div>
-                </div>
-            `;
-            chatMessages.appendChild(userMessage);
-            
-            // Scroll to the new message
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            
-            // Add sent animation after a short delay
-            setTimeout(() => {
-                userMessage.classList.remove('sending');
-                userMessage.classList.add('sent');
-            }, 300);
-            
-            // Show success message after message appears sent
-            setTimeout(() => {
-                document.getElementById('result-title').textContent = 'Message Sent!';
-                document.getElementById('result-message').textContent = 'Your response has been shared with the neighborhood chat.';
-                document.getElementById('chat-result').style.display = 'block';
-            }, 800);
-            
-        }, 1500); // Typing delay
-        
-        console.log('Chat response shown');
-    };
-    
-    window.restartChat = function() {
-        console.log('Restarting chat');
-        
-        // Reset chat messages to original state
-        const chatMessages = document.getElementById('chat-messages');
-        chatMessages.innerHTML = `
-            <div class="message neighbor-message">
-                <div class="message-avatar">👤</div>
-                <div class="message-content">
-                    <div class="message-sender">Sarah (Neighbor)</div>
-                    <div class="message-text">Hey everyone! Did anyone see that suspicious-looking person roaming around the area earlier? They were walking up and down the street taking photos of houses. Should we be concerned?</div>
-                    <div class="message-time">2 minutes ago</div>
-                </div>
-            </div>
-        `;
-        
-        initializeChat();
-    };
-    
-    console.log('Neighborhood chat functionality set up successfully!');
 });
 
-// Initialize page with live chat mockup visible
-document.addEventListener('DOMContentLoaded', function() {
-    // Show live chat mockup by default
-    const liveChatFeature = document.getElementById('live-chat-feature');
-    if (liveChatFeature) {
-        liveChatFeature.style.display = 'block';
-    }
-    
-    // Set live chat button as active by default
-    const liveChatButton = document.querySelector('.feature-button[onclick="showFeature(\'live-chat\')"]');
-    if (liveChatButton) {
-        liveChatButton.classList.add('active');
-    }
-    
-    console.log('Page initialized with live chat mockup');
-});
