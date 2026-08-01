@@ -1,3 +1,27 @@
+/* Scroll-triggered text reveal — applied generically by script.js to
+   headings/paragraphs/list items across all pages. Kept separate from the
+   older .animate-text (used only for the above-the-fold hero) so both can
+   coexist without fighting over the same class. */
+.scroll-fade {
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+    transition-delay: var(--scroll-fade-delay, 0s);
+}
+
+.scroll-fade.in-view {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .scroll-fade {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+}
+
 :root {
     --primary-color: #6b21a8;
     --secondary-color: #8b5cf6;

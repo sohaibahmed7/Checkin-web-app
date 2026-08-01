@@ -6,40 +6,12 @@
     <title>Check-In - Community Safety App</title>
     <link rel="stylesheet" href="../../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;1,300&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,500;6..12,600;6..12,700;6..12,800&display=swap">
     <link rel="stylesheet" href="../../redesign.css?v=1">
     <link rel="icon" type="image/png" href="../../Checklogopngping (1).png">
     <script src="/config.js?v=3"></script>
     <style>
-        /* Form Input Focus Effects */
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none !important;
-            border-color: #6b21a8 !important;
-            box-shadow: 0 0 0 3px rgba(107, 33, 168, 0.1) !important;
-            background: #fff !important;
-        }
-        
-        .form-group input:hover,
-        .form-group textarea:hover {
-            border-color: #9ca3af !important;
-            background: #fff !important;
-        }
-        
-        /* Submit Button Hover Effects */
-        .submit-button:hover {
-            transform: translateY(-2px) !important;
-            box-shadow: 0 8px 25px rgba(107, 33, 168, 0.4) !important;
-            background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 50%, #9333ea 100%) !important;
-        }
-        
-        .submit-button:active {
-            transform: translateY(0) !important;
-            box-shadow: 0 4px 15px rgba(107, 33, 168, 0.3) !important;
-        }
-        
         /* Mobile Responsiveness */
         @media (max-width: 768px) {
             .contact-page .container > div {
@@ -96,10 +68,12 @@
                 <a href="about-us.html" class="mobile-nav-link">About Us</a>
                 <a href="how-it-works.html" class="mobile-nav-link">How It Works</a>
                 <a href="contact.html" class="mobile-nav-link active">Contact</a>
-            </div>
-            <!-- COMMENTING OUT FOR NOW -->
-            <div class="mobile-nav-buttons">
-                <a href="../auth/login.html" class="mobile-button mobile-button-primary">Login</a>
+                <a
+                    href="#"
+                    class="mobile-nav-link mobile-newsletter-link newsletter-trigger"
+                >
+                    Newsletter
+                </a>
             </div>
         </div>
     </div>
@@ -109,50 +83,45 @@
             <h2 class="contact-title">Contact Us</h2>
             <p class="contact-subtitle">Have questions? We're here to help.</p>
             <div class="contact-content-wrapper">
-                <!-- Left: Info Cards -->
+                <!-- Left: Contact Directory -->
                 <div class="contact-info-cards">
-                    <div class="info-card">
-                        <i class="fas fa-envelope"></i>
-                        <div class="info-card-title">Email Us</div>
-                        <div>team@thecheckin.ca</div>
-                    </div>
-                    <div class="info-card">
-                        <i class="fas fa-phone"></i>
-                        <div class="info-card-title">Call Us</div>
-                        <div>416-786-8163</div>
-                    </div>
-                    <div class="info-card">
-                        <i class="fas fa-share-alt"></i>
-                        <div class="info-card-title">Follow Us</div>
-                        <div class="social-links-contact">
-                            <a href="https://twitter.com/thecheckin_ca" target="_blank" rel="noopener">
-                                <svg viewBox="0 0 1200 1227" width="28" height="28" fill="currentColor"><path d="M1199.61 0 741.68 558.41 1199.61 1227H1047.6L677.36 715.47 345.44 1227H0L484.64 615.41 55.36 0h163.2l331.92 472.94L841.36 0h358.25ZM1002.56 1140.47l-627.2-866.5h-81.6l627.2 866.5h81.6Z"></path></svg>
-                            </a>
-                            <a href="https://instagram.com/thecheckin.ca" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
+                    <div class="contact-directory">
+                        <div class="directory-entry">
+                            <span class="directory-label">Email Us</span>
+                            <a href="mailto:team@thecheckin.ca" class="directory-value">team@thecheckin.ca</a>
+                        </div>
+                        <div class="directory-entry">
+                            <span class="directory-label">Call Us</span>
+                            <a href="tel:+14167868163" class="directory-value">416-786-8163</a>
+                        </div>
+                        <div class="directory-entry">
+                            <span class="directory-label">Follow Us</span>
+                            <div class="directory-value directory-socials">
+                                <a href="https://twitter.com/thecheckin_ca" target="_blank" rel="noopener" aria-label="Check-In on X">
+                                    <svg viewBox="0 0 1200 1227" width="28" height="28" fill="currentColor"><path d="M1199.61 0 741.68 558.41 1199.61 1227H1047.6L677.36 715.47 345.44 1227H0L484.64 615.41 55.36 0h163.2l331.92 472.94L841.36 0h358.25ZM1002.56 1140.47l-627.2-866.5h-81.6l627.2 866.5h81.6Z"></path></svg>
+                                </a>
+                                <a href="https://instagram.com/thecheckin.ca" target="_blank" rel="noopener" aria-label="Check-In on Instagram"><i class="fab fa-instagram"></i></a>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <!-- Right: Contact Form -->
-                <div style="flex: 1; background: #fff; border-radius: 20px; box-shadow: 0 8px 32px rgba(107, 33, 168, 0.12); padding: 2rem 2rem; display: flex; flex-direction: column; gap: 1rem; border: 1px solid rgba(107, 33, 168, 0.08);">
-                    <div style="text-align: center; margin-bottom: 1rem;">
-                        <h3 style="color: #000000; font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">Send us a <span style="color: #6b21a8;">Message</span></h3>
-                    </div>
+                <div class="contact-form-panel">
+                    <h3>Send us a <span>Message</span></h3>
                     <form id="contactForm" autocomplete="off">
-                        <div class="form-group" style="margin-bottom: 1rem;">
-                            <label for="name" style="font-weight: 600; color: #374151; font-size: 0.95rem; display: block; margin-bottom: 0.4rem;">Full Name</label>
-                            <input type="text" id="name" name="name" required autocomplete="off" style="width: 100%; padding: 0.8rem; border-radius: 12px; border: 2px solid #e5e7eb; margin-top: 0; font-size: 1rem; transition: all 0.3s ease; background: #fafbfc;" placeholder="Enter your full name">
+                        <div class="form-group">
+                            <label for="name">Full Name</label>
+                            <input type="text" id="name" name="name" required autocomplete="off" placeholder="Enter your full name">
                         </div>
-                        <div class="form-group" style="margin-bottom: 1rem;">
-                            <label for="email" style="font-weight: 600; color: #374151; font-size: 0.95rem; display: block; margin-bottom: 0.4rem;">Email Address</label>
-                            <input type="email" id="email" name="email" required autocomplete="off" style="width: 100%; padding: 0.8rem; border-radius: 12px; border: 2px solid #e5e7eb; margin-top: 0; font-size: 1rem; transition: all 0.3s ease; background: #fafbfc;" placeholder="Enter your email address">
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" required autocomplete="off" placeholder="Enter your email address">
                         </div>
-                        <div class="form-group" style="margin-bottom: 1.5rem;">
-                            <label for="message" style="font-weight: 600; color: #374151; font-size: 0.95rem; display: block; margin-bottom: 0.4rem;">Message</label>
-                            <textarea id="message" name="message" rows="4" required autocomplete="off" style="width: 100%; padding: 0.8rem; border-radius: 12px; border: 2px solid #e5e7eb; margin-top: 0; font-size: 1rem; transition: all 0.3s ease; background: #fafbfc; resize: vertical; min-height: 100px;" placeholder="Tell us how we can help you..."></textarea>
+                        <div class="form-group">
+                            <label for="message">Message</label>
+                            <textarea id="message" name="message" rows="4" required autocomplete="off" placeholder="Tell us how we can help you..."></textarea>
                         </div>
-                        <button type="submit" class="submit-button" style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a855f7 100%); color: #fff; border: none; border-radius: 12px; padding: 1.1rem 2.5rem; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(107, 33, 168, 0.3); width: 100%; position: relative; overflow: hidden;">
-                            <span style="position: relative; z-index: 2;">Send Message</span>
-                        </button>
+                        <button type="submit" class="submit-button">Send Message</button>
                     </form>
                 </div>
             </div>
@@ -178,7 +147,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2025 Check-In. All rights reserved.</p>
+            <p>&copy; 2026 Check-In. All rights reserved.</p>
         </div>
     </footer>
 
@@ -202,6 +171,7 @@
         </div>
     </div>
     <script src="../../newsletter-modal.js?v=6" defer></script>
+    <script src="../../script.js" defer></script>
 
     <script>
         const contactForm = document.getElementById('contactForm');

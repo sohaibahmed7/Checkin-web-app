@@ -37,7 +37,61 @@ document.querySelectorAll('.animate-text, .animate-button, .animate-image').forE
     observer.observe(el);
 });
 
+// Scroll-triggered reveal for text content across the site: headings,
+// paragraphs, and list items fade/slide in as they enter the viewport.
+// Excludes nav/footer (always visible chrome) and anything already handled
+// by .animate-text so the hero isn't double-animated.
+const scrollFadeSelector = [
+    'main h1', 'main h2', 'main h3', 'main h4',
+    'main p', 'main li',
+    'section h1', 'section h2', 'section h3', 'section h4',
+    'section p', 'section li'
+].join(', ');
 
+const scrollFadeEls = new Set();
+document.querySelectorAll(scrollFadeSelector).forEach(el => {
+    if (el.closest('nav, footer, .navbar')) return;
+    if (el.classList.contains('animate-text')) return;
+    if (!el.textContent.trim()) return;
+    scrollFadeEls.add(el);
+});
+
+const fadeObserver = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+            obs.unobserve(entry.target);
+        }
+    });
+}, { root: null, rootMargin: '0px 0px -40px 0px', threshold: 0.1 });
+
+// Stagger siblings revealed together so groups (e.g. list items) cascade
+// in rather than popping simultaneously.
+const groupCounters = new WeakMap();
+scrollFadeEls.forEach(el => {
+    el.classList.add('scroll-fade');
+    const parent = el.parentElement;
+    const count = groupCounters.get(parent) || 0;
+    el.style.setProperty('--scroll-fade-delay', `${Math.min(count, 5) * 0.08}s`);
+    groupCounters.set(parent, count + 1);
+    fadeObserver.observe(el);
+});
+
+// Hand-drawn highlight behind purple emphasis words (see redesign.css
+// .highlight-purple / .purple-word): starts hidden and fills in left-to-
+// right once scrolled into view, rather than just appearing with the text.
+const highlightObserver = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('ci-highlight-in-view');
+            obs.unobserve(entry.target);
+        }
+    });
+}, { root: null, rootMargin: '0px 0px -40px 0px', threshold: 0.4 });
+
+document.querySelectorAll('.highlight-purple, .purple-word').forEach(el => {
+    highlightObserver.observe(el);
+});
 
 
 // Add hover effect to feature cards
@@ -51,24 +105,8 @@ document.querySelectorAll('.feature-card').forEach(card => {
     });
 });
 
-// Handle contact form submission
-const contactForm = document.getElementById('contactForm');
-if (contactForm) {
-    contactForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        // Get form data
-        const formData = new FormData(contactForm);
-        const data = Object.fromEntries(formData);
-        
-        // Here you would typically send the data to a server
-        console.log('Form submitted:', data);
-        
-        // Show success message
-        alert('Thank you for your message! We will get back to you soon.');
-        contactForm.reset();
-    });
-}
+// Note: contact.html wires up its own #contactForm submit handler (real
+// async submission), so script.js intentionally doesn't touch that form.
 
 // Safety Pings Functions
 function showPingDetails(pingId) {

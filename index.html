@@ -7,9 +7,8 @@
     <title>Check-In - Community Safety App</title>
     <link rel="stylesheet" href="styles.css?v=183">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;1,300&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,500;6..12,600;6..12,700;6..12,800&display=swap">
     <link rel="stylesheet" href="redesign.css?v=1">
     <link rel="icon" type="image/png" href="Checklogopngping (1).png">
     <script src="config.js"></script>
@@ -69,7 +68,7 @@
         <div class="hero-content">
 
             <h1 class="hero-headline animate-text">
-                <span class="headline-line-1">Your neighborhood,</span>
+                <span class="headline-line-1">Your neighbourhood,</span>
                 <span class="headline-line-2"><span class="highlight-purple">looking out</span></span>
                 <span class="headline-line-3 gradient-text"><span class="highlight-purple">for itself.</span></span>
             </h1>
@@ -97,23 +96,40 @@
     <!-- Official Partner -->
     <section class="exclusive-partners-section" aria-label="Official partner">
         <div class="partner-band">
-            <div class="partner-main">
-                <div class="partner-main-text">
-                    <p class="partner-label">Official Partner</p>
-                    <h2 class="partner-name">Crime Stoppers of Halton</h2>
-                    <div class="partner-stat">
-                        <span class="partner-stat-num">10,000+</span>
-                        <span class="partner-stat-cap">people in Halton will receive Check-In this summer</span>
+            <div class="partner-columns">
+                <!-- Left column: header, then logo + stat in their own
+                     content flow. This column's box height is entirely its
+                     own content — nothing here can stretch the right
+                     column, and nothing on the right can stretch this. -->
+                <div class="partner-col-official">
+                    <div class="partner-header partner-header-official">
+                        <p class="partner-label">Official App Partner of</p>
+                        <h2 class="partner-name">Crime Stoppers of Halton</h2>
+                    </div>
+                    <div class="partner-official-content">
+                        <div class="partner-featured-logo"><img src="pages/assets/partners/crime-stoppers-halton-cropped.png" alt="Crime Stoppers of Halton"></div>
+                        <div class="partner-stat">
+                            <span class="partner-stat-num">10,000+</span>
+                            <span class="partner-stat-cap">people in Halton will use Check-In this summer</span>
+                        </div>
                     </div>
                 </div>
-                <div class="partner-logo partner-logo-featured"><img src="pages/assets/partners/crime-stoppers-halton-transparent.png" alt="Crime Stoppers of Halton"></div>
-            </div>
-            <div class="partner-logos">
-                <p class="partner-label">Crime Stoppers of Halton partners with</p>
-                <div class="partner-logo-row">
-                    <div class="partner-logo"><img src="pages/assets/partners/OPP-transparent.png" alt="Ontario Provincial Police"></div>
-                    <div class="partner-logo"><img src="pages/assets/partners/HRPS-transparent.png" alt="Halton Regional Police Service"></div>
-                    <div class="partner-logo"><img src="pages/assets/partners/CHCH-transparent.png" alt="CHCH-TV"></div>
+
+                <!-- Right column: header, then the partner-logo grid. Ends
+                     naturally right after the logo row — no shared row or
+                     stretch rule ties its height to the left column. -->
+                <div class="partner-col-secondary">
+                    <div class="partner-header partner-header-secondary">
+                        <p class="partner-secondary-label">Crime Stoppers of Halton</p>
+                        <h2 class="partner-secondary-name">Partners with</h2>
+                    </div>
+                    <div class="partner-logo-strip" aria-label="Crime Stoppers of Halton's partners">
+                        <div class="partner-logo-track">
+                            <div class="partner-logo-item"><img src="pages/assets/partners/OPP-transparent.png" alt="Ontario Provincial Police"></div>
+                            <div class="partner-logo-item"><img src="pages/assets/partners/HRPS-transparent.png" alt="Halton Regional Police Service"></div>
+                            <div class="partner-logo-item"><img src="pages/assets/partners/CHCH-transparent.png" alt="CHCH-TV"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -147,7 +163,7 @@
                 <div class="features-left">
                     <h2>Check-In Is Your All-In-One <span class="highlight-purple">Community Safety</span> Platform</h2>
                     <ul class="features-list">
-                        <li>Place <strong>real-time</strong> safety pings on your neighborhood map</li>
+                        <li>Place <strong>real-time</strong> safety pings on your neighbourhood map</li>
                         <li>Connect with <strong>neighbors</strong> through live group chat</li>
                         <li>Create <strong>comprehensive</strong> safety reports with rich media</li>
                         <li>Experience <strong>seamless</strong> navigation through all features</li>
@@ -218,11 +234,11 @@
 
                                 <div class="landing-map-layout">
                                     <div class="landing-map-view">
-                                        <div id="landing-map-mockup" aria-label="Interactive neighborhood safety map"></div>
+                                        <div id="landing-map-mockup" aria-label="Interactive neighbourhood safety map"></div>
                                     </div>
                                     <div class="landing-ping-sidebar">
                                         <div class="landing-ping-sidebar-header">
-                                            <h3>Pings in your neighborhood</h3>
+                                            <h3>Pings in your neighbourhood</h3>
                                         </div>
                                         <div id="landing-ping-list" class="landing-ping-list"></div>
                                     </div>
@@ -246,12 +262,12 @@
             <div class="showcase-grid">
                 <div class="showcase-item">
                     <div class="showcase-text">
-                        <h3 style="color: black;">Drop <span class="highlight-purple">Safety Pings</span> Instantly on Your Neighborhood Map</h3>
+                        <h3>Drop <span class="highlight-purple">Safety Pings</span> Instantly on Your Neighbourhood Map</h3>
                         <ul class="showcase-features">
                             <li>One-tap safety alert placement with GPS precision</li>
                             <li>Real-time incident tracking with live map updates</li>
                             <li>Instant community-wide safety notifications</li>
-                            <li>Interactive neighborhood monitoring system</li>
+                            <li>Interactive neighbourhood monitoring system</li>
                         </ul>
                     </div>
                     <div class="video-frame-small">
@@ -263,9 +279,9 @@
 
                 <div class="showcase-item">
                     <div class="showcase-text">
-                        <h3 style="color: black;">Connect with Neighbors Through <span class="highlight-purple">Real-Time</span> Group Messaging</h3>
+                        <h3>Connect with Neighbors Through <span class="highlight-purple">Real-Time</span> Group Messaging</h3>
                         <ul class="showcase-features">
-                            <li>Live neighborhood chat with instant messaging</li>
+                            <li>Live neighbourhood chat with instant messaging</li>
                             <li>Share safety alerts and community updates instantly</li>
                             <li>Secure photo and location sharing capabilities</li>
                             <li>Coordinated community safety discussions</li>
@@ -280,7 +296,7 @@
 
                 <div class="showcase-item">
                     <div class="showcase-text">
-                        <h3 style="color: black;">Build Detailed <span class="highlight-purple">Safety Reports</span> with Photos & Videos</h3>
+                        <h3>Build Detailed <span class="highlight-purple">Safety Reports</span> with Photos & Videos</h3>
                         <ul class="showcase-features">
                             <li>Comprehensive incident documentation with media</li>
                             <li>Add photos, videos, and audio evidence easily</li>
@@ -299,7 +315,7 @@
 
                 <div class="showcase-item">
                     <div class="showcase-text">
-                        <h3 style="color: black;">Navigate the Complete Check-In <span class="highlight-purple">Dashboard</span> Experience</h3>
+                        <h3>Navigate the Complete Check-In <span class="highlight-purple">Dashboard</span> Experience</h3>
                         <ul class="showcase-features">
                             <li>Seamless access to all safety features</li>
                             <li>Quick navigation between tools and reports</li>
@@ -331,7 +347,7 @@
         </div>
     </section>
 
-    <footer class="footer" style="background: #18191a; color: #fff; padding: 3rem 0 1.5rem 0;">
+    <footer class="footer" style="padding: 3rem 0 1.5rem 0;">
         <div class="footer-content" style="display: flex; justify-content: center; align-items: flex-start; gap: 6rem; flex-wrap: wrap;">
             <div class="footer-section" style="text-align: center; min-width: 220px;">
                 <h3 style="font-weight: 600; color: #fff; margin-bottom: 1rem;">Contact Us</h3>
@@ -491,87 +507,6 @@
             
             // Check on initial load
             checkScroll();
-            
-            // Video loading debug
-            const videos = document.querySelectorAll('video');
-            videos.forEach((video, index) => {
-                video.addEventListener('loadstart', () => {
-                    console.log(`Video ${index + 1} started loading`);
-                });
-                video.addEventListener('canplay', () => {
-                    console.log(`Video ${index + 1} can play`);
-                });
-                video.addEventListener('error', (e) => {
-                    console.error(`Video ${index + 1} error:`, e);
-                });
-            });
-        });
-    </script>
-    
-    <!-- Phone Mockup Outline Removal Script -->
-    <script>
-        // Remove phone mockup outlines on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔧 Removing phone mockup outlines...');
-            
-            // Remove outlines from all phone mockup elements
-            document.querySelectorAll(".phone-mockup-container img, .primary-mockup, .secondary-mockup, .animate-image, .app-screenshot").forEach(el => {
-                el.style.border = "none";
-                el.style.outline = "none";
-                el.style.boxShadow = "none";
-                el.style.filter = "none";
-                el.style.webkitBoxShadow = "none";
-                el.style.mozBoxShadow = "none";
-                el.style.webkitAppearance = "none";
-                el.style.mozAppearance = "none";
-                el.style.appearance = "none";
-                el.style.userSelect = "none";
-                el.style.webkitUserSelect = "none";
-                el.style.mozUserSelect = "none";
-                el.style.msUserSelect = "none";
-                el.style.background = "transparent";
-                el.style.backgroundColor = "transparent";
-                el.style.backgroundImage = "none";
-            });
-            
-            // Also remove backgrounds from container elements
-            document.querySelectorAll(".phone-mockup-container, .hero-image, .hero div, .phone-mockup-container *, .hero-image *").forEach(el => {
-                el.style.background = "transparent";
-                el.style.backgroundColor = "transparent";
-                el.style.backgroundImage = "none";
-                el.style.backgroundSize = "none";
-                el.style.backgroundRepeat = "none";
-                el.style.backgroundPosition = "none";
-                el.style.backgroundAttachment = "none";
-                el.style.backgroundClip = "none";
-                el.style.backgroundOrigin = "none";
-            });
-            
-            console.log('✅ Phone mockup outlines removed!');
-            
-            // Force light purple borders on feature headers
-            document.querySelectorAll('.pings-header, .chat-header, .reports-header, .dashboard-header, .alerts-header, .community-header').forEach(el => {
-                el.style.border = '2px solid #e9d5ff';
-                el.style.borderColor = '#e9d5ff';
-                console.log('✅ Applied light purple borders to feature headers!');
-            });
-            
-            // Force the Get Started button to be white (skipped on the redesigned look,
-            // which styles this button via CSS instead)
-            const getStartedButton = document.querySelector('.cta-button-primary');
-            if (getStartedButton && !document.body.classList.contains('ci-redesign')) {
-                getStartedButton.style.background = 'white';
-                getStartedButton.style.color = '#6b21a8';
-                getStartedButton.style.border = 'none';
-                console.log('✅ Get Started button forced to white!');
-
-                // Continuously ensure button stays white
-                setInterval(() => {
-                    getStartedButton.style.background = 'white';
-                    getStartedButton.style.color = '#6b21a8';
-                    getStartedButton.style.border = 'none';
-                }, 100);
-            }
         });
     </script>
 </body>
