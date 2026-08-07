@@ -2684,7 +2684,7 @@ function renderReportsTable(reports) {
         // Evidence icon
         let evidenceHtml = hasEvidence
             ? `<span class="evidence-icon has-evidence" title="Evidence attached"><i class="fas fa-paperclip"></i></span>`
-            : `<span class="evidence-icon no-evidence" title="No evidence">—</span>`;
+            : `<span class="evidence-icon no-evidence" title="No evidence">-</span>`;
 
         // Status badge logic
         let status = report.status ? report.status.toLowerCase() : 'active';

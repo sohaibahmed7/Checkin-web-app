@@ -64,7 +64,7 @@ const connectDb = async () => {
   isConnected = true;
 };
 app.use(async (req, res, next) => {
-  if (req.path === "/api/newsletter/subscribe" || req.path === "/api/newsletter/welcome-email") {
+  if (req.path === "/api/newsletter/subscribe" || req.path === "/api/newsletter/welcome-email" || req.path === "/api/contact") {
     return next();
   }
   try {
@@ -203,7 +203,7 @@ function buildSubscribeSuccessMessage(status, welcomeSent) {
     return "Almost there! Check your inbox and click the confirmation link to finish subscribing.";
   }
   if (status === "validating") {
-    return "You're subscribed! We're verifying your email now — you'll be on the list shortly.";
+    return "You're subscribed! We're verifying your email now - you'll be on the list shortly.";
   }
   if (welcomeSent) {
     return "You're subscribed! Check your inbox for a welcome email from Check-In.";
@@ -941,8 +941,14 @@ app.post("/api/newsletter/welcome-email", express.json(), async (req, res) => {
 app.post("/api/contact", express.json(), async (req, res) => {
   try {
     const {name, email, message} = req.body;
-    const contactMsg = new ContactMessage({name, email, message});
-    await contactMsg.save();
+
+    try {
+      await connectDb();
+      const contactMsg = new ContactMessage({name, email, message});
+      await contactMsg.save();
+    } catch (dbErr) {
+      console.error("Contact form: skipping DB save, MongoDB unavailable:", dbErr);
+    }
 
     const mailOptionsTeam = {
       from: process.env.EMAIL_USER,
@@ -969,7 +975,7 @@ app.post("/api/contact", express.json(), async (req, res) => {
         <p><strong>Your message:</strong></p>
         <p>${message}</p>
         <hr>
-        <p>Best regards,<br>CheckIn Team</p>
+        <p>Best regards,<br>The Check-In Team</p>
       `,
     };
 

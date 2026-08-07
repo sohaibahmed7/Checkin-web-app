@@ -1,23 +1,23 @@
 /* ============================================================
-   Check-In — "The Friendly Notice Board" redesign layer.
+   Check-In - "The Friendly Notice Board" redesign layer.
    Replaces the earlier editorial-brutalist ("Neighborhood
    Bulletin") system. Scoped under body.ci-redesign so it only
    ever affects the 4 marketing pages that opt in (index,
    about-us, contact, how-it-works). Nothing in styles.css is
-   edited or removed — this file loads AFTER it and reskins
+   edited or removed - this file loads AFTER it and reskins
    colour/type/shape/shadow. All existing IDs, classes, JS hooks,
    form actions and layout mechanics (flex/grid/position/transform)
    are left untouched so nothing functional breaks.
 
-   World: warm, rounded, hand-friendly — a real neighbor posting a
+   World: warm, rounded, hand-friendly - a real neighbor posting a
    real notice, not a police blotter. Purple carries over from the
-   prior system (the one fixed brand color); everything else — the
+   prior system (the one fixed brand color); everything else - the
    cream base, the green secondary (matches the logo's checkmark), the
    rounded/soft-shadow shape language, the Baloo 2 + Nunito Sans type
-   pairing — is new.
+   pairing - is new.
 
    NOTE: nearly every declaration below uses !important. This is
-   not stylistic — styles.css is a legacy file full of defensive
+   not stylistic - styles.css is a legacy file full of defensive
    !important overrides (and a few inline style="...!important"
    attributes), so this layer has to match that specificity to
    reliably win, regardless of selector specificity.
@@ -29,7 +29,7 @@ body.ci-redesign {
   --ci-ink: #3A2E28;
   --ci-muted: #7A6B61;
   --ci-purple: #7C5CBF;
-  --ci-purple-deep: #5C3FA0;
+  --ci-purple-deep: #7C5CBF;
   --ci-purple-tint: #F1ECFA;
   --ci-green: #34C08B;
   --ci-green-deep: #23815D;
@@ -70,26 +70,6 @@ body.ci-redesign h3 {
   letter-spacing: -0.01em;
 }
 
-/* Hand-drawn highlighter swipe behind purple emphasis words — replaces the
-   green squiggly underline that used to sit beneath this text (see
-   6d7e804, "removed squiggly lines"). Background-image (not a pseudo-
-   element) so it paints behind the glyphs for free and clones per
-   wrapped line via box-decoration-break, so phrases that wrap onto a
-   second line still get their own highlight instead of one broken bar.
-   The path is basically a straight bar, not a wave — top/bottom edges
-   only wobble slightly and non-periodically, and the two end caps are
-   cut at a slight opposing slant, so it reads as one quick marker
-   stroke rather than a squiggle.
-
-   Fills in on scroll: starts at background-size 0% width (image hidden)
-   and script.js adds .ci-highlight-in-view once the word scrolls into
-   view, which animates the width to 100%. Height stays fixed the whole
-   time, and background-position stays left-anchored, so it reads as the
-   stroke being drawn left-to-right rather than fading or scaling in.
-   The transition-delay (0.5s) holds the fill until just after the word
-   itself is likely on screen, so the reader registers the plain text
-   first and then watches the highlight get drawn under it, instead of
-   both appearing at once as one flat pop. */
 body.ci-redesign .highlight-purple,
 body.ci-redesign .purple-word {
   color: var(--ci-purple) !important;
@@ -97,6 +77,28 @@ body.ci-redesign .purple-word {
   font-style: normal !important;
   text-decoration: none !important;
   border-bottom: none !important;
+}
+
+/* Hand-drawn highlighter swipe - opt-in via .ci-green-highlight, applied only
+   to a handful of specific call-outs (not every .highlight-purple/.purple-word
+   instance). Background-image (not a pseudo-element) so it paints behind the
+   glyphs for free and clones per wrapped line via box-decoration-break, so
+   phrases that wrap onto a second line still get their own highlight instead
+   of one broken bar. The path is basically a straight bar, not a wave -
+   top/bottom edges only wobble slightly and non-periodically, and the two end
+   caps are cut at a slight opposing slant, so it reads as one quick marker
+   stroke rather than a squiggle.
+
+   Fills in on scroll: starts at background-size 0% width (image hidden) and
+   script.js adds .ci-highlight-in-view once the word scrolls into view, which
+   animates the width to 100%. Height stays fixed the whole time, and
+   background-position stays left-anchored, so it reads as the stroke being
+   drawn left-to-right rather than fading or scaling in. The transition-delay
+   (0.5s) holds the fill until just after the word itself is likely on screen,
+   so the reader registers the plain text first and then watches the
+   highlight get drawn under it, instead of both appearing at once as one flat
+   pop. */
+body.ci-redesign .ci-green-highlight {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10' preserveAspectRatio='none'%3E%3Cpath d='M0.5,2.6 C20,1 45,2.4 65,1.3 C80,0.5 92,1.7 99.5,2.2 L100,8.6 C88,9.6 70,8 50,9.2 C32,10.1 14,8.8 0,9.4 Z' fill='%2334C08B' fill-opacity='0.48'/%3E%3C/svg%3E") !important;
   background-repeat: no-repeat !important;
   background-position: 0 58% !important;
@@ -108,14 +110,12 @@ body.ci-redesign .purple-word {
   -webkit-box-decoration-break: clone !important;
 }
 
-body.ci-redesign .highlight-purple.ci-highlight-in-view,
-body.ci-redesign .purple-word.ci-highlight-in-view {
+body.ci-redesign .ci-green-highlight.ci-highlight-in-view {
   background-size: 100% 0.8em !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body.ci-redesign .highlight-purple,
-  body.ci-redesign .purple-word {
+  body.ci-redesign .ci-green-highlight {
     background-size: 100% 0.8em !important;
     transition: none !important;
   }
@@ -407,8 +407,8 @@ body.ci-redesign .hero-cta-section .cta-button-secondary {
 /* ---------- Official Partner band ----------
    Two independent flex columns, middle-aligned against each other
    (align-items: center on .partner-columns) since the two sides now carry
-   very different content weight — a large standalone logo + stat card on
-   the left vs. a compact card grid on the right — and centering their
+   very different content weight - a large standalone logo + stat card on
+   the left vs. a compact card grid on the right - and centering their
    midpoints reads better than pinning both to the top. Each column's own
    height is still purely its own content (header + body stacked with
    `gap`, no forced min-heights or shared grid rows), so nothing here can
@@ -430,8 +430,8 @@ body.ci-redesign .partner-band {
 /* Wide gap + space-between so the two blocks sit toward the outer edges
    and use the band's full horizontal length instead of huddling in the
    middle with dead space at either end.
-   align-items: flex-start puts both columns' first child — the two header
-   labels — on the same baseline, so they read as a matched pair. */
+   align-items: flex-start puts both columns' first child - the two header
+   labels - on the same baseline, so they read as a matched pair. */
 body.ci-redesign .partner-columns {
   display: flex !important;
   align-items: flex-start !important;
@@ -453,10 +453,23 @@ body.ci-redesign .partner-col-official {
   flex: 0.85 1 0;
 }
 
+/* Only the official-partner column remains (secondary partners-of block
+   was removed) - drop the space-between two-column layout and center
+   the single column instead, so it doesn't hug the left edge. */
+body.ci-redesign .partner-columns-single {
+  justify-content: center !important;
+}
+
+body.ci-redesign .partner-columns-single .partner-col-official {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 500px;
+}
+
 /* Slightly wider so three logo cards always fit on one row at desktop.
    align-self: stretch makes this column match the taller left column's
    height; the logo strip then takes `margin: auto 0` below to sit at the
-   column's vertical midpoint — header stays pinned to the top, cards ride
+   column's vertical midpoint - header stays pinned to the top, cards ride
    the middle. */
 body.ci-redesign .partner-col-secondary {
   flex: 1.15 1 0;
@@ -470,7 +483,7 @@ body.ci-redesign .partner-header {
   width: 100%;
 }
 
-/* Both eyebrow labels are the same deep purple now — one was green, the
+/* Both eyebrow labels are the same deep purple now - one was green, the
    other muted gray, which read as unrelated. */
 body.ci-redesign .partner-label,
 body.ci-redesign .partner-secondary-label {
@@ -496,17 +509,18 @@ body.ci-redesign .partner-secondary-name {
 
 /* Logo + stat live in the official column's own flow, spaced with `gap`
    rather than margins, so this block's total height is exactly its
-   content — nothing else in the section depends on or is stretched by
+   content - nothing else in the section depends on or is stretched by
    its size. */
 body.ci-redesign .partner-official-content {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
-  gap: 26px;
+  gap: 20px;
   width: 100%;
+  margin-top: -24px;
 }
 
-/* Standalone, no card/background — the logo's own transparency carries
+/* Standalone, no card/background - the logo's own transparency carries
    it. This is the primary brand element of the whole band: deliberately
    the largest single asset in the section. */
 body.ci-redesign .partner-featured-logo {
@@ -518,16 +532,22 @@ body.ci-redesign .partner-featured-logo {
   box-shadow: none !important;
   padding: 0 !important;
   width: 100%;
+  margin: -32px 0 30px !important;
 }
 
-/* The source PNG was 447x447 with only 383x160 of actual artwork — 64% of
+body.ci-redesign .partner-featured-logo a {
+  display: block !important;
+  width: 100% !important;
+}
+
+/* The source PNG was 447x447 with only 383x160 of actual artwork - 64% of
    its height was transparent padding, which is what inflated this column
    and made the logo look small at any given box size. Cropped asset is
    383x160 (2.4:1), so it's sized by WIDTH now, not height. */
 body.ci-redesign .partner-featured-logo img {
   display: block !important;
   width: 100% !important;
-  max-width: 460px !important;
+  max-width: 500px !important;
   height: auto !important;
   object-fit: contain !important;
 }
@@ -554,6 +574,15 @@ body.ci-redesign .partner-stat-num {
   font-size: 60px !important;
   line-height: 1 !important;
   color: var(--ci-purple) !important;
+}
+
+body.ci-redesign .partner-note {
+  font-family: var(--ci-sans) !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: var(--ci-text-muted, #6b6b78) !important;
+  text-align: center !important;
+  margin: 0 !important;
 }
 
 body.ci-redesign .partner-stat-cap {
@@ -600,9 +629,8 @@ body.ci-redesign .partner-logo-item:hover {
   box-shadow: var(--ci-shadow-md) !important;
 }
 
-/* Grayscale/dimmed by default, full color only on hover. object-fit:
-   contain (via max-width/max-height + auto) preserves each logo's native
-   aspect ratio — nothing stretches or distorts. */
+/* Full color always. object-fit: contain (via max-width/max-height + auto)
+   preserves each logo's native aspect ratio - nothing stretches or distorts. */
 body.ci-redesign .partner-logo-item img {
   display: block !important;
   max-width: 100% !important;
@@ -610,12 +638,6 @@ body.ci-redesign .partner-logo-item img {
   width: auto !important;
   height: auto !important;
   object-fit: contain !important;
-  filter: grayscale(1) opacity(0.7);
-  transition: filter 0.2s ease;
-}
-
-body.ci-redesign .partner-logo-item:hover img {
-  filter: grayscale(0) opacity(1);
 }
 
 @media (max-width: 900px) {
@@ -640,14 +662,14 @@ body.ci-redesign .partner-logo-item:hover img {
     max-width: 560px;
   }
 
-  /* Stacked, so there is no leftover column height to center within —
+  /* Stacked, so there is no leftover column height to center within -
      drop the desktop auto margins that would add stray space. */
   body.ci-redesign .partner-logo-strip {
     margin: 0;
   }
 
   body.ci-redesign .partner-featured-logo img {
-    max-width: 420px !important;
+    max-width: 470px !important;
   }
 
   body.ci-redesign .partner-stat-num {
@@ -684,7 +706,7 @@ body.ci-redesign .partner-logo-item:hover img {
   }
 
   body.ci-redesign .partner-featured-logo img {
-    max-width: 300px !important;
+    max-width: 340px !important;
   }
 
   body.ci-redesign .partner-logo-track {
@@ -723,7 +745,7 @@ body.ci-redesign .video-container {
 
 /* ---------- Features / live map widget ---------- */
 body.ci-redesign .features-section {
-  background: var(--ci-purple-deep) !important;
+  background: var(--ci-purple) !important;
   border-bottom: none !important;
 }
 
@@ -765,7 +787,7 @@ body.ci-redesign .features-section h2 {
 }
 
 /* .highlight-purple defaults to purple text, which nearly disappears
-   against this panel's purple-deep background — swap to green-tint,
+   against this panel's purple-deep background - swap to green-tint,
    matching how .features-list li strong already handles the same panel. */
 body.ci-redesign .features-section h2 .highlight-purple {
   color: var(--ci-green-tint) !important;
@@ -792,19 +814,21 @@ body.ci-redesign .feature-button {
   border: none !important;
   border-radius: var(--ci-radius-pill) !important;
   box-shadow: none !important;
-  cursor: default !important;
-  transition: background 0.18s ease !important;
+  cursor: pointer !important;
+  transition: background 0.18s ease, transform 0.15s ease !important;
 }
 
 body.ci-redesign .feature-button:hover {
   border-color: transparent !important;
   background: rgba(255, 255, 255, 0.2) !important;
   box-shadow: none !important;
-  transform: none !important;
+  transform: translateY(-2px) !important;
 }
 
 body.ci-redesign .feature-button:active {
-  transform: none !important;
+  background: rgba(255, 255, 255, 0.28) !important;
+  transform: scale(0.95) !important;
+  transition: background 0.08s ease, transform 0.08s ease !important;
 }
 
 body.ci-redesign .feature-button i {
@@ -824,6 +848,10 @@ body.ci-redesign .landing-map-title {
   font-size: 1.3rem !important;
 }
 
+body.ci-redesign .landing-map-title .highlight-purple {
+  color: var(--ci-purple) !important;
+}
+
 body.ci-redesign .landing-category-toggles button.active {
   background: var(--ci-purple) !important;
   border-color: var(--ci-purple) !important;
@@ -840,7 +868,7 @@ body.ci-redesign .landing-category-toggles button:hover {
   background: var(--ci-purple-tint) !important;
 }
 
-/* green-deep, not the bright true-logo green — white text on the bright
+/* green-deep, not the bright true-logo green - white text on the bright
    green measured 2.32:1 (badly fails AA); green-deep clears 4.8:1. The
    bright green stays reserved for icons/underlines/decorative fills that
    don't pair with white text. */
@@ -856,7 +884,7 @@ body.ci-redesign .landing-map-view {
 }
 
 /* The "Other" ping category badge in the sidebar list still carried the
-   old pre-redesign green (#4caf50/#e8f5e8 from styles.css) — swap it to
+   old pre-redesign green (#4caf50/#e8f5e8 from styles.css) - swap it to
    the same green-tint/green-text pair used for every other green badge
    in this file so it matches the logo's checkmark green. */
 body.ci-redesign .safety-dashboard .ping-category.other {
@@ -1046,7 +1074,7 @@ body.ci-redesign .news-form input {
   font-family: var(--ci-sans) !important;
 }
 
-/* green-deep at rest, green-text on hover — white on the bright true-logo
+/* green-deep at rest, green-text on hover - white on the bright true-logo
    green fails contrast (2.32:1); both these darker shades clear 4.5:1. */
 body.ci-redesign .news-form button {
   border: none !important;
@@ -1121,7 +1149,7 @@ body.ci-redesign .news-status:empty {
 
 /* ---------- Footer ---------- */
 body.ci-redesign .footer {
-  background: var(--ci-ink) !important;
+  background: #000 !important;
   border-top: none !important;
 }
 
@@ -1211,7 +1239,7 @@ body.ci-redesign .join-movement p {
   color: var(--ci-muted) !important;
 }
 
-/* Problem log — kept as a single flowing list (not a same-size card grid),
+/* Problem log - kept as a single flowing list (not a same-size card grid),
    re-skinned warm: soft rounded icon chips and a light hairline divider
    instead of ink rules. */
 body.ci-redesign .problem-log {
@@ -1294,7 +1322,7 @@ body.ci-redesign .how-it-works-page h2 {
   color: var(--ci-ink) !important;
 }
 
-/* Procedure list — kept as a real numbered sequence (order genuinely
+/* Procedure list - kept as a real numbered sequence (order genuinely
    matters here), re-skinned warm: soft purple number chip + light divider. */
 body.ci-redesign .procedure-list {
   display: flex !important;
@@ -1405,7 +1433,7 @@ body.ci-redesign .contact-subtitle {
   color: var(--ci-muted) !important;
 }
 
-/* Contact directory — mono-label rows re-skinned warm: soft rounded
+/* Contact directory - mono-label rows re-skinned warm: soft rounded
    pill labels, light hairline dividers instead of ink rules. */
 body.ci-redesign .contact-directory {
   border-top: none !important;

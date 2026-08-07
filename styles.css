@@ -1,4 +1,4 @@
-/* Scroll-triggered text reveal — applied generically by script.js to
+/* Scroll-triggered text reveal - applied generically by script.js to
    headings/paragraphs/list items across all pages. Kept separate from the
    older .animate-text (used only for the above-the-fold hero) so both can
    coexist without fighting over the same class. */
@@ -2372,7 +2372,7 @@ body.scrolled {
     min-height: auto !important;
 }
 
-/* Exclusive Partners — logo swipe to partner info on hover */
+/* Exclusive Partners - logo swipe to partner info on hover */
 .exclusive-partners-section {
     background: #ffffff;
     border-top: 1px solid #e8eaed;

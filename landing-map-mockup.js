@@ -1,5 +1,5 @@
 /**
- * Landing page map mockup — static Mapbox image with interactive ping overlays.
+ * Landing page map mockup - static Mapbox image with interactive ping overlays.
  */
 (function () {
     const MAP_BOUNDS_PAD = 0.012;
@@ -271,12 +271,30 @@
             Math.min(left, containerRect.width - popupWidth - POPUP_EDGE_PADDING)
         );
 
-        let top = pinTop - popupHeight - POPUP_PIN_GAP;
-        if (top < POPUP_EDGE_PADDING) {
+        // Prefer showing the popup above the pin, but only if there's actually
+        // room for it - otherwise flip below. Whichever side has more space wins
+        // when neither fully fits, and the result is always clamped inside the
+        // map so the popup is never cut off by the map's edges.
+        const spaceAbove = pinTop;
+        const spaceBelow = containerRect.height - pinBottom;
+        const neededSpace = popupHeight + POPUP_PIN_GAP;
+
+        let top;
+        let showBelow;
+        if (spaceAbove >= neededSpace || spaceAbove >= spaceBelow) {
+            top = pinTop - popupHeight - POPUP_PIN_GAP;
+            showBelow = false;
+        } else {
             top = pinBottom + POPUP_PIN_GAP;
-            popupLayer.classList.add('is-below');
+            showBelow = true;
         }
 
+        top = Math.max(
+            POPUP_EDGE_PADDING,
+            Math.min(top, containerRect.height - popupHeight - POPUP_EDGE_PADDING)
+        );
+
+        popupLayer.classList.toggle('is-below', showBelow);
         popupLayer.style.left = `${left}px`;
         popupLayer.style.top = `${top}px`;
         popupLayer.style.setProperty('--arrow-left', `${pinCenterX - left}px`);

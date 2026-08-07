@@ -6,12 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Check-In - Community Safety App</title>
     <link rel="stylesheet" href="styles.css?v=183">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,500;6..12,600;6..12,700;6..12,800&display=swap">
     <link rel="stylesheet" href="redesign.css?v=1">
-    <link rel="icon" type="image/png" href="Checklogopngping (1).png">
-    <script src="config.js"></script>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <script src="config.js" defer></script>
     <script src="landing-map-mockup.js" defer></script>
     <script src="script.js" defer></script>
 </head>
@@ -19,7 +20,7 @@
     <nav class="navbar">
         <div class="logo">
             <a href="index.html">
-                <img src="pages/assets/check-in-logo-transparent.png" alt="Check-In Logo" class="logo-image">
+                <img src="pages/assets/check-in-logo-navbar.png" alt="Check-In Logo" class="logo-image">
             </a>
         </div>
         <div class="nav-links">
@@ -43,7 +44,7 @@
         <div class="mobile-nav-content">
             <div class="mobile-nav-header">
                 <div class="mobile-logo">
-                    <img src="pages/assets/check-in-logo-transparent.png" alt="Check-In Logo" class="logo-image">
+                    <img src="pages/assets/check-in-logo-navbar.png" alt="Check-In Logo" class="logo-image">
                 </div>
                 <button class="mobile-nav-close">
                     <i class="fas fa-times"></i>
@@ -68,9 +69,9 @@
         <div class="hero-content">
 
             <h1 class="hero-headline animate-text">
-                <span class="headline-line-1">Your neighbourhood,</span>
-                <span class="headline-line-2"><span class="highlight-purple">looking out</span></span>
-                <span class="headline-line-3 gradient-text"><span class="highlight-purple">for itself.</span></span>
+                <span class="headline-line-1">Your Neighbourhood,</span>
+                <span class="headline-line-2"><span class="highlight-purple ci-green-highlight">Looking Out</span></span>
+                <span class="headline-line-3 gradient-text"><span class="highlight-purple ci-green-highlight">For Itself.</span></span>
             </h1>
             <p class="hero-subheading animate-text">
                 Keep your community connected & safe with one app for real-time safety alerts, live incident map, and group chat.
@@ -96,39 +97,23 @@
     <!-- Official Partner -->
     <section class="exclusive-partners-section" aria-label="Official partner">
         <div class="partner-band">
-            <div class="partner-columns">
+            <div class="partner-columns partner-columns-single">
                 <!-- Left column: header, then logo + stat in their own
                      content flow. This column's box height is entirely its
-                     own content — nothing here can stretch the right
+                     own content - nothing here can stretch the right
                      column, and nothing on the right can stretch this. -->
                 <div class="partner-col-official">
                     <div class="partner-header partner-header-official">
                         <p class="partner-label">Official App Partner of</p>
                         <h2 class="partner-name">Crime Stoppers of Halton</h2>
                     </div>
+                    <div class="partner-featured-logo"><a href="https://www.haltoncrimestoppers.ca/" target="_blank" rel="noopener noreferrer"><img src="pages/assets/partners/crime-stoppers-halton-cropped.png" alt="Crime Stoppers of Halton" loading="lazy" decoding="async"></a></div>
                     <div class="partner-official-content">
-                        <div class="partner-featured-logo"><img src="pages/assets/partners/crime-stoppers-halton-cropped.png" alt="Crime Stoppers of Halton"></div>
                         <div class="partner-stat">
                             <span class="partner-stat-num">10,000+</span>
-                            <span class="partner-stat-cap">people in Halton will use Check-In this summer</span>
+                            <span class="partner-stat-cap">People In Halton Will Use Check-In This Summer</span>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Right column: header, then the partner-logo grid. Ends
-                     naturally right after the logo row — no shared row or
-                     stretch rule ties its height to the left column. -->
-                <div class="partner-col-secondary">
-                    <div class="partner-header partner-header-secondary">
-                        <p class="partner-secondary-label">Crime Stoppers of Halton</p>
-                        <h2 class="partner-secondary-name">Partners with</h2>
-                    </div>
-                    <div class="partner-logo-strip" aria-label="Crime Stoppers of Halton's partners">
-                        <div class="partner-logo-track">
-                            <div class="partner-logo-item"><img src="pages/assets/partners/OPP-transparent.png" alt="Ontario Provincial Police"></div>
-                            <div class="partner-logo-item"><img src="pages/assets/partners/HRPS-transparent.png" alt="Halton Regional Police Service"></div>
-                            <div class="partner-logo-item"><img src="pages/assets/partners/CHCH-transparent.png" alt="CHCH-TV"></div>
-                        </div>
+                        <p class="partner-note">Crime Stoppers of Halton partners with the Halton Regional Police</p>
                     </div>
                 </div>
             </div>
@@ -140,7 +125,7 @@
 
         
         <div class="container">
-            <h2>See a <span class="highlight-purple">Demo</span> of the Product in Action</h2>
+            <h2>See a <span class="highlight-purple ci-green-highlight">Demo</span> of the Product in Action</h2>
             <div class="video-container">
                 <iframe 
                     width="100%" 
@@ -161,7 +146,7 @@
             <div class="features-grid">
                 <!-- Left Column -->
                 <div class="features-left">
-                    <h2>Check-In Is Your All-In-One <span class="highlight-purple">Community Safety</span> Platform</h2>
+                    <h2>Check-In Is Your All-In-One <span class="highlight-purple ci-green-highlight">Community Safety</span> Platform</h2>
                     <ul class="features-list">
                         <li>Place <strong>real-time</strong> safety pings on your neighbourhood map</li>
                         <li>Connect with <strong>neighbors</strong> through live group chat</li>
@@ -258,7 +243,7 @@
     <!-- App Showcase Section -->
     <section class="app-showcase">
         <div class="container">
-            <h2>App <span class="highlight-purple">Features</span></h2>
+            <h2>App <span class="highlight-purple ci-green-highlight">Features</span></h2>
             <div class="showcase-grid">
                 <div class="showcase-item">
                     <div class="showcase-text">
@@ -393,7 +378,7 @@
 
     <script src="newsletter-modal.js?v=6" defer></script>
 
-    <!-- Inline newsletter band submit — posts to the same subscribe API as the modal -->
+    <!-- Inline newsletter band submit - posts to the same subscribe API as the modal -->
     <script>
         (function () {
             const form = document.getElementById('inlineNewsletterForm');
@@ -503,7 +488,7 @@
             }
 
             // Check on scroll
-            window.addEventListener('scroll', checkScroll);
+            window.addEventListener('scroll', checkScroll, { passive: true });
             
             // Check on initial load
             checkScroll();

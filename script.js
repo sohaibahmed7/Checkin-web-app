@@ -89,7 +89,7 @@ const highlightObserver = new IntersectionObserver((entries, obs) => {
     });
 }, { root: null, rootMargin: '0px 0px -40px 0px', threshold: 0.4 });
 
-document.querySelectorAll('.highlight-purple, .purple-word').forEach(el => {
+document.querySelectorAll('.ci-green-highlight').forEach(el => {
     highlightObserver.observe(el);
 });
 
@@ -242,16 +242,16 @@ document.querySelectorAll('.nav-links a').forEach(link => {
 });
 
 // Add scrolled class to body and navbar on scroll
+const navbarEl = document.querySelector('.navbar');
 window.addEventListener('scroll', () => {
-    const navbar = document.querySelector('.navbar');
     if (window.scrollY > 10) {
         document.body.classList.add('scrolled');
-        if (navbar) navbar.classList.add('scrolled');
+        if (navbarEl) navbarEl.classList.add('scrolled');
     } else {
         document.body.classList.remove('scrolled');
-        if (navbar) navbar.classList.remove('scrolled');
+        if (navbarEl) navbarEl.classList.remove('scrolled');
     }
-});
+}, { passive: true });
 
 // Mobile Navigation JavaScript
 document.addEventListener('DOMContentLoaded', function() {

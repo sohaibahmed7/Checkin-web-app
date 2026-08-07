@@ -27,7 +27,7 @@ const config = {
         PING_PHOTO: '/api/ping'
     },
 
-    // Beehiiv newsletter — publication ID from Beehiiv Settings → Integrations (safe to expose in frontend)
+    // Beehiiv newsletter - publication ID from Beehiiv Settings → Integrations (safe to expose in frontend)
     BEEHIIV_PUBLICATION_ID: 'pub_1bbbfb5a-c142-4f10-bcbd-014e766f8066',
 
     // Mapbox Configuration
